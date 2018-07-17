@@ -17,7 +17,6 @@ def execute():
 
 	if "healthcare" not in frappe.get_active_domains():
 		return
-
 	healthcare_custom_field_in_sales_invoice()
 	for si_ref_doc in sales_invoice_referenced_doc:
 		if frappe.db.exists('DocType', si_ref_doc):
