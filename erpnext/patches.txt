@@ -563,4 +563,4 @@ erpnext.patches.v10_0.set_discount_amount
 erpnext.patches.v10_0.recalculate_gross_margin_for_project
 erpnext.patches.v11_0.make_job_card
 erpnext.patches.v11_0.redesign_healthcare_billing_work_flow
-erpnext.patches.v11_0.rename_healthcare_field_test_name
+erpnext.patches.v11_0.rename_healthcare_fields
