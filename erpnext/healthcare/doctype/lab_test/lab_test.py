@@ -319,6 +319,7 @@ def insert_lab_test_to_medical_record(doc):
 	medical_record.reference_doctype = "Lab Test"
 	medical_record.reference_name = doc.name
 	medical_record.reference_owner = doc.owner
+	medical_record.can_plot_chart = can_plot_chart_for_lab_test(doc)
 	medical_record.save(ignore_permissions=True)
 
 def delete_lab_test_from_medical_record(self):
@@ -326,6 +327,34 @@ def delete_lab_test_from_medical_record(self):
 
 	if medical_record_id and medical_record_id[0][0]:
 		frappe.delete_doc("Patient Medical Record", medical_record_id[0][0])
+		manage_can_plot_chart_in_medical_record(self)
+
+def manage_can_plot_chart_in_medical_record(lab_test):
+	if not can_plot_chart_for_lab_test(lab_test):
+		pmrs = frappe.db.exists(
+			{
+				'doctype': 'Patient Medical Record',
+				'reference_doctype': 'Lab Test',
+				'patient': lab_test.patient,
+				'can_plot_chart': 1
+			}
+		)
+		if pmrs and len(pmrs) > 0:
+			for pmr in pmrs:
+				frappe.db.set_value("Patient Medical Record", pmr[0], "can_plot_chart", 0)
+
+def can_plot_chart_for_lab_test(lab_test):
+	exists_lab_test = frappe.db.exists(
+		{
+			'doctype': 'Lab Test',
+			'patient': lab_test.patient,
+			'template': lab_test.template,
+			'docstatus': 1
+		}
+	)
+	if exists_lab_test and len(exists_lab_test) > 1:
+		return True
+	return False
 
 @frappe.whitelist()
 def get_lab_test_prescribed(patient):
