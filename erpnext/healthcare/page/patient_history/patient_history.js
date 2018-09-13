@@ -28,6 +28,20 @@ frappe.pages['patient_history'].on_page_load = function(wrapper) {
 	});
 	patient.refresh();
 
+	this.page.main.on("click", ".btn-show-history-chart", function() {
+		var lab_test_template = $(this).attr("data-lab-test-template");
+		var test_name_to_show = $(this).attr("test_name_to_show");
+		show_lab_test_history(me, patient.get_value(), lab_test_template, test_name_to_show);
+	});
+
+	this.page.main.on("click", ".btn-hide-history-chart", function() {
+		var lab_test_template = $(this).attr("data-lab-test-template");
+		me.page.main.find(".lab_test_history_chart").html("");
+		me.page.main.find(".show_btn_history_chart").html(`<a class='btn btn-default btn-xs btn-show-history-chart'\
+		data-lab-test-template=${lab_test_template} >Show History</a>`);
+		me.page.main.find(".show_chart_history_btns").html("");
+	});
+
 	this.page.main.on("click", ".btn-show-chart", function() {
 		var	btn_show_id = $(this).attr("data-show-chart-id"), pts = $(this).attr("data-pts");
 		var title = $(this).attr("data-title");
@@ -204,6 +218,67 @@ var show_patient_info = function(patient, me){
 		}
 	});
 };
+
+var show_lab_test_history = function(me, patient, lab_test_template, test_name_to_show) {
+	frappe.call({
+		method: "erpnext.healthcare.utils.get_lab_test_history",
+		args:{
+			patient: patient,
+			lab_test_template: lab_test_template
+		},
+		callback: function(r) {
+			if (r.message){
+				var data = r.message;
+				var show_chart_history_btns_html = "";
+				if(data['lab_test_names'].length>1){
+					show_chart_history_btns_html = "<div>"
+					for(var i=0; i<data['lab_test_names'].length; i++){
+						let lab_test_name = data['lab_test_names'][i];
+						show_chart_history_btns_html += `<a class='btn btn-default btn-xs btn-show-history-chart' \
+						data-lab-test-template=${lab_test_template} test_name_to_show='${lab_test_name}'>\
+						${lab_test_name}</a><br/>`
+					}
+					show_chart_history_btns_html += "</div>"
+				}
+				if(!test_name_to_show){
+					test_name_to_show = data['datasets'][0]['name'];
+				}
+				var datasets = [];
+				for(var j=0; j<data['datasets'].length; j++){
+					if(data['datasets'][j].name == test_name_to_show){
+						datasets.push({name: data['datasets'][j].name, values: data['datasets'][j].values,
+						chartType: data['datasets'][j].chartType})
+					}
+				}
+				me.page.main.find(".show_chart_history_btns").html(show_chart_history_btns_html);
+				let chart = new Chart( ".lab_test_history_chart", {
+					data: {
+						labels: data['lables'],
+						datasets: datasets,
+						yRegions: [{ label: "Normal Range", start: 90, end: 110, options: { labelPos: 'right' }}],
+					},
+
+					title: data['parent_test_name'],
+					type: 'axis-mixed', // 'axis-mixed', 'bar', 'line', 'pie', 'percentage'
+					height: 150,
+					colors: ['purple', '#ffa3ef', 'light-blue'],
+
+					tooltipOptions: {
+						formatTooltipX: d => (d + '').toUpperCase(),
+						formatTooltipY: d => d + ' ' + data['uom'][test_name_to_show]
+					}
+				});
+			}
+			else{
+				me.page.main.find(".lab_test_history_chart").html("<div class='text-muted' align='center'>\
+				<br>Lab Test not yet recorded<div>");
+				me.page.main.find(".show_chart_history_btns").html("");
+			}
+		}
+	});
+	me.page.main.find(".show_btn_history_chart").html(`<a class='btn btn-default btn-xs btn-hide-history-chart'\
+	data-lab-test-template=${lab_test_template} >Hide History</a>`);
+}
 
 var show_patient_vital_charts = function(patient, me, btn_show_id, pts, title) {
 	frappe.call({

@@ -533,7 +533,98 @@ def render_doc_as_html(doctype, docname, exclude_fields = []):
 		doc_html += "<div class='col-md-12 col-sm-12'\
 		><div class='col-md-12 col-sm-12'>" \
 		+ section_html + html +"</div></div>"
+
 	if doc_html:
-		doc_html = "<div class='small'><div class='col-md-12 text-right'><a class='btn btn-default btn-xs' href='#Form/%s/%s'>EDIT</a></div>" %(doctype, docname) + doc_html + "</div>"
+		if doctype=="Lab Test":
+			if frappe.db.get_value("Patient Medical Record", {"reference_doctype": "Lab Test", "reference_name": docname}, "can_plot_chart") == 1:
+				doc_html = set_lab_test_history_chart(doc_html, docname)
+		# doc_html = "<div class='small'><div class='col-md-12 text-right'><a class='btn btn-default btn-xs' href='#Form/%s/%s'>EDIT</a></div>" %(doctype, docname) + doc_html + "</div>"
 
 	return {'html': doc_html}
+
+def set_lab_test_history_chart(doc_html, docname):
+	pmrs = frappe.db.exists(
+		{
+			'doctype': 'Patient Medical Record',
+			'reference_doctype': 'Lab Test',
+			'reference_name': docname,
+			'can_plot_chart': 1
+		}
+	)
+	if pmrs and len(pmrs) > 0:
+		lab_test_template = frappe.db.get_value("Lab Test", docname, "template")
+		doc_html = "<div class='small'>\
+						<div class='col-md-12 text-right'>\
+							<div class='col-sm-3 show_chart_history_btns' align='left'>\
+							</div>\
+							<div id='chart' class='col-sm-9 lab_test_history_chart'>\
+							</div>\
+						</div>\
+						<div class='col-md-12 text-right show_btn_history_chart'>\
+							<a class='btn btn-default btn-xs btn-show-history-chart'\
+							data-lab-test-template=%s >Show History</a>\
+						</div>\
+						" %(lab_test_template) + doc_html + "\
+					</div>"
+	return doc_html
+
+@frappe.whitelist()
+def get_lab_test_history(patient, lab_test_template):
+	if not patient or not lab_test_template: return
+	lab_tests = frappe.db.sql("""select * from `tabLab Test` where \
+	docstatus=1 and patient=%s and template=%s order by result_date""", \
+	(patient, lab_test_template), as_dict=1)
+	if lab_tests and lab_tests[0]:
+		lab_test_dict = []
+		for lab_test in lab_tests:
+			if lab_test.normal_toggle:
+				normal_test_items = frappe.db.sql("""select * from `tabNormal Test Items`
+					where parent=%s and parenttype='Lab Test'""", (lab_test.name), as_dict=True)
+				if normal_test_items:
+					for normal_test_item in normal_test_items:
+						if normal_test_item.require_result_value == 1:
+							lab_test_name = normal_test_item.lab_test_name
+							result_value = normal_test_item.result_value
+							try:
+								float(result_value)
+							except:
+								continue
+							if normal_test_item.lab_test_event:
+								lab_test_name = normal_test_item.lab_test_event
+							lab_test_dict.append({'parent_test_name': lab_test.lab_test_name,
+								'lab_test_uom': normal_test_item.lab_test_uom, 'lab_test_name': lab_test_name,
+								'result_date': lab_test.result_date, 'value': result_value})
+		return get_chart_field_values(lab_test_dict)
+	else:
+		return False
+
+def get_chart_field_values(lab_test_dict):
+	chart_dict = {}
+	labels = []
+	datasets = []
+	lab_test_names = []
+	result_values = []
+	values = []
+	parent_test_name = False
+	lab_test_name_uoms = {}
+	for lab_test_item in lab_test_dict:
+		if not parent_test_name:
+			parent_test_name = lab_test_item['parent_test_name']
+		if lab_test_item['result_date'] not in labels:
+			labels.append(lab_test_item['result_date'])
+		if lab_test_item['lab_test_name'] not in lab_test_names:
+			lab_test_names.append(lab_test_item['lab_test_name'])
+			lab_test_name_uoms[lab_test_item['lab_test_name']] = lab_test_item['lab_test_uom']
+		result_values.append({lab_test_item['lab_test_name']: lab_test_item['value']})
+	for lab_test_name in lab_test_names:
+		for result_value in result_values:
+			if lab_test_name in result_value:
+				values.append(result_value[lab_test_name])
+		datasets.append({'name': lab_test_name, 'values': values, 'chartType': 'line'})
+		values = []
+	chart_dict['parent_test_name'] = parent_test_name
+	chart_dict['datasets'] = datasets
+	chart_dict['lables'] = labels
+	chart_dict['lab_test_names'] = lab_test_names
+	chart_dict['uom'] = lab_test_name_uoms
+	return chart_dict
