@@ -121,7 +121,6 @@ var check_and_set_availability = function(frm) {
 	var selected_slot = null;
 	var service_unit = null;
 	var duration = null;
-
 	show_availability();
 
 	function show_empty_state(practitioner, appointment_date) {
