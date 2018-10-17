@@ -375,6 +375,7 @@ def get_events(start, end, filters=None):
 	"""
 	from frappe.desk.calendar import get_event_conditions
 	conditions = get_event_conditions("Patient Appointment", filters)
+
 	data = frappe.db.sql("""
 		select
 		`tabPatient Appointment`.name, `tabPatient Appointment`.patient,
