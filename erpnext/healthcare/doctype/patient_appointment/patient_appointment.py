@@ -71,6 +71,13 @@ class PatientAppointment(Document):
 			frappe.db.get_value("Patient Appointment", self.name, "invoiced") != 1:
 			invoice_appointment(self)
 
+		# Set duration from appointment_type
+		if self.appointment_type:
+			default_duration = frappe.db.get_value("Appointment Type", self.appointment_type, "default_duration")
+			if default_duration and default_duration > 0:
+				if self.duration != default_duration:
+					frappe.db.set_value("Patient Appointment", self.name, 'duration', default_duration)
+
 @frappe.whitelist()
 def invoice_appointment(appointment_doc):
 	if not appointment_doc.name:
