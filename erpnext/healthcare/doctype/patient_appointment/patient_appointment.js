@@ -139,8 +139,10 @@ var check_and_set_availability = function(frm) {
 			title: __("Available slots"),
 			fields: [
 				{ fieldtype: 'Link', options: 'Medical Department', reqd:1, fieldname: 'department', label: 'Medical Department'},
-				{ fieldtype: 'Column Break'},
 				{ fieldtype: 'Link', options: 'Healthcare Practitioner', reqd:1, fieldname: 'practitioner', label: 'Healthcare Practitioner'},
+				{ fieldtype: 'Column Break'},
+				{ fieldtype: 'Link', options: 'Appointment Type', reqd:1, fieldname: 'appointment_type', label: 'Appointment Type'},
+				{ fieldtype: 'Int', fieldname: 'duration', label: 'Duration'},
 				{ fieldtype: 'Column Break'},
 				{ fieldtype: 'Date', reqd:1, fieldname: 'appointment_date', label: 'Date'},
 				{ fieldtype: 'Section Break'},
@@ -150,10 +152,12 @@ var check_and_set_availability = function(frm) {
 			primary_action: function() {
 				frm.set_value('appointment_time', selected_slot);
 				frm.set_value('service_unit', service_unit || '');
-				frm.set_value('duration', duration);
+				// frm.set_value('duration', duration);
+				frm.set_value('duration', d.get_value('duration'));
 				frm.set_value('practitioner', d.get_value('practitioner'));
 				frm.set_value('department', d.get_value('department'));
 				frm.set_value('appointment_date', d.get_value('appointment_date'));
+				frm.set_value('appointment_type', d.get_value('appointment_type'))
 				d.hide();
 				frm.enable_save();
 				frm.save();
@@ -165,7 +169,8 @@ var check_and_set_availability = function(frm) {
 		d.set_values({
 			'department': frm.doc.department,
 			'practitioner': frm.doc.practitioner,
-			'appointment_date': frm.doc.appointment_date
+			'appointment_date': frm.doc.appointment_date,
+			'appointment_type': frm.doc.appointment_type
 		});
 
 		d.fields_dict["department"].df.onchange = () => {
@@ -190,7 +195,15 @@ var check_and_set_availability = function(frm) {
 		// Field Change Handler
 
 		var fd = d.fields_dict;
-
+		d.fields_dict["appointment_type"].df.onchange = () => {
+			frappe.db.get_value("Appointment Type", d.get_value('appointment_type'), 'default_duration', function(r) {
+				if(r && r.default_duration){
+					d.set_values({
+						'duration': r.default_duration
+					});
+				}
+			});
+		}
 		d.fields_dict["appointment_date"].df.onchange = () => {
 			show_slots(d, fd);
 		};
@@ -201,6 +214,7 @@ var check_and_set_availability = function(frm) {
 			}
 		};
 		d.show();
+		d.$wrapper.find('.modal-dialog').css("width", "800px");
 	}
 
 	function show_slots(d, fd) {
