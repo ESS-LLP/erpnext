@@ -204,7 +204,6 @@ var check_and_set_availability = function(frm) {
 				}
 			});
 		}
-
 		d.fields_dict["appointment_date"].df.onchange = () => {
 			show_slots(d, fd);
 		};
