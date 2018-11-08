@@ -248,6 +248,7 @@ var check_and_set_availability = function(frm) {
 									let end_time = booked_moment.clone().add(booked.duration, 'minutes');
 									if(end_time.isSame(slot_start_time) || end_time.isBetween(slot_start_time, slot_to_time)){
 										start_str = end_time.format("HH:mm")+":00";
+
 										interval = (slot_to_time - end_time)/60000 | 0;
 										return false;
 									}
