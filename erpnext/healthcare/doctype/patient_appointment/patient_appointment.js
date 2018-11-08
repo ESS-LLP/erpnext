@@ -88,6 +88,8 @@ frappe.ui.form.on('Patient Appointment', {
 			});
 		}
 		frm.set_df_property("get_procedure_from_encounter", "read_only", frm.doc.__islocal ? 0 : 1);
+		frm.set_df_property("service_unit", "read_only", frm.doc.__islocal ? 0 : 1);
+		frm.set_df_property("procedure_template", "read_only", frm.doc.__islocal ? 0 : 1);
 		frappe.db.get_value('Healthcare Settings', {name: 'Healthcare Settings'}, 'manage_appointment_invoice_automatically', (r) => {
 			if(r.manage_appointment_invoice_automatically == 1){
 				frm.set_df_property("mode_of_payment", "hidden", 0);
