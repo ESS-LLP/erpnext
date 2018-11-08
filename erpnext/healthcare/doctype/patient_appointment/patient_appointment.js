@@ -230,12 +230,10 @@ var check_and_set_availability = function(frm) {
 								slot_details[i].appointments.forEach(function(booked) {
 									let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
 									let end_time = booked_moment.clone().add(booked.duration, 'minutes');
-									// Deal with 0 duration appointments
-									if(booked_moment.isSame(slot_start_time) || booked_moment.isBetween(slot_start_time, slot_to_time)){
-										if(booked.duration == 0){
-											disabled = 'disabled="disabled"';
-											return false;
-										}
+									if(end_time.isSame(slot_start_time) || end_time.isBetween(slot_start_time, slot_to_time)){
+										start_str = end_time.format("hh:mm")+":00";
+										interval = (slot_to_time - end_time)/60000 | 0;
+										return false;
 									}
 									// Check for overlaps considering appointment duration
 									if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
