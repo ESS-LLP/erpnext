@@ -247,20 +247,23 @@ def get_availability_data(date, practitioner):
 							appointments = frappe.get_all(
 								"Patient Appointment",
 								filters={"practitioner": practitioner, "service_unit": schedule.service_unit, "appointment_date": date, "status": ["not in",["Cancelled"]]},
-								fields=["name", "appointment_time", "duration", "status"])
+								fields=["name", "appointment_time", "duration", "status"],
+								order_by= "appointment_date, appointment_time")
 						else:
 							# fetch all appointments to service unit
 							appointments = frappe.get_all(
 								"Patient Appointment",
 								filters={"service_unit": schedule.service_unit, "appointment_date": date, "status": ["not in",["Cancelled"]]},
-								fields=["name", "appointment_time", "duration", "status"])
+								fields=["name", "appointment_time", "duration", "status"],
+								order_by= "appointment_date, appointment_time")
 					else:
 						slot_name = schedule.schedule
 						# fetch all appointments to practitioner without service unit
 						appointments = frappe.get_all(
 							"Patient Appointment",
 							filters={"practitioner": practitioner, "service_unit": '', "appointment_date": date, "status": ["not in",["Cancelled"]]},
-							fields=["name", "appointment_time", "duration", "status"])
+							fields=["name", "appointment_time", "duration", "status"],
+							order_by= "appointment_date, appointment_time")
 
 					slot_details.append({"slot_name":slot_name, "service_unit":schedule.service_unit,
 						"avail_slot":available_slots, 'appointments': appointments})
