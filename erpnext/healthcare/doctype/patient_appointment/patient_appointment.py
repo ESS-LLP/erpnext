@@ -357,7 +357,7 @@ def get_events(start, end, filters=None):
 		'start', `tabAppointment Type`.color from `tabPatient Appointment` left join `tabAppointment Type`
 		on `tabPatient Appointment`.appointment_type=`tabAppointment Type`.name
 		where (`tabPatient Appointment`.appointment_date between %(start)s and %(end)s)
-		and `tabPatient Appointment`.docstatus < 2 {conditions}""".format(conditions=conditions),
+		and `tabPatient Appointment`.status != 'Cancelled' and `tabPatient Appointment`.docstatus < 2 {conditions}""".format(conditions=conditions),
 		{"start": start, "end": end}, as_dict=True, update={"allDay": 0})
 
 	for item in data:
