@@ -111,7 +111,7 @@ def change_item_code(item, item_code, doc_name):
 		frappe.db.set_value("Healthcare Service Unit Type", doc_name, "item_code", item_code)
 
 @frappe.whitelist()
-def disable_enable(status, doc_name, item=None,  is_billable=None):
+def disable_enable(status, doc_name, is_billable, item=None):
 	frappe.db.set_value("Healthcare Service Unit Type", doc_name, "disabled", status)
-	if(is_billable == 1):
+	if is_billable == 1 and item:
 		frappe.db.set_value("Item", item, "disabled", status)
