@@ -14,17 +14,19 @@ frappe.ui.form.on('Healthcare Service Unit Type', {
 	refresh: function(frm) {
 		frm.set_df_property("item_code", "read_only", frm.doc.__islocal ? 0 : 1);
 		if(!frm.doc.__islocal) {
-			frm.add_custom_button(__('Change Item Code'), function() {
-				change_item_code(cur_frm,frm.doc);
-			} );
+			if(frm.doc.inpatient_occupancy && frm.doc.is_billable){
+				frm.add_custom_button(__('Change Item Code'), function() {
+					change_item_code(cur_frm,frm.doc);
+				} );
+			}
 			if(frm.doc.disabled == 1){
 				frm.add_custom_button(__('Enable'), function() {
-					enable(cur_frm);
+					disable(frm, 0);
 				} );
 			}
 			else{
 				frm.add_custom_button(__('Disable'), function() {
-					disable(cur_frm);
+					disable(frm, 1);
 				} );
 			}
 		}
@@ -46,22 +48,11 @@ frappe.ui.form.on('Healthcare Service Unit Type', {
 	}
 });
 
-var disable = function(frm){
+var disable = function(frm, status){
 	var doc = frm.doc;
 	frappe.call({
-		method: "erpnext.healthcare.doctype.healthcare_service_unit_type.healthcare_service_unit_type.disable_enable",
-		args: {status: 1, doc_name: doc.name, item: doc.item, is_billable: doc.is_billable},
-		callback: function(){
-			cur_frm.reload_doc();
-		}
-	});
-};
-
-var enable = function(frm){
-	var doc = frm.doc;
-	frappe.call({
-		method: "erpnext.healthcare.doctype.healthcare_service_unit_type.healthcare_service_unit_type.disable_enable",
-		args: {status: 0, doc_name: doc.name, item: doc.item, is_billable: doc.is_billable},
+		method: 		"erpnext.healthcare.doctype.healthcare_service_unit_type.healthcare_service_unit_type.disable_enable",
+		args: {status: status, doc_name: doc.name, item: doc.item, is_billable: doc.is_billable},
 		callback: function(){
 			cur_frm.reload_doc();
 		}
