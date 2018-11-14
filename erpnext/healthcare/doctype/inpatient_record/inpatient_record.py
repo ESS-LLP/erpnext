@@ -64,8 +64,8 @@ def schedule_inpatient(patient, encounter_id, practitioner):
 	inpatient_record.phone = patient_obj.phone
 	inpatient_record.status = "Admission Scheduled"
 	inpatient_record.scheduled_date = today()
-	inpatient_record.admission_practitioner = practitioner
-	inpatient_record.admission_encounter = encounter_id
+	inpatient_record.referring_practitioner = practitioner
+	inpatient_record.referring_encounter = encounter_id
 	inpatient_record.save(ignore_permissions = True)
 
 @frappe.whitelist()
