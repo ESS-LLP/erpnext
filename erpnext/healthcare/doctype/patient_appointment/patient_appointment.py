@@ -219,6 +219,7 @@ def get_availability_data(date, practitioner):
 	if practitioner_obj.practitioner_schedules:
 		enabled_schedule = False
 		for schedule in practitioner_obj.practitioner_schedules:
+			practitioner_schedule = None
 			if schedule.schedule:
 				if frappe.db.exists(
 					"Practitioner Schedule",
