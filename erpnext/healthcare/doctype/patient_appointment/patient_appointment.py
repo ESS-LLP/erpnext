@@ -217,9 +217,18 @@ def get_availability_data(date, practitioner):
 
 	# get practitioners schedule
 	if practitioner_obj.practitioner_schedules:
+		enabled_schedule = False
 		for schedule in practitioner_obj.practitioner_schedules:
 			if schedule.schedule:
-				practitioner_schedule = frappe.get_doc("Practitioner Schedule", schedule.schedule)
+				if frappe.db.exists(
+					"Practitioner Schedule",
+					{
+						"name": schedule.schedule,
+						"disabled": ['!=', 1]
+					}
+				):
+					practitioner_schedule = frappe.get_doc('Practitioner Schedule', schedule.schedule)
+					enabled_schedule = True
 			else:
 				frappe.throw(_("{0} does not have a Healthcare Practitioner Schedule. Add it in Healthcare Practitioner master".format(practitioner)))
 
@@ -261,6 +270,8 @@ def get_availability_data(date, practitioner):
 					slot_details.append({"slot_name":slot_name, "service_unit":schedule.service_unit,
 						"avail_slot":available_slots, 'appointments': appointments})
 
+		if not enabled_schedule:
+			frappe.throw(_("{0} does not have an enabled Healthcare Practitioner Schedule.".format(practitioner)))
 	else:
 		frappe.throw(_("{0} does not have a Healthcare Practitioner Schedule. Add it in Healthcare Practitioner master".format(practitioner)))
 
