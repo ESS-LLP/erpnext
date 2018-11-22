@@ -378,8 +378,8 @@ def get_drugs_to_invoice(encounter):
 							description += " for "+drug_line.period
 						if not description:
 							description = ""
-						item_to_invoice.append({'drug_code': drug_line.drug_code, 'quantity': qty,
-						'description': description})
+						item_to_invoice.append({'reference_type': 'Drug Prescription', 'reference_name': drug_line.name,
+						'drug_code': drug_line.drug_code, 'quantity': qty, 'description': description})
 				return item_to_invoice
 
 @frappe.whitelist()
