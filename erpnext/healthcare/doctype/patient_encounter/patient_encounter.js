@@ -29,12 +29,12 @@ frappe.ui.form.on('Patient Encounter', {
 				},
 				callback: function(data) {
 					if(data.message && data.message.inpatient_status == "Admission Scheduled" || data.message.inpatient_status == "Admitted"){
-						frm.add_custom_button(__('Schedule Discharge'), function() {
+						frm.add_custom_button(__('Order Discharge'), function() {
 							schedule_discharge(frm);
 						});
 					}
 					else if(data.message.inpatient_status != "Discharge Scheduled"){
-						frm.add_custom_button(__('Schedule Admission'), function() {
+						frm.add_custom_button(__('Order Admission'), function() {
 							schedule_inpatient(frm);
 						});
 					}
@@ -107,31 +107,182 @@ frappe.ui.form.on('Patient Encounter', {
 });
 
 var schedule_inpatient = function(frm) {
-	frappe.call({
-		method: "erpnext.healthcare.doctype.inpatient_record.inpatient_record.schedule_inpatient",
-		args: {patient: frm.doc.patient, encounter_id: frm.doc.name, practitioner: frm.doc.practitioner},
-		callback: function(data) {
-			if(!data.exc){
-				frm.reload_doc();
+	var dialog = new frappe.ui.Dialog({
+		title: 'Admission Order',
+		fields: [
+			{fieldtype: "Link", label: "Medical Department", fieldname: "medical_department", options: "Medical Department", reqd: 1},
+			{fieldtype: "Link", label: "Healthcare Practitioner (Primary)", fieldname: "primary_practitioner", options: "Healthcare Practitioner", reqd: 1},
+			{fieldtype: "Link", label: "Healthcare Practitioner (Secondary)", fieldname: "secondary_practitioner", options: "Healthcare Practitioner"},
+			{fieldtype: "Small Text", label: "Diagnosis", fieldname: "diagnosis"},
+			{fieldtype: 'Column Break'},
+			{fieldtype: "Date", label: "Admission Ordered For", fieldname: "admission_ordered_for", default: "Today"},
+			{fieldtype: "Link", label: "Service Unit Type", fieldname: "service_unit_type", options: "Healthcare Service Unit Type"},
+			{fieldtype: "Int", label: "Expected Length of Stay", fieldname: "expected_length_of_stay"},
+			{fieldtype: "Small Text", label: "Admission Instruction", fieldname: "admission_instruction"},
+			{fieldtype: 'Section Break', label: "Procedure Orders"},
+			{fieldtype: 'HTML', fieldname: 'procedure_prescriptions'}
+		],
+		primary_action_label: __("Order"),
+		primary_action : function(){
+			var args = {
+				patient: frm.doc.patient,
+				encounter_id: frm.doc.name,
+				ref_practitioner: frm.doc.practitioner,
+				medical_department: dialog.get_value('medical_department'),
+				primary_practitioner: dialog.get_value('primary_practitioner'),
+				secondary_practitioner: dialog.get_value('secondary_practitioner'),
+				diagnosis: dialog.get_value('diagnosis'),
+				admission_ordered_for: dialog.get_value('admission_ordered_for'),
+				service_unit_type: dialog.get_value('service_unit_type'),
+				expected_length_of_stay: dialog.get_value('expected_length_of_stay'),
+				admission_instruction: dialog.get_value('admission_instruction'),
+				chief_complaint: frm.doc.symptoms || ''
 			}
-		},
-		freeze: true,
-		freeze_message: "Process Inpatient Scheduling"
+			frappe.call({
+				method: "erpnext.healthcare.doctype.inpatient_record.inpatient_record.schedule_inpatient",
+				args: {
+					args: args
+				},
+				callback: function(data) {
+					if(!data.exc){
+						frm.reload_doc();
+					}
+				},
+				freeze: true,
+				freeze_message: "Process Inpatient Scheduling"
+			});
+			frm.refresh_fields();
+			dialog.hide();
+		}
 	});
+
+	dialog.set_values({
+		'medical_department': frm.doc.visit_department,
+		'primary_practitioner': frm.doc.practitioner,
+		'diagnosis': frm.doc.diagnosis
+	});
+
+	show_procedure_prescriptions(dialog)
+
+	dialog.fields_dict["service_unit_type"].get_query = function(){
+		return {
+			filters: {
+				"inpatient_occupancy": 1,
+				"allow_appointments": 0
+			}
+		};
+	};
+
+	dialog.show();
+	dialog.$wrapper.find('.modal-dialog').css("width", "800px");
+
+	function show_procedure_prescriptions(dialog) {
+		if(frm.doc.procedure_prescription.length > 0){
+			var $wrapper = dialog.fields_dict.procedure_prescriptions.$wrapper;
+			var procedure_prescriptions = "<div class='col-md-12 col-sm-12 text-muted'>";
+			var procedure_rx_html = null;
+			var table_head = null;
+			var table_row = null;
+			table_head = '<tr> \
+				<th>Procedure</th> \
+				<th>Practitioner</th> \
+				<th>Date</th> \
+				<th style="width:50%">Comments</th> \
+			</tr>'
+			$.each(frm.doc.procedure_prescription, function(index, data_object){
+				var procedure_comment = "";
+				if(data_object.comments){
+					procedure_comment = data_object.comments
+				}
+				if(table_row == null){
+					table_row = '<tr> \
+						<td>'+data_object.procedure+'</td> \
+						<td>'+data_object.practitioner+'</td> \
+						<td>'+data_object.date+'</td> \
+						<td>'+procedure_comment+'</td> \
+					</tr>'
+				}else{
+					table_row = table_row + '<tr> \
+						<td>'+data_object.procedure+'</td> \
+						<td>'+data_object.practitioner+'</td> \
+						<td>'+data_object.date+'</td> \
+						<td>'+procedure_comment+'</td> \
+					</tr>'
+				}
+			});
+			procedure_rx_html = '<table class="table table-condensed \
+				bordered">' + table_head +  table_row + '</table> <br/> <hr/>'
+
+			procedure_prescriptions = procedure_prescriptions + procedure_rx_html + "</div>"
+			$wrapper
+				.css('margin-bottom', 0)
+				.html(procedure_prescriptions);
+		}
+	}
 };
 
 var schedule_discharge = function(frm) {
-	frappe.call({
-		method: "erpnext.healthcare.doctype.inpatient_record.inpatient_record.schedule_discharge",
-		args: {patient: frm.doc.patient, encounter_id: frm.doc.name, practitioner: frm.doc.practitioner},
-		callback: function(data) {
-			if(!data.exc){
-				frm.reload_doc();
+	var dialog = new frappe.ui.Dialog({
+		title: 'Discharge Order',
+		fields: [
+			{fieldtype: "Link", label: "Medical Department", fieldname: "medical_department", options: "Medical Department", read_only: 1},
+			{fieldtype: "Link", label: "Healthcare Practitioner", fieldname: "discharge_practitioner", options: "Healthcare Practitioner", read_only: 1},
+			{fieldtype: "Date", label: "Discharge Ordered", fieldname: "discharge_ordered", default: "Today"},
+			{fieldtype: "Date", label: "Followup Date", fieldname: "followup_date"},
+			{fieldtype: 'Column Break'},
+			{fieldtype: "Small Text", label: "Discharge Instruction", fieldname: "discharge_instruction"},
+			{fieldtype: 'Section Break'},
+			{fieldtype: 'Column Break', label:'Discharge Summary Print'},
+			{fieldtype: "Check", label: "Chief Complaint", fieldname: "include_chief_complaint"},
+			{fieldtype: "Check", label: "Diagnosis", fieldname: "include_diagnosis"},
+			{fieldtype: "Check", label: "Medication", fieldname: "include_medication"},
+			{fieldtype: "Check", label: "Investigations", fieldname: "include_investigations"},
+			{fieldtype: "Check", label: "Procedures", fieldname: "include_procedures"},
+			{fieldtype: "Check", label: "Occupancy Details", fieldname: "include_occupancy_details"},
+			{fieldtype: 'Column Break'},
+			{fieldtype: "Long Text", label: "Discharge Note", fieldname: "discharge_note"},
+		],
+		primary_action_label: __("Order"),
+		primary_action : function(){
+			var args = {
+				patient: frm.doc.patient,
+				encounter_id: frm.doc.name,
+				discharge_practitioner: frm.doc.practitioner,
+				medical_department: frm.doc.visit_department,
+				discharge_ordered: dialog.get_value('discharge_ordered'),
+				followup_date: dialog.get_value('followup_date'),
+				discharge_instruction: dialog.get_value('discharge_instruction'),
+				discharge_note: dialog.get_value('discharge_note'),
+				include_chief_complaint: dialog.get_value('include_chief_complaint'),
+				include_diagnosis: dialog.get_value('include_diagnosis'),
+				include_medication: dialog.get_value('include_medication'),
+				include_investigations: dialog.get_value('include_investigations'),
+				include_procedures: dialog.get_value('include_procedures'),
+				include_occupancy_details: dialog.get_value('include_occupancy_details')
 			}
-		},
-		freeze: true,
-		freeze_message: "Process Discharge"
+			frappe.call({
+				method: "erpnext.healthcare.doctype.inpatient_record.inpatient_record.schedule_discharge",
+				args: {args},
+				callback: function(data) {
+					if(!data.exc){
+						frm.reload_doc();
+					}
+				},
+				freeze: true,
+				freeze_message: "Process Discharge"
+			});
+			frm.refresh_fields();
+			dialog.hide();
+		}
 	});
+
+	dialog.set_values({
+		'medical_department': frm.doc.visit_department,
+		'discharge_practitioner': frm.doc.practitioner
+	});
+
+	dialog.show();
+	dialog.$wrapper.find('.modal-dialog').css("width", "800px");
 };
 
 var create_medical_record = function (frm) {
