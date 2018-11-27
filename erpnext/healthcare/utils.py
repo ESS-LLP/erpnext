@@ -429,3 +429,16 @@ def get_children(doctype, parent, company, is_root=False):
 					occupancy_msg = str(occupied) + " Occupied out of " + str(occupancy_total)
 			each["occupied_out_of_vacant"] = occupancy_msg
 	return hc_service_units
+
+@frappe.whitelist()
+def exists_appointment(appointment_date, practitioner, patient, not_in_status=["Cancelled"]):
+	exist_appointment = frappe.db.get_list("Patient Appointment",
+		{
+			"practitioner": practitioner,
+			"appointment_date": getdate(appointment_date),
+			"patient": patient,
+			"status": ["not in", not_in_status]
+		}, ["name"])
+	if exist_appointment:
+		return exist_appointment[0]['name']
+	return False
