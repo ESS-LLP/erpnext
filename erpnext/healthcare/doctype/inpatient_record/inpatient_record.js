@@ -2,6 +2,14 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Inpatient Record', {
+	setup: function(frm) {
+		frm.get_field('drug_prescription').grid.editable_fields = [
+			{fieldname: 'drug_code', columns: 2},
+			{fieldname: 'drug_name', columns: 2},
+			{fieldname: 'dosage', columns: 2},
+			{fieldname: 'period', columns: 2}
+		];
+	},
 	refresh: function(frm) {
 		if(!frm.doc.__islocal && frm.doc.status == "Admission Scheduled"){
 			frm.add_custom_button(__('Admit'), function() {
@@ -18,6 +26,15 @@ frappe.ui.form.on('Inpatient Record', {
 		if(!frm.doc.__islocal && (frm.doc.status == "Discharged" || frm.doc.status == "Discharge Scheduled")){
 			frm.disable_save();
 			frm.set_df_property("btn_transfer", "hidden", 1);
+		}
+		if(!frm.doc.__islocal && frm.doc.drug_prescription){
+			show_table_html(frm, frm.doc.drug_prescription, "drug_prescription", frm.fields_dict.drug_prescription_html)
+		}
+		if(!frm.doc.__islocal && frm.doc.lab_test_prescription){
+			show_table_html(frm, frm.doc.lab_test_prescription, "lab_test_prescription", frm.fields_dict.lab_test_prescription_html)
+		}
+		if(!frm.doc.__islocal && frm.doc.procedure_prescription){
+			show_table_html(frm, frm.doc.procedure_prescription, "procedure_prescription", frm.fields_dict.procedure_prescription_html)
 		}
 	},
 	btn_transfer: function(frm) {
@@ -183,3 +200,44 @@ var transfer_patient_dialog = function(frm){
 		'leave_from': not_left_service_unit
 	});
 };
+
+var show_table_html = function(frm, child_table, child_table_name, html_field) {
+	setTimeout(function() {
+		var $wrapper = html_field.$wrapper;
+		var table_html = "<div class='col-md-12 col-sm-12 text-muted'>";
+		var table_head = null;
+		var table_row = null;
+		var table_fields = frm.get_field(child_table_name).grid.docfields;
+		var abcd = frm.get_field(child_table_name).grid
+
+		table_head = '<tr>'
+		$.each(table_fields, function(i, table_field) {
+			if(table_field.in_list_view == 1){
+				table_head = table_head + '<th>' + table_field.label + '</th>'
+			}
+		});
+		table_head = table_head + '</tr>'
+
+		$.each(child_table, function(index, data_object){
+			var procedure_comment = "";
+			if(table_row == null){
+				table_row = '<tr>'
+			}
+			else{
+				table_row = table_row + '<tr>'
+			}
+			$.each(table_fields, function(i, table_field) {
+				if(table_field.in_list_view == 1){
+					table_row = table_row + '<td>'+data_object[table_field.fieldname]+'</td>'
+				}
+			});
+			table_row = table_row + '</tr>'
+		});
+
+		table_html = table_html + '<table class="table table-condensed \
+			bordered">' + table_head +  table_row + '</table> <br/> <hr/>' + "</div>"
+		$wrapper
+			.css('margin-bottom', 0)
+			.html(table_html);
+	}, 1000)
+}

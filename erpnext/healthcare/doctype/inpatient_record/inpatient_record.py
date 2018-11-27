@@ -3,7 +3,7 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
-import frappe
+import frappe, json
 from frappe import _
 from frappe.utils import today, now_datetime
 from frappe.model.document import Document
@@ -51,10 +51,36 @@ class InpatientRecord(Document):
 			transfer_patient(self, service_unit, check_in)
 
 @frappe.whitelist()
-def schedule_inpatient(patient, encounter_id, practitioner):
-	patient_obj = frappe.get_doc('Patient', patient)
+def schedule_inpatient(args):
+	dialog = json.loads(args)
 	inpatient_record = frappe.new_doc('Inpatient Record')
-	inpatient_record.patient = patient
+	# Set Patient Details
+	set_ip_admission_patient_details(inpatient_record, dialog)
+	# Set Inpatient Record Details
+	set_ip_admission_record_details(inpatient_record, dialog)
+	# Set Inpatient Record Child
+	encounter = frappe.get_doc("Patient Encounter", dialog['encounter_id'])
+	# Medication
+	if encounter and encounter.drug_prescription:
+		set_ip_admission_child_records(inpatient_record, "drug_prescription", encounter.drug_prescription)
+	# Investigations
+	if encounter and encounter.lab_test_prescription:
+		set_ip_admission_child_records(inpatient_record, "lab_test_prescription", encounter.lab_test_prescription)
+	# Procedure Prescription
+	if encounter and encounter.procedure_prescription:
+		set_ip_admission_child_records(inpatient_record, "procedure_prescription", encounter.procedure_prescription)
+
+	inpatient_record.save(ignore_permissions = True)
+
+def set_ip_admission_child_records(inpatient_record, table_name, encounter_table):
+	for item in  encounter_table:
+		table = inpatient_record.append(table_name)
+		for df in table.meta.get("fields"):
+			table.set(df.fieldname, item.get(df.fieldname))
+
+def set_ip_admission_patient_details(inpatient_record, dialog):
+	patient_obj = frappe.get_doc('Patient', dialog['patient'])
+	inpatient_record.patient = dialog['patient']
 	inpatient_record.patient_name = patient_obj.patient_name
 	inpatient_record.gender = patient_obj.sex
 	inpatient_record.blood_group = patient_obj.blood_group
@@ -62,11 +88,23 @@ def schedule_inpatient(patient, encounter_id, practitioner):
 	inpatient_record.mobile = patient_obj.mobile
 	inpatient_record.email = patient_obj.email
 	inpatient_record.phone = patient_obj.phone
+	return inpatient_record
+
+def set_ip_admission_record_details(inpatient_record, dialog):
 	inpatient_record.status = "Admission Scheduled"
 	inpatient_record.scheduled_date = today()
-	inpatient_record.referring_practitioner = practitioner
-	inpatient_record.referring_encounter = encounter_id
-	inpatient_record.save(ignore_permissions = True)
+	inpatient_record.referring_practitioner = dialog['ref_practitioner']
+	inpatient_record.referring_encounter = dialog['encounter_id']
+	inpatient_record.medical_department = dialog['medical_department']
+	inpatient_record.primary_practitioner = dialog['primary_practitioner']
+	inpatient_record.secondary_practitioner = dialog['secondary_practitioner']
+	inpatient_record.admission_ordered_for = dialog['admission_ordered_for']
+	inpatient_record.chief_complaint = dialog['chief_complaint']
+	inpatient_record.diagnosis = dialog['diagnosis']
+	inpatient_record.admission_service_unit_type = dialog['service_unit_type']
+	inpatient_record.expected_length_of_stay = dialog['expected_length_of_stay']
+	inpatient_record.admission_instruction = dialog['admission_instruction']
+	return inpatient_record
 
 @frappe.whitelist()
 def schedule_discharge(patient, encounter_id=None, practitioner=None):
