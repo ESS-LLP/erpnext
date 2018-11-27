@@ -143,7 +143,11 @@ def get_healthcare_services_to_invoice(patient):
 						hours_occupied = time_diff_in_hours(inpatient_occupancy.check_out, inpatient_occupancy.check_in)
 						qty = 0.5
 						if hours_occupied > 0:
-							actual_qty = hours_occupied / service_unit_type.no_of_hours
+							if service_unit_type.no_of_hours and service_unit_type.no_of_hours > 0:
+								actual_qty = hours_occupied / service_unit_type.no_of_hours
+							else:
+								# 24 hours = 1 Day
+								actual_qty = hours_occupied / 24
 							floor = math.floor(actual_qty)
 							decimal_part = actual_qty - floor
 							if decimal_part > 0.5:
