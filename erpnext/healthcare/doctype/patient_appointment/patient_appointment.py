@@ -269,7 +269,8 @@ def get_availability_data(date, practitioner):
 							order_by= "appointment_date, appointment_time")
 
 					slot_details.append({"slot_name":slot_name, "service_unit":schedule.service_unit,
-						"avail_slot":available_slots, 'appointments': appointments})
+						"avail_slot":available_slots, 'appointments': appointments,
+						'fixed_duration': schedule.always_use_slot_duration_as_appointment_duration})
 
 		if not enabled_schedule:
 			frappe.throw(_("{0} does not have an enabled Healthcare Practitioner Schedule.".format(practitioner)))

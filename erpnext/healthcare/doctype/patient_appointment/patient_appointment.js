@@ -256,10 +256,12 @@ var check_and_set_availability = function(frm) {
 										slot_details[i].appointments.forEach(function(booked) {
 											let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
 											let end_time = booked_moment.clone().add(booked.duration, 'minutes');
-											if(end_time.isSame(slot_start_time) || end_time.isBetween(slot_start_time, slot_to_time)){
-												start_str = end_time.format("HH:mm")+":00";
-												interval = (slot_to_time - end_time)/60000 | 0;
-												return false;
+											if(slot_details[i].fixed_duration != 1){
+												if(end_time.isSame(slot_start_time) || end_time.isBetween(slot_start_time, slot_to_time)){
+													start_str = end_time.format("HH:mm")+":00";
+													interval = (slot_to_time - end_time)/60000 | 0;
+													return false;
+												}
 											}
 											// Check for overlaps considering appointment duration
 											if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
@@ -272,6 +274,7 @@ var check_and_set_availability = function(frm) {
 											data-name=${start_str}
 											data-duration=${interval}
 											data-service-unit="${slot_details[i].service_unit || ''}"
+											flag-fixed-duration=${slot_details[i].fixed_duration || 0}
 											style="margin: 0 10px 10px 0; width: 72px;" ${disabled}>
 											${start_str.substring(0, start_str.length - 3)}
 										</button>`;
@@ -294,6 +297,11 @@ var check_and_set_availability = function(frm) {
 									duration = $btn.attr('data-duration')
 									// enable dialog action
 									d.get_primary_btn().attr('disabled', null);
+									if($btn.attr('flag-fixed-duration') == 1){
+										d.set_values({
+											'duration': $btn.attr('data-duration')
+										});
+									}
 								});
 
 							}else {
