@@ -210,6 +210,9 @@ var check_and_set_availability = function(frm) {
 				selected_appointment_date = d.get_value('appointment_date');
 				show_slots(d, fd);
 			}
+			else if(!d.get_value("appointment_date")){
+				selected_appointment_date = '';
+			}
 		}
 		d.fields_dict["practitioner"].df.onchange = () => {
 			if(d.get_value('practitioner') && d.get_value('practitioner') != selected_practitioner){
@@ -224,190 +227,124 @@ var check_and_set_availability = function(frm) {
 	function show_slots(d, fd) {
 		if (d.get_value('appointment_date') && d.get_value('practitioner')){
 			fd.available_slots.html("");
-			frappe.call({
-				method: 'erpnext.healthcare.doctype.patient_appointment.patient_appointment.get_availability_data',
-				args: {
-					practitioner: d.get_value('practitioner'),
-					date: d.get_value('appointment_date')
-				},
-				callback: (r) => {
-					var data = r.message;
-					if(data.slot_details.length > 0) {
-						var $wrapper = d.fields_dict.available_slots.$wrapper;
+			exists_appointment(frm.doc.patient, d.get_value('practitioner'), d.get_value('appointment_date'), (exists)=>{
+				if(exists){
+					fd.available_slots.html("");
+					frappe.call({
+						method: 'erpnext.healthcare.doctype.patient_appointment.patient_appointment.get_availability_data',
+						args: {
+							practitioner: d.get_value('practitioner'),
+							date: d.get_value('appointment_date')
+						},
+						callback: (r) => {
+							var data = r.message;
+							if(data.slot_details.length > 0) {
+								var $wrapper = d.fields_dict.available_slots.$wrapper;
 
-						// make buttons for each slot
-						var slot_details = data.slot_details;
-						var slot_html = "";
-						for (let i = 0; i < slot_details.length; i++) {
-							slot_html = slot_html + `<label>${slot_details[i].slot_name}</label>`;
-							slot_html = slot_html + `<br/>` + slot_details[i].avail_slot.map(slot => {
-								let disabled = '';
-								let start_str = slot.from_time;
-								let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
-								let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
-								let interval = (slot_to_time - slot_start_time)/60000 | 0;
-								//iterate in all booked appointments, update the start time and duration
-								slot_details[i].appointments.forEach(function(booked) {
-									let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
-									let end_time = booked_moment.clone().add(booked.duration, 'minutes');
-									if(end_time.isSame(slot_start_time) || end_time.isBetween(slot_start_time, slot_to_time)){
-										start_str = end_time.format("HH:mm")+":00";
-										interval = (slot_to_time - end_time)/60000 | 0;
-										return false;
-									}
-									// Check for overlaps considering appointment duration
-									if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
-										// There is an overlap
-										disabled = 'disabled="disabled"';
-										return false;
-									}
+								// make buttons for each slot
+								var slot_details = data.slot_details;
+								var slot_html = "";
+								for (let i = 0; i < slot_details.length; i++) {
+									slot_html = slot_html + `<label>${slot_details[i].slot_name}</label>`;
+									slot_html = slot_html + `<br/>` + slot_details[i].avail_slot.map(slot => {
+										let disabled = '';
+										let start_str = slot.from_time;
+										let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
+										let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
+										let interval = (slot_to_time - slot_start_time)/60000 | 0;
+										//iterate in all booked appointments, update the start time and duration
+										slot_details[i].appointments.forEach(function(booked) {
+											let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
+											let end_time = booked_moment.clone().add(booked.duration, 'minutes');
+											if(end_time.isSame(slot_start_time) || end_time.isBetween(slot_start_time, slot_to_time)){
+												start_str = end_time.format("HH:mm")+":00";
+												interval = (slot_to_time - end_time)/60000 | 0;
+												return false;
+											}
+											// Check for overlaps considering appointment duration
+											if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
+												// There is an overlap
+												disabled = 'disabled="disabled"';
+												return false;
+											}
+										});
+										return `<button class="btn btn-default"
+											data-name=${start_str}
+											data-duration=${interval}
+											data-service-unit="${slot_details[i].service_unit || ''}"
+											style="margin: 0 10px 10px 0; width: 72px;" ${disabled}>
+											${start_str.substring(0, start_str.length - 3)}
+										</button>`;
+									}).join("");
+									slot_html = slot_html + `<br/>`;
+								}
+
+								$wrapper
+									.css('margin-bottom', 0)
+									.addClass('text-center')
+									.html(slot_html);
+
+								// blue button when clicked
+								$wrapper.on('click', 'button', function() {
+									var $btn = $(this);
+									$wrapper.find('button').removeClass('btn-primary');
+									$btn.addClass('btn-primary');
+									selected_slot = $btn.attr('data-name');
+									service_unit = $btn.attr('data-service-unit')
+									duration = $btn.attr('data-duration')
+									// enable dialog action
+									d.get_primary_btn().attr('disabled', null);
 								});
-								return `<button class="btn btn-default"
-									data-name=${start_str}
-									data-duration=${interval}
-									data-service-unit="${slot_details[i].service_unit || ''}"
-									style="margin: 0 10px 10px 0; width: 72px;" ${disabled}>
-									${start_str.substring(0, start_str.length - 3)}
-								</button>`;
-							}).join("");
-							slot_html = slot_html + `<br/>`;
-						}
 
-						$wrapper
-							.css('margin-bottom', 0)
-							.addClass('text-center')
-							.html(slot_html);
-
-						// blue button when clicked
-						$wrapper.on('click', 'button', function() {
-							var $btn = $(this);
-							$wrapper.find('button').removeClass('btn-primary');
-							$btn.addClass('btn-primary');
-							selected_slot = $btn.attr('data-name');
-							service_unit = $btn.attr('data-service-unit')
-							duration = $btn.attr('data-duration')
-							// enable dialog action
-							d.get_primary_btn().attr('disabled', null);
-						});
-
-					}else {
-						//	fd.available_slots.html("Please select a valid date.".bold())
-						show_empty_state(d.get_value('practitioner'), d.get_value('appointment_date'));
-					}
-				},
-				freeze: true,
-				freeze_message: __("Fetching records......")
+							}else {
+								//	fd.available_slots.html("Please select a valid date.".bold())
+								show_empty_state(d.get_value('practitioner'), d.get_value('appointment_date'));
+							}
+						},
+						freeze: true,
+						freeze_message: __("Fetching records......")
+					});
+				}
+				else{
+					fd.available_slots.html("");
+				}
 			});
-			// frappe.call({
-			// 	method: "erpnext.healthcare.utils.exists_appointment",
-			// 	args:{
-			// 		appointment_date: d.get_value('appointment_date'),
-			// 		practitioner: d.get_value('practitioner'),
-			// 		patient: frm.doc.patient
-			// 	},
-			// 	callback: function(data) {
-			// 		if(data.message){
-			// 			var message  = __("Appointment is already booked on {0} for {1} with {2}, Do you want to book another appointment on this day?",
-			// 				[d.get_value('appointment_date').bold(), frm.doc.patient.bold(), d.get_value('practitioner').bold()]);
-			// 			frappe.confirm(
-			// 				message,
-			// 				function(){
-			// 					show_booking_model(fd, d, selected_slot, service_unit, duration);
-			// 				},
-			// 				function(){
-			// 					fd.available_slots.html("");
-			// 					frappe.show_alert({
-			// 						message:__("Select new date and slot to book appointment if you wish."),
-			// 						indicator:'yellow'
-			// 					});
-			// 				}
-			// 			)
-			// 		}
-			// 		else{
-			// 			show_booking_model(fd, d, selected_slot, service_unit, duration);
-			// 		}
-			// 	}
-			// });
-		}else{
+		}
+		else{
 			fd.available_slots.html("Appointment date and Healthcare Practitioner are Mandatory".bold());
 		}
 	}
 
-	function show_booking_model(fd, d, selected_slot, service_unit, duration) {
-		fd.available_slots.html("");
+	function exists_appointment(patient, practitioner, appointment_date, callback) {
 		frappe.call({
-			method: 'erpnext.healthcare.doctype.patient_appointment.patient_appointment.get_availability_data',
-			args: {
-				practitioner: d.get_value('practitioner'),
-				date: d.get_value('appointment_date')
+			method: "erpnext.healthcare.utils.exists_appointment",
+			args:{
+				appointment_date: appointment_date,
+				practitioner: practitioner,
+				patient: patient
 			},
-			callback: (r) => {
-				var data = r.message;
-				if(data.slot_details.length > 0) {
-					var $wrapper = d.fields_dict.available_slots.$wrapper;
-
-					// make buttons for each slot
-					var slot_details = data.slot_details;
-					var slot_html = "";
-					for (let i = 0; i < slot_details.length; i++) {
-						slot_html = slot_html + `<label>${slot_details[i].slot_name}</label>`;
-						slot_html = slot_html + `<br/>` + slot_details[i].avail_slot.map(slot => {
-							let disabled = '';
-							let start_str = slot.from_time;
-							let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
-							let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
-							let interval = (slot_to_time - slot_start_time)/60000 | 0;
-							//iterate in all booked appointments, update the start time and duration
-							slot_details[i].appointments.forEach(function(booked) {
-								let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
-								let end_time = booked_moment.clone().add(booked.duration, 'minutes');
-								if(end_time.isSame(slot_start_time) || end_time.isBetween(slot_start_time, slot_to_time)){
-									start_str = end_time.format("HH:mm")+":00";
-									interval = (slot_to_time - end_time)/60000 | 0;
-									return false;
-								}
-								// Check for overlaps considering appointment duration
-								if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
-									// There is an overlap
-									disabled = 'disabled="disabled"';
-									return false;
-								}
+			callback: function(data) {
+				if(data.message){
+					var message  = __("Appointment is already booked on {0} for {1} with {2}, Do you want to book another appointment on this day?",
+						[appointment_date.bold(), patient.bold(), practitioner.bold()]);
+					frappe.confirm(
+						message,
+						function(){
+							callback(true);
+						},
+						function(){
+							frappe.show_alert({
+								message:__("Select new date and slot to book appointment if you wish."),
+								indicator:'yellow'
 							});
-							return `<button class="btn btn-default"
-								data-name=${start_str}
-								data-duration=${interval}
-								data-service-unit="${slot_details[i].service_unit || ''}"
-								style="margin: 0 10px 10px 0; width: 72px;" ${disabled}>
-								${start_str.substring(0, start_str.length - 3)}
-							</button>`;
-						}).join("");
-						slot_html = slot_html + `<br/>`;
-					}
-
-					$wrapper
-						.css('margin-bottom', 0)
-						.addClass('text-center')
-						.html(slot_html);
-
-					// blue button when clicked
-					$wrapper.on('click', 'button', function() {
-						var $btn = $(this);
-						$wrapper.find('button').removeClass('btn-primary');
-						$btn.addClass('btn-primary');
-						selected_slot = $btn.attr('data-name');
-						service_unit = $btn.attr('data-service-unit')
-						duration = $btn.attr('data-duration')
-						// enable dialog action
-						d.get_primary_btn().attr('disabled', null);
-					});
-
-				}else {
-					//	fd.available_slots.html("Please select a valid date.".bold())
-					show_empty_state(d.get_value('practitioner'), d.get_value('appointment_date'));
+							callback(false);
+						}
+					);
 				}
-			},
-			freeze: true,
-			freeze_message: __("Fetching records......")
+				else{
+					callback(true);
+				}
+			}
 		});
 	}
 }
