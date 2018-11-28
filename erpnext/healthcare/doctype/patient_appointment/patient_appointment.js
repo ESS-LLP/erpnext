@@ -294,7 +294,7 @@ var check_and_set_availability = function(frm) {
 								}
 
 								if(!have_atleast_one_schedule){
-									slot_html = __("There are no schedules for appointment type {0}", [d.get_value("appointment_type")]).bold();
+									slot_html = __("There are no schedules for appointment type {0}", [d.get_value("appointment_type")||'']).bold();
 								}
 
 								$wrapper
