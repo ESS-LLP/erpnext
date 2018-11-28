@@ -136,6 +136,7 @@ var check_and_set_availability = function(frm) {
 	function show_availability() {
 		let selected_practitioner = '';
 		let selected_appointment_date = '';
+		let selected_appointment_type = '';
 		var d = new frappe.ui.Dialog({
 			title: __("Available slots"),
 			fields: [
@@ -204,6 +205,10 @@ var check_and_set_availability = function(frm) {
 					});
 				}
 			});
+			if(d.get_value('appointment_type') && d.get_value('appointment_type') != selected_appointment_type){
+				selected_appointment_type = d.get_value('appointment_type');
+				show_slots(d, fd);
+			}
 		}
 		d.fields_dict["appointment_date"].df.onchange = () => {
 			if(d.get_value('appointment_date') && d.get_value('appointment_date') != selected_appointment_date){
@@ -225,7 +230,9 @@ var check_and_set_availability = function(frm) {
 	}
 
 	function show_slots(d, fd) {
-		if (d.get_value('appointment_date') && d.get_value('practitioner')){
+		// If appointment_type is there in frm then dialoge shoud needs that appointment_type - Rescehduling
+		// If appointment_type is NOT there in frm then dialoge shoud NOT need appointment_type - Booking
+		if (d.get_value('appointment_date') && d.get_value('practitioner') && !(frm.doc.appointment_type && !d.get_value("appointment_type"))){
 			fd.available_slots.html("");
 			exists_appointment(frm.doc.patient, d.get_value('practitioner'), d.get_value('appointment_date'), (exists)=>{
 				if(exists){
@@ -244,42 +251,50 @@ var check_and_set_availability = function(frm) {
 								// make buttons for each slot
 								var slot_details = data.slot_details;
 								var slot_html = "";
+								var have_atleast_one_schedule = false;
 								for (let i = 0; i < slot_details.length; i++) {
-									slot_html = slot_html + `<label>${slot_details[i].slot_name}</label>`;
-									slot_html = slot_html + `<br/>` + slot_details[i].avail_slot.map(slot => {
-										let disabled = '';
-										let start_str = slot.from_time;
-										let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
-										let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
-										let interval = (slot_to_time - slot_start_time)/60000 | 0;
-										//iterate in all booked appointments, update the start time and duration
-										slot_details[i].appointments.forEach(function(booked) {
-											let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
-											let end_time = booked_moment.clone().add(booked.duration, 'minutes');
-											if(slot_details[i].fixed_duration != 1){
-												if(end_time.isSame(slot_start_time) || end_time.isBetween(slot_start_time, slot_to_time)){
-													start_str = end_time.format("HH:mm")+":00";
-													interval = (slot_to_time - end_time)/60000 | 0;
+									if(slot_details[i].appointment_type == d.get_value("appointment_type") || slot_details[i].appointment_type == null){
+										have_atleast_one_schedule = true;
+										slot_html = slot_html + `<label>${slot_details[i].slot_name}</label>`;
+										slot_html = slot_html + `<br/>` + slot_details[i].avail_slot.map(slot => {
+											let disabled = '';
+											let start_str = slot.from_time;
+											let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
+											let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
+											let interval = (slot_to_time - slot_start_time)/60000 | 0;
+											//iterate in all booked appointments, update the start time and duration
+											slot_details[i].appointments.forEach(function(booked) {
+												let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
+												let end_time = booked_moment.clone().add(booked.duration, 'minutes');
+												if(slot_details[i].fixed_duration != 1){
+													if(end_time.isSame(slot_start_time) || end_time.isBetween(slot_start_time, slot_to_time)){
+														start_str = end_time.format("HH:mm")+":00";
+														interval = (slot_to_time - end_time)/60000 | 0;
+														return false;
+													}
+												}
+												// Check for overlaps considering appointment duration
+												if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
+													// There is an overlap
+													disabled = 'disabled="disabled"';
 													return false;
 												}
-											}
-											// Check for overlaps considering appointment duration
-											if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
-												// There is an overlap
-												disabled = 'disabled="disabled"';
-												return false;
-											}
-										});
-										return `<button class="btn btn-default"
-											data-name=${start_str}
-											data-duration=${interval}
-											data-service-unit="${slot_details[i].service_unit || ''}"
-											flag-fixed-duration=${slot_details[i].fixed_duration || 0}
-											style="margin: 0 10px 10px 0; width: 72px;" ${disabled}>
-											${start_str.substring(0, start_str.length - 3)}
-										</button>`;
-									}).join("");
-									slot_html = slot_html + `<br/>`;
+											});
+											return `<button class="btn btn-default"
+												data-name=${start_str}
+												data-duration=${interval}
+												data-service-unit="${slot_details[i].service_unit || ''}"
+												flag-fixed-duration=${slot_details[i].fixed_duration || 0}
+												style="margin: 0 10px 10px 0; width: 72px;" ${disabled}>
+												${start_str.substring(0, start_str.length - 3)}
+											</button>`;
+										}).join("");
+										slot_html = slot_html + `<br/>`;
+									}
+								}
+
+								if(!have_atleast_one_schedule){
+									slot_html = __("There are no schedules for appointment type {0}", [d.get_value("appointment_type")]).bold();
 								}
 
 								$wrapper
