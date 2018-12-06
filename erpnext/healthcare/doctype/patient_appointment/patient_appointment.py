@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 import json
-from frappe.utils import getdate, add_days, get_time
+from frappe.utils import getdate, add_days, get_time, time_diff_in_seconds
 from frappe import _
 import datetime
 from frappe.core.doctype.sms_settings.sms_settings import send_sms
@@ -216,8 +216,8 @@ def get_availability_data(date, practitioner):
 				frappe.throw(_("{0} on Leave on {1}").format(practitioner, date))
 
 	# get practitioners schedule
+	enabled_schedule = False
 	if practitioner_obj.practitioner_schedules:
-		enabled_schedule = False
 		for schedule in practitioner_obj.practitioner_schedules:
 			practitioner_schedule = None
 			if schedule.schedule:
@@ -230,8 +230,6 @@ def get_availability_data(date, practitioner):
 				):
 					practitioner_schedule = frappe.get_doc('Practitioner Schedule', schedule.schedule)
 					enabled_schedule = True
-			else:
-				frappe.throw(_("{0} does not have a Healthcare Practitioner Schedule. Add it in Healthcare Practitioner master".format(practitioner)))
 
 			if practitioner_schedule:
 				available_slots = []
@@ -272,17 +270,68 @@ def get_availability_data(date, practitioner):
 						"avail_slot":available_slots, 'appointments': appointments,
 						'fixed_duration': schedule.always_use_slot_duration_as_appointment_duration, 'appointment_type': schedule.appointment_type})
 
-		if not enabled_schedule:
-			frappe.throw(_("{0} does not have an enabled Healthcare Practitioner Schedule.".format(practitioner)))
-	else:
-		frappe.throw(_("{0} does not have a Healthcare Practitioner Schedule. Add it in Healthcare Practitioner master".format(practitioner)))
+	# Present events
+	present_events = frappe.db.sql("""
+		select
+			name, event, from_time, to_time, from_date, to_date, duration, service_unit
+		from
+			`tabPractitioner Event`
+		where
+			practitioner = %s and from_date<=%s and to_date>=%s and present = 1
+	""", (practitioner, date, date), as_dict=True)
 
-	if not available_slots and not slot_details:
-		# TODO: return available slots in nearby dates
-		frappe.throw(_("Healthcare Practitioner not available on {0}").format(weekday))
+	event_available_slots = []
+	present_events_details = []
+	if present_events:
+		for present_event in present_events:
+			total_time_diff = time_diff_in_seconds(present_event.to_time, present_event.from_time)/60
+			from_time = present_event.from_time
+			slot_name = present_event.event
+			appointments = []
+
+			if present_event.service_unit:
+				slot_name  = slot_name+" - "+present_event.service_unit
+				allow_overlap = frappe.get_value('Healthcare Service Unit', present_event.service_unit, 'overlap_appointments')
+				if allow_overlap:
+					# fetch all appointments to practitioner by service unit
+					appointments = frappe.get_all(
+						"Patient Appointment",
+						filters={"practitioner": practitioner, "service_unit": present_event.service_unit, "appointment_date": date, "status": ["not in",["Cancelled"]]},
+						fields=["name", "appointment_time", "duration", "status"],
+						order_by= "appointment_date, appointment_time")
+				else:
+					# fetch all appointments to service unit
+					appointments = frappe.get_all(
+						"Patient Appointment",
+						filters={"service_unit": present_event.service_unit, "appointment_date": date, "status": ["not in",["Cancelled"]]},
+						fields=["name", "appointment_time", "duration", "status"],
+						order_by= "appointment_date, appointment_time")
+			else:
+				# fetch all appointments to practitioner without service unit
+				appointments = frappe.get_all(
+					"Patient Appointment",
+					filters={"practitioner": practitioner, "service_unit": '', "appointment_date": date, "status": ["not in",["Cancelled"]]},
+					fields=["name", "appointment_time", "duration", "status"],
+					order_by= "appointment_date, appointment_time")
+
+			for x in range(0, int(total_time_diff), present_event.duration):
+				to_time = from_time + datetime.timedelta(seconds=present_event.duration*60)
+				event_available_slots.append({'from_time': from_time, 'to_time': to_time})
+				from_time = to_time
+			present_events_details.append({'slot_name': slot_name, "service_unit":present_event.service_unit,
+			'avail_slot': event_available_slots, 'appointments': appointments})
+
+	else:
+		if not practitioner_obj.practitioner_schedules:
+			frappe.throw(_("{0} does not have a Healthcare Practitioner Schedule. Add it in Healthcare Practitioner master".format(practitioner)))
+		elif not enabled_schedule:
+			frappe.throw(_("{0} does not have an enabled Healthcare Practitioner Schedule.".format(practitioner)))
+		elif not available_slots and not slot_details:
+			frappe.throw(_("Healthcare Practitioner not available on {0}").format(weekday))
 
 	return {
-		"slot_details": slot_details
+		"slot_details": slot_details,
+		"present_events": present_events_details
 	}
 
 
