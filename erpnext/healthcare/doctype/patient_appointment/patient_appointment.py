@@ -266,8 +266,18 @@ def get_availability_data(date, practitioner):
 							fields=["name", "appointment_time", "duration", "status"],
 							order_by= "appointment_date, appointment_time")
 
+					# Absent events
+					absent_events = frappe.db.sql("""
+						select
+							name, event, from_time, to_time, from_date, to_date, duration, service_unit
+						from
+							`tabPractitioner Event`
+						where
+							practitioner = %s and from_date<=%s and to_date>=%s and present != 1
+					""", (practitioner, date, date), as_dict=True)
+
 					slot_details.append({"slot_name":slot_name, "service_unit":schedule.service_unit,
-						"avail_slot":available_slots, 'appointments': appointments,
+						"avail_slot":available_slots, 'appointments': appointments, 'absent_events': absent_events,
 						'fixed_duration': schedule.always_use_slot_duration_as_appointment_duration, 'appointment_type': schedule.appointment_type})
 
 	# Present events

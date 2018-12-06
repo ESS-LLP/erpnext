@@ -282,6 +282,18 @@ var check_and_set_availability = function(frm) {
 													return false;
 												}
 											});
+											//iterate in all absent events and disable the slots
+											slot_details[i].absent_events.forEach(function(event) {
+												let event_from_time = moment(event.from_time, 'HH:mm:ss');
+												let event_to_time = moment(event.to_time, 'HH:mm:ss');
+												// Check for overlaps considering event start and end time
+												if(slot_start_time.isBefore(event_to_time) && slot_to_time.isAfter(event_from_time)){
+													// There is an overlap
+													disabled = 'disabled="disabled"';
+													background_color = "#ffd7d7";
+													return false;
+												}
+											});
 											return `<button class="btn btn-default"
 												data-name=${start_str}
 												data-duration=${interval}
