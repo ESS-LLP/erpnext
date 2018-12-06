@@ -258,6 +258,7 @@ var check_and_set_availability = function(frm) {
 										slot_html = slot_html + `<label>${slot_details[i].slot_name}</label>`;
 										slot_html = slot_html + `<br/>` + slot_details[i].avail_slot.map(slot => {
 											let disabled = '';
+											let background_color = "#cef6d1";
 											let start_str = slot.from_time;
 											let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
 											let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
@@ -277,6 +278,7 @@ var check_and_set_availability = function(frm) {
 												if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
 													// There is an overlap
 													disabled = 'disabled="disabled"';
+													background_color = "#d2d2ff";
 													return false;
 												}
 											});
@@ -285,7 +287,7 @@ var check_and_set_availability = function(frm) {
 												data-duration=${interval}
 												data-service-unit="${slot_details[i].service_unit || ''}"
 												flag-fixed-duration=${slot_details[i].fixed_duration || 0}
-												style="margin: 0 10px 10px 0; width: 72px;" ${disabled}>
+												style="margin: 0 10px 10px 0; width: 72px; background-color:${background_color};" ${disabled}>
 												${start_str.substring(0, start_str.length - 3)}
 											</button>`;
 										}).join("");
@@ -304,6 +306,7 @@ var check_and_set_availability = function(frm) {
 										slot_html = slot_html + `<label>${present_events[i].slot_name}</label>`;
 										slot_html = slot_html + `<br/>` + present_events[i].avail_slot.map(slot => {
 											let disabled = '';
+											let background_color = "#cef6d1";
 											let start_str = slot.from_time;
 											let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
 											let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
@@ -316,6 +319,7 @@ var check_and_set_availability = function(frm) {
 												if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
 													// There is an overlap
 													disabled = 'disabled="disabled"';
+													background_color = "#d2d2ff";
 													return false;
 												}
 											});
@@ -325,7 +329,7 @@ var check_and_set_availability = function(frm) {
 												data-duration=${interval}
 												data-service-unit="${present_events[i].service_unit || ''}"
 												flag-fixed-duration=${1}
-												style="margin: 0 10px 10px 0; width: 72px;" ${disabled}>
+												style="margin: 0 10px 10px 0; width: 72px; background-color:${background_color};" ${disabled}>
 												${start_str.substring(0, start_str.length - 3)}
 											</button>`;
 										}).join("");
