@@ -43,6 +43,11 @@ def get_data():
 					"type": "doctype",
 					"name": "Inpatient Record",
 					"label": _("Inpatient Record"),
+				},
+				{
+					"type": "doctype",
+					"name": "Practitioner Event",
+					"label": _("Practitioner Event")
 				}
 			]
 		},
