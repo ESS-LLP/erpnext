@@ -290,10 +290,10 @@ def get_availability_data(date, practitioner):
 			practitioner = %s and from_date<=%s and to_date>=%s and present = 1
 	""", (practitioner, date, date), as_dict=True)
 
-	event_available_slots = []
 	present_events_details = []
 	if present_events:
 		for present_event in present_events:
+			event_available_slots = []
 			total_time_diff = time_diff_in_seconds(present_event.to_time, present_event.from_time)/60
 			from_time = present_event.from_time
 			slot_name = present_event.event
@@ -330,7 +330,6 @@ def get_availability_data(date, practitioner):
 				from_time = to_time
 			present_events_details.append({'slot_name': slot_name, "service_unit":present_event.service_unit,
 			'avail_slot': event_available_slots, 'appointments': appointments})
-
 	else:
 		if not practitioner_obj.practitioner_schedules:
 			frappe.throw(_("{0} does not have a Healthcare Practitioner Schedule. Add it in Healthcare Practitioner master".format(practitioner)))
