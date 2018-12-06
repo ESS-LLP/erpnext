@@ -245,7 +245,7 @@ var check_and_set_availability = function(frm) {
 						},
 						callback: (r) => {
 							var data = r.message;
-							if(data.slot_details.length > 0) {
+							if(data.slot_details.length > 0 || data.present_events.length > 0) {
 								var $wrapper = d.fields_dict.available_slots.$wrapper;
 
 								// make buttons for each slot
@@ -293,8 +293,44 @@ var check_and_set_availability = function(frm) {
 									}
 								}
 
-								if(!have_atleast_one_schedule){
+								if(!have_atleast_one_schedule && !data.present_events){
 									slot_html = __("There are no schedules for appointment type {0}", [d.get_value("appointment_type")||'']).bold();
+								}
+
+								if(data.present_events && data.present_events.length > 0){
+									slot_html = slot_html + `<br/>`;
+									var present_events = data.present_events
+									for (let i = 0; i < present_events.length; i++) {
+										slot_html = slot_html + `<label>${present_events[i].slot_name}</label>`;
+										slot_html = slot_html + `<br/>` + present_events[i].avail_slot.map(slot => {
+											let disabled = '';
+											let start_str = slot.from_time;
+											let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
+											let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
+											let interval = (slot_to_time - slot_start_time)/60000 | 0;
+											//iterate in all booked appointments, update the start time and duration
+											present_events[i].appointments.forEach(function(booked) {
+												let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
+												let end_time = booked_moment.clone().add(booked.duration, 'minutes');
+												// Check for overlaps considering appointment duration
+												if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
+													// There is an overlap
+													disabled = 'disabled="disabled"';
+													return false;
+												}
+											});
+
+											return `<button class="btn btn-default"
+												data-name=${start_str}
+												data-duration=${interval}
+												data-service-unit="${present_events[i].service_unit || ''}"
+												flag-fixed-duration=${1}
+												style="margin: 0 10px 10px 0; width: 72px;" ${disabled}>
+												${start_str.substring(0, start_str.length - 3)}
+											</button>`;
+										}).join("");
+										slot_html = slot_html + `<br/>`;
+									}
 								}
 
 								$wrapper
@@ -519,21 +555,6 @@ frappe.ui.form.on("Patient Appointment", "patient", function(frm) {
 					age = calculate_age(data.message.dob);
 				}
 				frappe.model.set_value(frm.doctype,frm.docname, "patient_age", age);
-			}
-		});
-	}
-});
-
-frappe.ui.form.on("Patient Appointment", "appointment_type", function(frm) {
-	if(frm.doc.appointment_type) {
-		frappe.call({
-			"method": "frappe.client.get",
-			args: {
-				doctype: "Appointment Type",
-				name: frm.doc.appointment_type
-			},
-			callback: function (data) {
-				frappe.model.set_value(frm.doctype,frm.docname, "duration",data.message.default_duration);
 			}
 		});
 	}
