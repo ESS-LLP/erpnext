@@ -273,8 +273,13 @@ def get_availability_data(date, practitioner):
 						from
 							`tabPractitioner Event`
 						where
-							practitioner = %s and from_date<=%s and to_date>=%s and present != 1
-					""", (practitioner, date, date), as_dict=True)
+							practitioner = %s and present != 1 and
+							(
+								(repeat_this_event = 1 and (from_date<=%s and ifnull(repeat_till, "3000-01-01")>=%s))
+								or
+								(repeat_this_event != 1 and (from_date<=%s and to_date>=%s))
+							)
+					""", (practitioner, date, date, date, date), as_dict=True)
 
 					slot_details.append({"slot_name":slot_name, "service_unit":schedule.service_unit,
 						"avail_slot":available_slots, 'appointments': appointments, 'absent_events': absent_events,
