@@ -7,4 +7,15 @@ import frappe
 from frappe.model.document import Document
 
 class PractitionerEvent(Document):
-	pass
+	def validate(self):
+		self.validate_repeat_on()
+
+	def validate_repeat_on(self):
+		if self.repeat_on == "Every Day":
+			have_atleast_one_weekday = False
+			weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+			for weeday in weekdays:
+				if self.get(weeday) == 1:
+					have_atleast_one_weekday = True
+			if not have_atleast_one_weekday:
+				frappe.throw("Please select atleast one day")
