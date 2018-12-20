@@ -186,6 +186,9 @@ def get_availability_data(date, practitioner):
 	slot_details = []
 	practitioner_schedule = None
 
+	add_events = []
+	remove_events = []
+
 	employee = None
 
 	practitioner_obj = frappe.get_doc("Healthcare Practitioner", practitioner)
@@ -215,10 +218,38 @@ def get_availability_data(date, practitioner):
 			else:
 				frappe.throw(_("{0} on Leave on {1}").format(practitioner, date))
 
+	# Remove events by repeat_on
+	def remove_events_by_repeat_on(events_list):
+		weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+		if events_list:
+			i = 0
+			for event in events_list:
+				if event.repeat_this_event:
+					if event.repeat_on == "Every Day":
+						if event[weekdays[getdate(date).weekday()]]:
+							add_events.append(event.copy())
+						remove_events.append(event.copy())
+
+					if event.repeat_on=="Every Week":
+						if getdate(event.from_date).weekday() == getdate(date).weekday():
+							add_events.append(event.copy())
+						remove_events.append(event.copy())
+
+					if event.repeat_on=="Every Month":
+						if getdate(event.from_date).day == getdate(date).day:
+							add_events.append(event.copy())
+						remove_events.append(event.copy())
+
+					if event.repeat_on=="Every Year":
+						if getdate(event.from_date).strftime("%j") == getdate(date).strftime("%j"):
+							add_events.append(event.copy())
+						remove_events.append(event.copy())
+
 	# Absent events
 	absent_events = frappe.db.sql("""
 		select
-			name, event, from_time, to_time, from_date, to_date, duration, service_unit
+			name, event, from_time, to_time, from_date, to_date, duration, service_unit, service_unit, repeat_this_event, repeat_on, repeat_till,
+			monday, tuesday, wednesday, thursday, friday, saturday, sunday
 		from
 			`tabPractitioner Event`
 		where
@@ -229,6 +260,14 @@ def get_availability_data(date, practitioner):
 				(repeat_this_event != 1 and (from_date<=%s and to_date>=%s))
 			)
 	""", (practitioner, date, date, date, date), as_dict=True)
+
+	if absent_events:
+		remove_events = []
+		add_events = []
+		remove_events_by_repeat_on(absent_events)
+		for e in remove_events:
+			absent_events.remove(e)
+		absent_events = absent_events + add_events
 
 	# get practitioners schedule
 	enabled_schedule = False
@@ -288,7 +327,8 @@ def get_availability_data(date, practitioner):
 	# Present events
 	present_events = frappe.db.sql("""
 		select
-			name, event, from_time, to_time, from_date, to_date, duration, service_unit
+			name, event, from_time, to_time, from_date, to_date, duration, service_unit, repeat_this_event, repeat_on, repeat_till,
+			monday, tuesday, wednesday, thursday, friday, saturday, sunday
 		from
 			`tabPractitioner Event`
 		where
@@ -302,6 +342,13 @@ def get_availability_data(date, practitioner):
 
 	present_events_details = []
 	if present_events:
+		remove_events = []
+		add_events = []
+		remove_events_by_repeat_on(present_events)
+		for e in remove_events:
+			present_events.remove(e)
+		present_events = present_events + add_events
+
 		for present_event in present_events:
 			event_available_slots = []
 			total_time_diff = time_diff_in_seconds(present_event.to_time, present_event.from_time)/60
