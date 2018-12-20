@@ -106,7 +106,16 @@ frappe.ui.form.on('Patient Appointment', {
 		});
 	},
 	check_availability: function(frm) {
-		check_and_set_availability(frm);
+		if(frm.doc.patient){
+			check_and_set_availability(frm);
+		}
+		else{
+			frappe.msgprint({
+				title: __('Missing Fields'),
+				message: __("Patient is Mandatory"),
+				indicator: 'red'
+			});
+		}
 	},
 	onload:function(frm){
 		if(frm.is_new()) {
