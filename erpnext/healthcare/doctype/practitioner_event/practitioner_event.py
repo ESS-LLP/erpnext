@@ -4,7 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import time_diff_in_seconds
+from frappe.utils import time_diff_in_seconds, getdate
 from frappe import _
 from frappe.model.document import Document
 
@@ -13,6 +13,7 @@ class PractitionerEvent(Document):
 		self.validate_repeat_on()
 		if self.present == 1:
 			validate_duration(self)
+		validate_date(self)
 
 	def validate_repeat_on(self):
 		if self.repeat_on == "Every Day":
@@ -36,3 +37,7 @@ def validate_duration(doc):
 			frappe.throw(_("Duration between from time and to time must be greater than or equal to duration given"))
 		elif total_time_diff % doc.duration != 0:
 			frappe.throw(_("Duration between from time and to time must be multiple of duration given"))
+
+def validate_date(doc):
+	if doc.repeat_this_event == 1 and doc.repeat_till and getdate(doc.from_date) > getdate(doc.repeat_till):
+		frappe.throw(_("Practitioner Event Repeat Till must be after From Date"))
