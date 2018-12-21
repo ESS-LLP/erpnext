@@ -4,7 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import time_diff_in_seconds, getdate
+from frappe.utils import time_diff_in_seconds, getdate, formatdate
 from frappe import _
 from frappe.model.document import Document
 
@@ -14,6 +14,7 @@ class PractitionerEvent(Document):
 		if self.present == 1:
 			validate_duration(self)
 		validate_date(self)
+		validate_overlap(self)
 
 	def validate_repeat_on(self):
 		if self.repeat_on == "Every Day":
@@ -41,3 +42,101 @@ def validate_duration(doc):
 def validate_date(doc):
 	if doc.repeat_this_event == 1 and doc.repeat_till and getdate(doc.from_date) > getdate(doc.repeat_till):
 		frappe.throw(_("Practitioner Event Repeat Till must be after From Date"))
+
+def validate_overlap(doc):
+	validate_event_overlap(doc)
+
+def validate_event_overlap(doc):
+	query = """
+		select
+			name, from_date, from_time, to_time
+		from
+			`tabPractitioner Event`
+		where
+			name != %(name)s and present = %(present)s
+			and practitioner = %(practitioner)s and docstatus < 2 and
+			(
+				(
+					repeat_this_event = 1
+					and
+					(
+						(from_date between %(from_date)s and %(repeat_till)s)
+						or
+						(ifnull(repeat_till, "3000-01-01") between %(from_date)s and %(repeat_till)s)
+						or
+						(from_date < %(from_date)s and ifnull(repeat_till, "3000-01-01") > %(repeat_till)s)
+					)
+					and
+					(
+						(
+							repeat_on = 'Every Day'
+							and
+							(
+								monday=%(monday)s or tuesday=%(tuesday)s or wednesday=%(wednesday)s or thursday=%(thursday)s
+								or
+								friday=%(friday)s or saturday=%(saturday)s or sunday=%(sunday)s
+							)
+						)
+						or
+						(
+							repeat_on = 'Every Month'
+							and
+							(
+								month(%(from_date)s)=month(from_date)
+							)
+						)
+					)
+				)
+				or
+				(
+					repeat_this_event != 1
+					and
+					(
+						(%(from_date)s between from_date and to_date)
+						or
+						(%(to_date)s between from_date and to_date)
+						or
+						(%(from_date)s < from_date and %(to_date)s > to_date)
+					)
+				)
+			)
+			and
+			(
+				from_time between %(from_time)s and %(to_time)s or to_time between %(from_time)s and %(to_time)s
+				or
+				(from_time < %(from_time)s and to_time > %(to_time)s)
+			)
+		"""
+
+	if not doc.name:
+		# hack! if name is null, it could cause problems with !=
+		doc.name = "New "+doc.doctype
+
+	overlap_doc = frappe.db.sql(query.format(doc.doctype),{
+			"practitioner": doc.get("practitioner"),
+			"from_date": doc.from_date,
+			"to_date":doc.to_date,
+			"from_time": doc.from_time,
+			"repeat_till": doc.repeat_till or "3000-01-01",
+			"to_time": doc.to_time,
+			"name": doc.name,
+			"present": doc.present,
+			"monday": 1 if doc.monday == 1 else 2,
+			"tuesday": 1 if doc.tuesday == 1 else 2,
+			"wednesday": 1 if doc.wednesday == 1 else 2,
+			"thursday": 1 if doc.thursday == 1 else 2,
+			"friday": 1 if doc.friday == 1 else 2,
+			"saturday": 1 if doc.saturday == 1 else 2,
+			"sunday": 1 if doc.sunday == 1 else 2
+		}, as_dict = 1)
+
+	if overlap_doc:
+		throw_overlap_error(doc, doc.practitioner, overlap_doc[0].name, overlap_doc[0].from_date,
+		 overlap_doc[0].from_time, overlap_doc[0].to_time)
+
+def throw_overlap_error(doc, exists_for, overlap_doc, from_date, from_time, to_time):
+	msg = _("A {0} exists on {1} with time {2} to {3} (").format(doc.doctype,
+		formatdate(from_date), from_time, to_time) \
+		+ """ <b><a href="#Form/{0}/{1}">{1}</a></b>""".format(doc.doctype, overlap_doc) \
+		+ _(") for {0}").format(exists_for)
+	frappe.throw(msg)
