@@ -8,7 +8,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, flt, nowdate, nowtime, cstr
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_account
-from erpnext.healthcare.doctype.lab_test.lab_test import create_sample_doc
+from erpnext.healthcare.doctype.lab_test.lab_test import create_sample_doc, create_lab_test_doc
 from erpnext.stock.stock_ledger import get_previous_sle
 from erpnext.stock.get_item_details import get_item_details
 
@@ -29,6 +29,7 @@ class ClinicalProcedure(Document):
 		if self.consume_stock:
 			set_stock_items(self, self.procedure_template, "Clinical Procedure Template")
 			self.set_actual_qty();
+		set_procedure_pre_post_tasks(self)
 
 	def after_insert(self):
 		if self.prescription:
@@ -40,6 +41,7 @@ class ClinicalProcedure(Document):
 			patient = frappe.get_doc("Patient", self.patient)
 			sample_collection = create_sample_doc(template, patient, None)
 			frappe.db.set_value("Clinical Procedure", self.name, "sample", sample_collection.name)
+		create_pre_post_document(self)
 		self.reload()
 
 	def complete(self):
@@ -120,6 +122,40 @@ class ClinicalProcedure(Document):
 				se_child.cost_center = cost_center
 				se_child.expense_account = expense_account
 		return stock_entry.as_dict()
+
+def set_procedure_pre_post_tasks(doc):
+	if doc.procedure_template:
+		template = frappe.get_doc("Clinical Procedure Template", doc.procedure_template)
+		if template.nursing_tasks:
+			for nursing_task in template.nursing_tasks:
+				nursing_task_item = doc.append("nursing_tasks")
+				nursing_task_item.check_list = nursing_task.check_list
+				nursing_task_item.task = nursing_task.task
+
+		if template.investigations:
+			for investigation in template.investigations:
+				investigation_item = doc.append("investigations")
+				investigation_item.lab_test = investigation.lab_test
+				investigation_item.pre_post = investigation.pre_post
+
+	return doc
+
+def create_pre_post_document(doc):
+	if doc.nursing_tasks:
+		for nursing_task in doc.nursing_tasks:
+			if not nursing_task.nursing_task_reference:
+				create_nursing_task(doc.patient, nursing_task.check_list, nursing_task.task, nursing_task.name, doc.doctype, doc.name, doc.practitioner, doc.service_unit, doc.medical_department)
+
+	if doc.investigations:
+		for investigation in doc.investigations:
+			if not investigation.lab_test_reference:
+				lab_test = create_lab_test_doc(True, doc.practitioner, frappe.get_doc("Patient", doc.patient), frappe.get_doc("Lab Test Template", investigation.lab_test))
+				lab_test.reference_dt = doc.doctype
+				lab_test.reference_dn = doc.name
+				lab_test.save(ignore_permissions = True)
+				# frappe.db.set_value("Clinical Procedure Lab Test", investigation.name, "lab_test_reference", lab_test.name)
+
+	doc.reload()
 
 @frappe.whitelist()
 def get_stock_qty(item_code, warehouse):

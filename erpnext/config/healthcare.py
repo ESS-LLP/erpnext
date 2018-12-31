@@ -48,6 +48,11 @@ def get_data():
 					"type": "doctype",
 					"name": "Practitioner Event",
 					"label": _("Practitioner Event")
+				},
+				{
+					"type": "doctype",
+					"name": "Healthcare Nursing Task",
+					"label": _("Healthcare Nursing Task"),
 				}
 			]
 		},
@@ -182,6 +187,11 @@ def get_data():
 					"type": "doctype",
 					"name": "Healthcare Service Unit Type",
 					"label": _("Healthcare Service Unit Type")
+				},
+				{
+					"type": "doctype",
+					"name": "Clinical Procedure Check List Template",
+					"label": _("Clinical Procedure Check List Template"),
 				}
 			]
 		}
