@@ -59,6 +59,7 @@ frappe.ui.form.on('Clinical Procedure Template', {
 								var nursing_task_item = frappe.model.add_child(frm.doc, 'Clinical Procedure Nursing Task', 'nursing_tasks');
 								frappe.model.set_value(nursing_task_item.doctype, nursing_task_item.name, 'check_list', data.message.check_lists[i]['check_list']);
 								frappe.model.set_value(nursing_task_item.doctype, nursing_task_item.name, 'task', data.message.check_lists[i]['task']);
+								frappe.model.set_value(nursing_task_item.doctype, nursing_task_item.name, 'expected_time', data.message.check_lists[i]['expected_time']);
 							}
 						}
 						frm.refresh_field("nursing_tasks");
