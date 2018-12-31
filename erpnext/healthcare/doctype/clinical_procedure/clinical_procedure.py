@@ -6,11 +6,12 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cint, flt, nowdate, nowtime, cstr
+from frappe.utils import cint, flt, nowdate, nowtime, cstr, to_timedelta
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_account
 from erpnext.healthcare.doctype.lab_test.lab_test import create_sample_doc, create_lab_test_doc
 from erpnext.stock.stock_ledger import get_previous_sle
 from erpnext.stock.get_item_details import get_item_details
+import datetime
 
 class ClinicalProcedure(Document):
 	def validate(self):
@@ -131,12 +132,14 @@ def set_procedure_pre_post_tasks(doc):
 				nursing_task_item = doc.append("nursing_tasks")
 				nursing_task_item.check_list = nursing_task.check_list
 				nursing_task_item.task = nursing_task.task
+				nursing_task_item.expected_time = nursing_task.expected_time
 
 		if template.investigations:
 			for investigation in template.investigations:
 				investigation_item = doc.append("investigations")
 				investigation_item.lab_test = investigation.lab_test
-				investigation_item.pre_post = investigation.pre_post
+				investigation_item.task = investigation.task
+				investigation_item.expected_time = investigation.expected_time
 
 	return doc
 
@@ -144,7 +147,7 @@ def create_pre_post_document(doc):
 	if doc.nursing_tasks:
 		for nursing_task in doc.nursing_tasks:
 			if not nursing_task.nursing_task_reference:
-				create_nursing_task(doc.patient, nursing_task.check_list, nursing_task.task, nursing_task.name, doc.doctype, doc.name, doc.practitioner, doc.service_unit, doc.medical_department)
+				create_nursing_task(doc, nursing_task)
 
 	if doc.investigations:
 		for investigation in doc.investigations:
@@ -152,10 +155,34 @@ def create_pre_post_document(doc):
 				lab_test = create_lab_test_doc(True, doc.practitioner, frappe.get_doc("Patient", doc.patient), frappe.get_doc("Lab Test Template", investigation.lab_test))
 				lab_test.reference_dt = doc.doctype
 				lab_test.reference_dn = doc.name
+				lab_test.expected_result_date = doc.start_date
+				if doc.start_time and investigation.expected_time and investigation.expected_time > 0:
+					if investigation.task == "After":
+						lab_test.expected_result_time = to_timedelta(doc.start_time) + datetime.timedelta(seconds=investigation.expected_time*60)
+					elif investigation.task == "Before":
+						lab_test.expected_result_time = to_timedelta(doc.start_time) - datetime.timedelta(seconds=investigation.expected_time*60)
 				lab_test.save(ignore_permissions = True)
 				# frappe.db.set_value("Clinical Procedure Lab Test", investigation.name, "lab_test_reference", lab_test.name)
 
-	doc.reload()
+def create_nursing_task(doc, nursing_task):
+	hc_nursing_task = frappe.new_doc("Healthcare Nursing Task")
+	hc_nursing_task.patient = doc.patient
+	hc_nursing_task.practitioner = doc.practitioner
+	hc_nursing_task.task = nursing_task.check_list
+	hc_nursing_task.service_unit = doc.service_unit
+	hc_nursing_task.medical_department = doc.medical_department
+	hc_nursing_task.task_order = nursing_task.task
+	hc_nursing_task.reference_doctype = doc.doctype
+	hc_nursing_task.reference_docname = doc.name
+	hc_nursing_task.date = doc.start_date
+	if doc.start_time and nursing_task.expected_time and nursing_task.expected_time > 0:
+		if nursing_task.task == "After":
+			hc_nursing_task.time = to_timedelta(doc.start_time) + datetime.timedelta(seconds=nursing_task.expected_time*60)
+		elif nursing_task.task == "Before":
+			hc_nursing_task.time = to_timedelta(doc.start_time) - datetime.timedelta(seconds=nursing_task.expected_time*60)
+	hc_nursing_task.save(ignore_permissions=True)
+	# frappe.db.set_value("Clinical Procedure Nursing Task", nursing_task.name, "nursing_task_reference", nursing_task.name)
+
 
 @frappe.whitelist()
 def get_stock_qty(item_code, warehouse):
