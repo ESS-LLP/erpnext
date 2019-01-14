@@ -98,6 +98,21 @@ var admit_patient_dialog = function(frm){
 		}
 	});
 
+	dialog.fields_dict["check_in"].df.onchange = () => {
+		if(dialog.get_value('check_in')){
+			if (frm.doc.expected_length_of_stay && frm.doc.expected_length_of_stay > 0){
+				dialog.set_values({
+					'expected_discharge': frappe.datetime.add_days(dialog.get_value('check_in'), frm.doc.expected_length_of_stay)
+				});
+			}
+		}
+		else{
+			dialog.set_values({
+				'expected_discharge': ""
+			});
+		}
+	}
+
 	dialog.fields_dict["service_unit_type"].get_query = function(){
 		return {
 			filters: {
@@ -115,6 +130,22 @@ var admit_patient_dialog = function(frm){
 			}
 		};
 	};
+
+	var check_in_date_time = frappe.datetime.now_datetime();
+	var expected_discharge_date = "";
+
+	if(frm.doc.admission_ordered_for){
+		check_in_date_time = frm.doc.admission_ordered_for+" "+frappe.datetime.now_time();
+		if (frm.doc.expected_length_of_stay && frm.doc.expected_length_of_stay > 0){
+			expected_discharge_date = frappe.datetime.add_days(frm.doc.admission_ordered_for, frm.doc.expected_length_of_stay);
+		}
+	}
+
+	dialog.set_values({
+		'service_unit_type': frm.doc.admission_service_unit_type,
+		'check_in': check_in_date_time,
+		'expected_discharge': expected_discharge_date
+	});
 
 	dialog.show();
 };
