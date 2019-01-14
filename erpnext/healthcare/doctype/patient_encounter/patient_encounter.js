@@ -19,7 +19,7 @@ frappe.ui.form.on('Patient Encounter', {
 	refresh: function(frm) {
 		refresh_field('drug_prescription');
 		refresh_field('lab_test_prescription');
-		if (!frm.doc.__islocal){
+		if (!frm.doc.__islocal && frm.doc.docstatus == 1){
 			frappe.call({
 				method: 'frappe.client.get_value',
 				args: {
