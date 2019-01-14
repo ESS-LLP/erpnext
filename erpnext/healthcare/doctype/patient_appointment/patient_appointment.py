@@ -253,13 +253,13 @@ def get_availability_data(date, practitioner):
 		from
 			`tabPractitioner Event`
 		where
-			practitioner = %s and present != 1 and
+			practitioner = %(practitioner)s and present != 1 and
 			(
-				(repeat_this_event = 1 and (from_date<=%s and ifnull(repeat_till, "3000-01-01")>=%s))
+				(repeat_this_event = 1 and (from_date<=%(date)s and ifnull(repeat_till, "3000-01-01")>=%(date)s))
 				or
-				(repeat_this_event != 1 and (from_date<=%s and to_date>=%s))
+				(repeat_this_event != 1 and (from_date<=%(date)s and to_date>=%(date)s))
 			)
-	""", (practitioner, date, date, date, date), as_dict=True)
+	""".format(),{"practitioner": practitioner, "date": getdate(date)}, as_dict=True)
 
 	if absent_events:
 		remove_events = []
@@ -332,13 +332,13 @@ def get_availability_data(date, practitioner):
 		from
 			`tabPractitioner Event`
 		where
-			practitioner = %s and present = 1 and
+			practitioner = %(practitioner)s and present = 1 and
 			(
-				(repeat_this_event = 1 and (from_date<=%s and ifnull(repeat_till, "3000-01-01")>=%s))
+				(repeat_this_event = 1 and (from_date<=%(date)s and ifnull(repeat_till, "3000-01-01")>=%(date)s))
 				or
-				(repeat_this_event != 1 and (from_date<=%s and to_date>=%s))
+				(repeat_this_event != 1 and (from_date<=%(date)s and to_date>=%(date)s))
 			)
-	""", (practitioner, date, date, date, date), as_dict=True)
+	""".format(),{"practitioner":practitioner, "date":getdate(date)}, as_dict=True)
 
 	present_events_details = []
 	if present_events:
@@ -491,6 +491,7 @@ def get_events(start, end, filters=None):
 	"""
 	from frappe.desk.calendar import get_event_conditions
 	conditions = get_event_conditions("Patient Appointment", filters)
+
 	data = frappe.db.sql("""
 		select
 		`tabPatient Appointment`.name, `tabPatient Appointment`.patient,
