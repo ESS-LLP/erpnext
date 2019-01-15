@@ -44,11 +44,18 @@ class InpatientRecord(Document):
 	def discharge(self):
 		discharge_patient(self)
 
-	def transfer(self, service_unit, check_in, leave_from):
+	def transfer(self, service_unit, check_in, leave_from, requested_transfer=False):
 		if leave_from:
 			patient_leave_service_unit(self, check_in, leave_from)
 		if service_unit:
 			transfer_patient(self, service_unit, check_in)
+		if requested_transfer:
+			self.transfer_requested = False
+			self.transfer_requested_unit_type = None
+			self.expected_transfer = None
+			self.status = "Admitted"
+			self.save(ignore_permissions = True)
+			frappe.db.set_value("Patient", self.patient, "inpatient_status", "Admitted")
 
 @frappe.whitelist()
 def schedule_inpatient(args):
@@ -237,3 +244,15 @@ def get_leave_from(doctype, txt, searchfield, start, page_len, filters):
 		'start': start,
 		'page_len': page_len
 	})
+
+@frappe.whitelist()
+def transfer_order(patient, transfer_unit_type, expected_transfer=None):
+	inpatient_record_id = frappe.db.get_value('Patient', patient, 'inpatient_record')
+	if inpatient_record_id:
+		inpatient_record = frappe.get_doc("Inpatient Record", inpatient_record_id)
+		inpatient_record.transfer_requested = True
+		inpatient_record.transfer_requested_unit_type = transfer_unit_type
+		inpatient_record.expected_transfer = expected_transfer
+		inpatient_record.status = "Transfer Scheduled"
+		inpatient_record.save(ignore_permissions = True)
+		frappe.db.set_value("Patient", patient, "inpatient_status", "Transfer Scheduled")
