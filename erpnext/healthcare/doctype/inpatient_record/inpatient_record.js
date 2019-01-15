@@ -180,7 +180,8 @@ var transfer_patient_dialog = function(frm){
 				args:{
 					'service_unit': service_unit,
 					'check_in': check_in,
-					'leave_from': leave_from
+					'leave_from': leave_from,
+					'requested_transfer': frm.doc.transfer_requested
 				},
 				callback: function(data) {
 					if(!data.exc){
@@ -230,6 +231,29 @@ var transfer_patient_dialog = function(frm){
 	dialog.set_values({
 		'leave_from': not_left_service_unit
 	});
+	if(frm.doc.transfer_requested == 1){
+		if(frm.doc.transfer_requested_unit_type){
+			dialog.set_values({
+				'service_unit_type': frm.doc.transfer_requested_unit_type
+			});
+		}
+		if(frm.doc.transfer_requested_unit_type){
+			dialog.set_values({
+				'check_in': frm.doc.expected_transfer
+			});
+		}
+	}
+	else{
+		if(not_left_service_unit){
+			frappe.db.get_value("Healthcare Service Unit", not_left_service_unit, 'service_unit_type', function(r) {
+				if(r && r.service_unit_type){
+					dialog.set_values({
+						'service_unit_type': r.service_unit_type
+					});
+				}
+			});
+		}
+	}
 };
 
 var show_table_html = function(frm, child_table, child_table_name, html_field) {
