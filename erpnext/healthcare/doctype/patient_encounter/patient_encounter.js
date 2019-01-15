@@ -28,7 +28,12 @@ frappe.ui.form.on('Patient Encounter', {
 					filters: {name: frm.doc.patient}
 				},
 				callback: function(data) {
-					if(data.message && data.message.inpatient_status == "Admission Scheduled" || data.message.inpatient_status == "Admitted"){
+					if(data.message && data.message.inpatient_status == "Admitted"){
+						frm.add_custom_button(__('Order Transfer'), function() {
+							order_transfer(frm);
+						});
+					}
+					if(data.message && data.message.inpatient_status == "Admission Scheduled" || data.message.inpatient_status == "Admitted" || data.message.inpatient_status == "Transfer Scheduled"){
 						frm.add_custom_button(__('Order Discharge'), function() {
 							schedule_discharge(frm);
 						});
@@ -105,6 +110,48 @@ frappe.ui.form.on('Patient Encounter', {
 		frm.set_df_property("encounter_time", "read_only", frm.doc.__islocal ? 0:1);
 	}
 });
+
+var order_transfer = function(frm, inpatient_record) {
+	var dialog = new frappe.ui.Dialog({
+		title: 'Transfer Patient',
+		width: 100,
+		fields: [
+			{fieldtype: "Link", label: "Service Unit Type", fieldname: "service_unit_type", options: "Healthcare Service Unit Type", reqd: 1},
+			{fieldtype: "Datetime", label: "Expected Transfer", fieldname: "expected_transfer"}
+		],
+		primary_action_label: __("Order Transfer"),
+		primary_action : function(){
+			frappe.call({
+				method: 'erpnext.healthcare.doctype.inpatient_record.inpatient_record.transfer_order',
+				args:{
+					'expected_transfer': dialog.get_value('expected_transfer'),
+					'transfer_unit_type': dialog.get_value('service_unit_type'),
+					'patient': frm.doc.patient
+				},
+				callback: function(data) {
+					if(!data.exc){
+						frm.reload_doc();
+					}
+				},
+				freeze: true,
+				freeze_message: "Process Transfer Order"
+			});
+			frm.refresh_fields();
+			dialog.hide();
+		}
+	});
+
+	dialog.fields_dict["service_unit_type"].get_query = function(){
+		return {
+			filters: {
+				"inpatient_occupancy": 1,
+				"allow_appointments": 0
+			}
+		};
+	};
+
+	dialog.show();
+}
 
 var schedule_inpatient = function(frm) {
 	var dialog = new frappe.ui.Dialog({
