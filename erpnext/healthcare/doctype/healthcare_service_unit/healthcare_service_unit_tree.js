@@ -19,12 +19,7 @@ frappe.treeview_settings["Healthcare Service Unit"] = {
 		}
 		if (node.data && node.data.inpatient_occupancy!==undefined) {
 			if (node.data.inpatient_occupancy == 1){
-				if (node.data.status == "Occupied"){
-					$('<span class="balance-area pull-right small">'
-						+ " " + node.data.status
-						+ '</span>').insertBefore(node.$ul);
-				}
-				if (node.data.status == "Vacant"){
+				if (node.data.status!==undefined){
 					$('<span class="balance-area pull-right text-muted small">'
 						+ " " + node.data.status
 						+ '</span>').insertBefore(node.$ul);
