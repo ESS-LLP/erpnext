@@ -19,14 +19,14 @@ frappe.treeview_settings["Healthcare Service Unit"] = {
 		}
 		if (node.data && node.data.inpatient_occupancy!==undefined) {
 			if (node.data.inpatient_occupancy == 1){
-				if (node.data.occupancy_status == "Occupied"){
+				if (node.data.status == "Occupied"){
 					$('<span class="balance-area pull-right small">'
-						+ " " + node.data.occupancy_status
+						+ " " + node.data.status
 						+ '</span>').insertBefore(node.$ul);
 				}
-				if (node.data.occupancy_status == "Vacant"){
+				if (node.data.status == "Vacant"){
 					$('<span class="balance-area pull-right text-muted small">'
-						+ " " + node.data.occupancy_status
+						+ " " + node.data.status
 						+ '</span>').insertBefore(node.$ul);
 				}
 			}
