@@ -403,7 +403,7 @@ def get_children(doctype, parent, company, is_root=False):
 		filters.append(['company', '=', company])
 
 	else:
-		fields += ['service_unit_type', 'allow_appointments', 'inpatient_occupancy', 'occupancy_status'] if doctype == 'Healthcare Service Unit' else []
+		fields += ['service_unit_type', 'allow_appointments', 'inpatient_occupancy', 'status'] if doctype == 'Healthcare Service Unit' else []
 		fields += [parent_fieldname + ' as parent']
 
 	hc_service_units = frappe.get_list(doctype, fields=fields, filters=filters)
@@ -415,7 +415,7 @@ def get_children(doctype, parent, company, is_root=False):
 				occupied = False
 				vacant = False
 				child_list = frappe.db.sql("""
-					select name, occupancy_status from `tabHealthcare Service Unit`
+					select name, status from `tabHealthcare Service Unit`
 					where inpatient_occupancy = 1 and
 					lft > %s and rgt < %s""",
 					(each['lft'], each['rgt']))
