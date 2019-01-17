@@ -412,25 +412,21 @@ def get_children(doctype, parent, company, is_root=False):
 		for each in hc_service_units:
 			occupancy_msg = ""
 			if each['expandable'] == 1:
-				occupied = False
 				vacant = False
+				total_bed = 0
 				child_list = frappe.db.sql("""
 					select name, status from `tabHealthcare Service Unit`
 					where inpatient_occupancy = 1 and
 					lft > %s and rgt < %s""",
 					(each['lft'], each['rgt']))
 				for child in child_list:
-					if not occupied:
-						occupied = 0
-					if child[1] == "Occupied":
-						occupied += 1
+					total_bed += 1
 					if not vacant:
 						vacant = 0
 					if child[1] == "Vacant":
 						vacant += 1
-				if vacant and occupied:
-					occupancy_total = vacant+occupied
-					occupancy_msg = str(occupied) + " Occupied out of " + str(occupancy_total)
+				if vacant:
+					occupancy_msg = str(vacant) + _(" Vacant out of ") + str(total_bed)
 			each["occupied_out_of_vacant"] = occupancy_msg
 	return hc_service_units
 
