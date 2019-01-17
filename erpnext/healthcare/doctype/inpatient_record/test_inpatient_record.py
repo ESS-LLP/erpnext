@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import frappe
 import unittest
+import json
 from frappe.utils import now_datetime, today
 from frappe.utils.make_random import get_random
 from erpnext.healthcare.doctype.inpatient_record.inpatient_record import admit_patient, discharge_patient, schedule_discharge
@@ -23,11 +24,26 @@ class TestInpatientRecord(unittest.TestCase):
 		service_unit = get_healthcare_service_unit()
 		admit_patient(ip_record, service_unit, now_datetime())
 		self.assertEqual("Admitted", frappe.db.get_value("Patient", patient, "inpatient_status"))
-		self.assertEqual("Occupied", frappe.db.get_value("Healthcare Service Unit", service_unit, "occupancy_status"))
+		self.assertEqual("Occupied", frappe.db.get_value("Healthcare Service Unit", service_unit, "status"))
 
 		# Discharge
-		schedule_discharge(patient=patient)
-		self.assertEqual("Vacant", frappe.db.get_value("Healthcare Service Unit", service_unit, "occupancy_status"))
+		args = {
+			"patient": patient,
+			"encounter_id": "",
+			"discharge_practitioner": "",
+			"discharge_ordered": "",
+			"followup_date": "",
+			"discharge_instruction": "",
+			"discharge_note": "",
+			"include_chief_complaint": "",
+			"include_diagnosis": "",
+			"include_medication": "",
+			"include_investigations": "",
+			"include_procedures": "",
+			"include_occupancy_details": ""
+		}
+		schedule_discharge(args=json.dumps(args))
+		self.assertEqual("Vacant", frappe.db.get_value("Healthcare Service Unit", service_unit, "status"))
 
 		ip_record1 = frappe.get_doc("Inpatient Record", ip_record.name)
 		# Validate Pending Invoices
@@ -71,7 +87,9 @@ def create_inpatient(patient):
 	inpatient_record.mobile = patient_obj.mobile
 	inpatient_record.email = patient_obj.email
 	inpatient_record.phone = patient_obj.phone
-	inpatient_record.inpatient = "Scheduled"
+	inpatient_record.expected_length_of_stay = 1
+	inpatient_record.medical_department = get_random("Medical Department")
+	inpatient_record.status = "Admission Scheduled"
 	inpatient_record.scheduled_date = today()
 	return inpatient_record
 
@@ -93,7 +111,7 @@ def get_healthcare_service_unit():
 		service_unit.healthcare_service_unit_name = "Test Service Unit Ip Occupancy"
 		service_unit.service_unit_type = get_service_unit_type()
 		service_unit.inpatient_occupancy = 1
-		service_unit.occupancy_status = "Vacant"
+		service_unit.status = "Vacant"
 		service_unit.is_group = 0
 		service_unit_parent_name = frappe.db.exists({
 				"doctype": "Healthcare Service Unit",
