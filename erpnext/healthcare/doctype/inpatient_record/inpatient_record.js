@@ -126,7 +126,7 @@ var admit_patient_dialog = function(frm){
 			filters: {
 				"is_group": 0,
 				"service_unit_type": dialog.get_value("service_unit_type"),
-				"occupancy_status" : "Vacant"
+				"status" : "Vacant"
 			}
 		};
 	};
@@ -215,7 +215,7 @@ var transfer_patient_dialog = function(frm){
 			filters: {
 				"is_group": 0,
 				"service_unit_type": dialog.get_value("service_unit_type"),
-				"occupancy_status" : "Vacant"
+				"status" : "Vacant"
 			}
 		};
 	};
