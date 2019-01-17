@@ -8,7 +8,7 @@ import unittest
 import json
 from frappe.utils import now_datetime, today
 from frappe.utils.make_random import get_random
-from erpnext.healthcare.doctype.inpatient_record.inpatient_record import admit_patient, discharge_patient, schedule_discharge
+from erpnext.healthcare.doctype.inpatient_record.inpatient_record import admit_patient, discharge_patient, schedule_discharge, get_check_out_stats
 
 class TestInpatientRecord(unittest.TestCase):
 	def test_admit_and_discharge(self):
@@ -43,7 +43,7 @@ class TestInpatientRecord(unittest.TestCase):
 			"include_occupancy_details": ""
 		}
 		schedule_discharge(args=json.dumps(args))
-		self.assertEqual("Vacant", frappe.db.get_value("Healthcare Service Unit", service_unit, "status"))
+		self.assertEqual(get_check_out_stats(), frappe.db.get_value("Healthcare Service Unit", service_unit, "status"))
 
 		ip_record1 = frappe.get_doc("Inpatient Record", ip_record.name)
 		# Validate Pending Invoices

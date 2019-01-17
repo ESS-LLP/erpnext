@@ -146,7 +146,7 @@ def check_out_inpatient(inpatient_record):
 			if inpatient_occupancy.left != 1:
 				inpatient_occupancy.left = True
 				inpatient_occupancy.check_out = now_datetime()
-				frappe.db.set_value("Healthcare Service Unit", inpatient_occupancy.service_unit, "status", "Vacant")
+				frappe.db.set_value("Healthcare Service Unit", inpatient_occupancy.service_unit, "status", get_check_out_stats())
 
 def discharge_patient(inpatient_record):
 	validate_invoiced_inpatient(inpatient_record)
@@ -222,7 +222,7 @@ def patient_leave_service_unit(inpatient_record, check_out, leave_from):
 			if inpatient_occupancy.left != 1 and inpatient_occupancy.service_unit == leave_from:
 				inpatient_occupancy.left = True
 				inpatient_occupancy.check_out = check_out
-				frappe.db.set_value("Healthcare Service Unit", inpatient_occupancy.service_unit, "status", "Vacant")
+				frappe.db.set_value("Healthcare Service Unit", inpatient_occupancy.service_unit, "status", get_check_out_stats())
 	inpatient_record.save(ignore_permissions = True)
 
 @frappe.whitelist()
@@ -256,3 +256,10 @@ def transfer_order(patient, transfer_unit_type, expected_transfer=None):
 		inpatient_record.status = "Transfer Scheduled"
 		inpatient_record.save(ignore_permissions = True)
 		frappe.db.set_value("Patient", patient, "inpatient_status", "Transfer Scheduled")
+
+@frappe.whitelist()
+def get_check_out_stats():
+	default_check_out_status = frappe.db.get_value("Healthcare Settings", None, "healthcare_service_unit_checkout_status")
+	if not default_check_out_status:
+		return "Vacant"
+	return default_check_out_status
