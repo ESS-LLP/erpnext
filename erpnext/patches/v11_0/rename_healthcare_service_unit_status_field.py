@@ -6,5 +6,6 @@ def execute():
 		return
 
 	if frappe.db.exists('DocType', 'Healthcare Service Unit'):
+		frappe.reload_doc('healthcare', 'doctype', 'healthcare_service_unit')
 		if frappe.db.has_column('Healthcare Service Unit', 'occupancy_status'):
 			rename_field('Healthcare Service Unit', 'occupancy_status', 'status')
