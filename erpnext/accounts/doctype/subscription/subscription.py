@@ -240,6 +240,8 @@ class Subscription(Document):
 		invoice.set_posting_time = 1
 		invoice.posting_date = self.current_invoice_start
 		invoice.customer = self.customer
+		if self.company:
+			invoice.company = self.company
 
 		# Subscription is better suited for service items. I won't update `update_stock`
 		# for that reason
