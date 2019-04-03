@@ -9,7 +9,10 @@ frappe.ui.form.on('Practitioner Event', {
 	},
 	appointment_type: function(frm) {
 		if(frm.doc.appointment_type){
-			frappe.db.get_value('Appointment Type', {name: frm.doc.appointment_type}, 'default_duration', (r) => {
+			frappe.db.get_value('Appointment Type', {name: frm.doc.appointment_type}, ['default_duration', 'color'], (r) => {
+				if(r.color){
+					frm.set_value("color", r.color);
+				}
 				if(r.default_duration){
 					frm.set_value("duration", r.default_duration);
 				}
