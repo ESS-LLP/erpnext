@@ -91,9 +91,9 @@ frappe.ui.form.on("Healthcare Practitioner", "employee", function(frm) {
 				if(!frm.doc.designation || frm.doc.designation != data.message.designation)
 					frappe.model.set_value(frm.doctype,frm.docname, "designation", data.message.designation);
 				if(!frm.doc.first_name || !frm.doc.user_id){
-					frappe.model.set_value(frm.doctype,frm.docname, "first_name", data.message.employee_name);
-					frappe.model.set_value(frm.doctype,frm.docname, "middle_name", "");
-					frappe.model.set_value(frm.doctype,frm.docname, "last_name", "");
+					frappe.model.set_value(frm.doctype,frm.docname, "first_name", data.message.first_name);
+					frappe.model.set_value(frm.doctype,frm.docname, "middle_name", data.message.middle_name);
+					frappe.model.set_value(frm.doctype,frm.docname, "last_name", data.message.last_name);
 				}
 				if(!frm.doc.mobile_phone || !frm.doc.user_id)
 					frappe.model.set_value(frm.doctype,frm.docname, "mobile_phone", data.message.cell_number);
