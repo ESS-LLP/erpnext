@@ -10,15 +10,22 @@ from frappe.utils import cstr
 from erpnext.accounts.party import validate_party_accounts
 from frappe.contacts.address_and_contact import load_address_and_contact, delete_contact_and_address
 from frappe.desk.reportview import build_match_conditions, get_filters_cond
+from frappe.model.naming import set_name_by_naming_series
 
 class HealthcarePractitioner(Document):
 	def onload(self):
 		load_address_and_contact(self)
 
 	def autoname(self):
-		# practitioner first_name and last_name
-		self.name = " ".join(filter(None,
-			[cstr(self.get(f)).strip() for f in ["first_name","middle_name","last_name"]]))
+		naming_method = frappe.db.get_value("Healthcare Settings", None, "practitioner_name_by")
+		if not naming_method:
+			throw(_("Please setup Healthcare Practitioner Naming System in Healthcare > Healthcare Settings"))
+		else:
+			if naming_method == 'Naming Series':
+				set_name_by_naming_series(self)
+			elif naming_method == 'Full Name':
+				self.set_practitioner_name()
+				self.name = self.practitioner_name
 
 	def validate(self):
 		self.set_practitioner_name()
