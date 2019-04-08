@@ -21,6 +21,7 @@ class HealthcarePractitioner(Document):
 			[cstr(self.get(f)).strip() for f in ["first_name","middle_name","last_name"]]))
 
 	def validate(self):
+		self.set_practitioner_name()
 		validate_party_accounts(self)
 		if self.inpatient_visit_charge_item:
 			validate_service_item(self.inpatient_visit_charge_item, "Configure a service Item for Inpatient Visit Charge Item")
@@ -40,6 +41,9 @@ class HealthcarePractitioner(Document):
 			if existing_user_id:
 				frappe.permissions.remove_user_permission(
 					"Healthcare Practitioner", self.name, existing_user_id)
+
+	def set_practitioner_name(self):
+		self.practitioner_name = ' '.join(filter(lambda x: x, [self.first_name, self.middle_name, self.last_name]))
 
 	def on_update(self):
 		if self.user_id:
@@ -68,7 +72,7 @@ def validate_service_item(item, msg):
 		frappe.throw(_(msg))
 
 def get_practitioner_list(doctype, txt, searchfield, start, page_len, filters=None):
-	fields = ["name", "first_name", "mobile_phone"]
+	fields = ["name", "practitioner_name", "mobile_phone"]
 	match_conditions = build_match_conditions("Healthcare Practitioner")
 	match_conditions = "and {}".format(match_conditions) if match_conditions else ""
 
