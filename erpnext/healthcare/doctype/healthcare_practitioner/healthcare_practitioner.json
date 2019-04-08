@@ -1023,7 +1023,7 @@
  "issingle": 0,
  "istable": 0,
  "max_attachments": 0,
- "modified": "2019-04-08 21:38:57.470886",
+ "modified": "2019-04-08 22:02:09.676213",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Practitioner",
@@ -1096,7 +1096,7 @@
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "title_field": "first_name",
+ "title_field": "practitioner_name",
  "track_changes": 1,
  "track_seen": 0,
  "track_views": 0
