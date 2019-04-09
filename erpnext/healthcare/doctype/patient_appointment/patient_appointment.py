@@ -455,18 +455,21 @@ def remind_appointment():
 		rem_before = datetime.datetime.strptime(frappe.get_value("Healthcare Settings", None, "rem_before"), "%H:%M:%S")
 		rem_dt = datetime.datetime.now() + datetime.timedelta(
 			hours=rem_before.hour, minutes=rem_before.minute, seconds=rem_before.second)
-
-		appointment_list = frappe.db.sql(
-			"select name from `tabPatient Appointment` where start_dt between %s and %s and reminded = 0 ",
-			(datetime.datetime.now(), rem_dt)
-		)
-
+		query = """
+			select
+				name
+			from
+				`tabPatient Appointment`
+			where
+				convert(concat(convert(appointment_date, char),' ',convert(appointment_time, char)), datetime) between %s and %s
+				and reminded = 0
+			"""
+		appointment_list = frappe.db.sql(query, (datetime.datetime.now(), rem_dt))
 		for i in range(0, len(appointment_list)):
 			doc = frappe.get_doc("Patient Appointment", appointment_list[i][0])
 			message = frappe.db.get_value("Healthcare Settings", None, "app_rem_msg")
 			send_message(doc, message)
 			frappe.db.set_value("Patient Appointment", doc.name, "reminded",1)
-
 
 def send_message(doc, message):
 	patient = frappe.get_doc("Patient", doc.patient)
