@@ -222,7 +222,17 @@ var check_and_set_availability = function(frm) {
 		d.fields_dict["appointment_date"].df.onchange = () => {
 			if(d.get_value('appointment_date') && d.get_value('appointment_date') != selected_appointment_date){
 				selected_appointment_date = d.get_value('appointment_date');
-				show_slots(d, fd);
+				var today = frappe.datetime.nowdate();
+				if(today > selected_appointment_date){
+					frappe.msgprint(__("you cannot book appointments for past date"));
+					d.set_values({
+						"appointment_date": ""
+					});
+				}
+				else
+				{
+					show_slots(d, fd);
+				}
 			}
 			else if(!d.get_value("appointment_date")){
 				selected_appointment_date = '';
@@ -272,7 +282,7 @@ var check_and_set_availability = function(frm) {
 											let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
 											let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
 											let interval = (slot_to_time - slot_start_time)/60000 | 0;
-											//iterate in all booked appointments, update the start time and duration
+											// iterate in all booked appointments, update the start time and duration
 											slot_details[i].appointments.forEach(function(booked) {
 												let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
 												let end_time = booked_moment.clone().add(booked.duration, 'minutes');
@@ -291,7 +301,7 @@ var check_and_set_availability = function(frm) {
 													return false;
 												}
 											});
-											//iterate in all absent events and disable the slots
+											// iterate in all absent events and disable the slots
 											slot_details[i].absent_events.forEach(function(event) {
 												let event_from_time = moment(event.from_time, 'HH:mm:ss');
 												let event_to_time = moment(event.to_time, 'HH:mm:ss');
@@ -303,6 +313,15 @@ var check_and_set_availability = function(frm) {
 													return false;
 												}
 											});
+											var today = frappe.datetime.nowdate();
+				                            if(today == d.get_value('appointment_date')){
+											    // disable before  current  time in current date
+												var curr_time= moment(frappe.datetime.now_time(), 'HH:mm:ss');
+												if(slot_start_time.isBefore(curr_time)){
+													disabled = 'disabled="disabled"';
+													background_color = "#ffd7d7";
+												}
+											}
 											return `<button class="btn btn-default"
 												data-name=${start_str}
 												data-duration=${interval}
@@ -356,6 +375,15 @@ var check_and_set_availability = function(frm) {
 													return false;
 												}
 											});
+											var today = frappe.datetime.nowdate();
+				                            if(today == d.get_value('appointment_date')){
+											    // disable before  current  time in current date
+												var curr_time= moment(frappe.datetime.now_time(), 'HH:mm:ss');
+												if(slot_start_time.isBefore(curr_time)){
+													disabled = 'disabled="disabled"';
+													background_color = "#ffd7d7";
+												}
+											}
 											return `<button class="btn btn-default"
 												data-name=${start_str}
 												data-duration=${interval}
