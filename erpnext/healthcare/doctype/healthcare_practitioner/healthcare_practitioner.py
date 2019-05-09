@@ -48,6 +48,8 @@ class HealthcarePractitioner(Document):
 			if existing_user_id:
 				frappe.permissions.remove_user_permission(
 					"Healthcare Practitioner", self.name, existing_user_id)
+		if self.employee:
+		    self.validate_employee_details()
 
 	def set_practitioner_name(self):
 		self.practitioner_name = ' '.join(filter(lambda x: x, [self.first_name, self.middle_name, self.last_name]))
@@ -56,6 +58,11 @@ class HealthcarePractitioner(Document):
 		if self.user_id:
 			frappe.permissions.add_user_permission("Healthcare Practitioner", self.name, self.user_id)
 
+	def validate_employee_details(self):
+		data = frappe.db.get_value('Employee',
+			self.employee, ['image'], as_dict=1)
+		if data.get("image"):
+			self.image = data.get("image")
 
 	def validate_for_enabled_user_id(self):
 		enabled = frappe.db.get_value("User", self.user_id, "enabled")
