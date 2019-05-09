@@ -300,6 +300,17 @@ var check_and_set_availability = function(frm) {
 													background_color = "#d2d2ff";
 													return false;
 												}
+												else{
+													var today = frappe.datetime.nowdate();
+													if(today == d.get_value('appointment_date')){
+														// disable before  current  time in current date
+														var curr_time= moment(frappe.datetime.now_time(), 'HH:mm:ss');
+														if(slot_start_time.isBefore(curr_time) || ! (curr_time.isBetween(booked_moment ,end_time)) ){
+															disabled = 'disabled="disabled"';
+															background_color = "#FAEBD7";
+														}
+													}
+												}
 											});
 											// iterate in all absent events and disable the slots
 											slot_details[i].absent_events.forEach(function(event) {
@@ -313,15 +324,6 @@ var check_and_set_availability = function(frm) {
 													return false;
 												}
 											});
-											var today = frappe.datetime.nowdate();
-				                            if(today == d.get_value('appointment_date')){
-											    // disable before  current  time in current date
-												var curr_time= moment(frappe.datetime.now_time(), 'HH:mm:ss');
-												if(slot_start_time.isBefore(curr_time)){
-													disabled = 'disabled="disabled"';
-													background_color = "#ffd7d7";
-												}
-											}
 											return `<button class="btn btn-default"
 												data-name=${start_str}
 												data-duration=${interval}
@@ -362,6 +364,17 @@ var check_and_set_availability = function(frm) {
 													background_color = "#d2d2ff";
 													return false;
 												}
+												else{
+													var today = frappe.datetime.nowdate();
+													if(today == d.get_value('appointment_date')){
+														// disable before  current  time in current date
+														var curr_time= moment(frappe.datetime.now_time(), 'HH:mm:ss');
+														if(slot_start_time.isBefore(curr_time)){
+															disabled = 'disabled="disabled"';
+															background_color = "#FAEBD7";
+														}
+													}
+												}
 											});
 											//iterate in all absent events and disable the slots
 											present_events[i].absent_events.forEach(function(event) {
@@ -375,15 +388,6 @@ var check_and_set_availability = function(frm) {
 													return false;
 												}
 											});
-											var today = frappe.datetime.nowdate();
-				                            if(today == d.get_value('appointment_date')){
-											    // disable before  current  time in current date
-												var curr_time= moment(frappe.datetime.now_time(), 'HH:mm:ss');
-												if(slot_start_time.isBefore(curr_time)){
-													disabled = 'disabled="disabled"';
-													background_color = "#ffd7d7";
-												}
-											}
 											return `<button class="btn btn-default"
 												data-name=${start_str}
 												data-duration=${interval}
