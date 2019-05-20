@@ -338,6 +338,8 @@ def get_availability_data(date, practitioner):
 				or
 				(repeat_this_event != 1 and (from_date<=%(date)s and to_date>=%(date)s))
 			)
+		order by
+			from_date, from_time
 	""".format(),{"practitioner":practitioner, "date":getdate(date)}, as_dict=True)
 
 	present_events_details = []
