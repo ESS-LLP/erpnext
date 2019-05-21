@@ -271,68 +271,62 @@ var check_and_set_availability = function(frm) {
 								var slot_details = data.slot_details;
 								var slot_html = "";
 								var have_atleast_one_schedule = false;
+								var have_atleast_one_schedule_for_service_unit = false;
 								for (let i = 0; i < slot_details.length; i++) {
 									if(slot_details[i].appointment_type == d.get_value("appointment_type") || slot_details[i].appointment_type == null){
 										have_atleast_one_schedule = true;
-										slot_html = slot_html + `<label>${slot_details[i].slot_name}</label>`;
-										slot_html = slot_html + `<br/>` + slot_details[i].avail_slot.map(slot => {
-											let disabled = '';
-											let background_color = "#cef6d1";
-											let start_str = slot.from_time;
-											let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
-											let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
-											let interval = (slot_to_time - slot_start_time)/60000 | 0;
-											//checking current time in solt
-											var today = frappe.datetime.nowdate();
-											if(today == d.get_value('appointment_date')){
-												// disable before  current  time in current date
-												var curr_time= moment(frappe.datetime.now_time(), 'HH:mm:ss');
-												if(slot_start_time.isBefore(curr_time)){
-													disabled = 'disabled="disabled"';
-													background_color = "#FAEBD7";
-												}
-											}
-											// iterate in all booked appointments, update the start time and duration
-											slot_details[i].appointments.forEach(function(booked) {
-												let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
-												let end_time = booked_moment.clone().add(booked.duration, 'minutes');
-												if(slot_details[i].fixed_duration != 1){
-													if(end_time.isSame(slot_start_time) || end_time.isBetween(slot_start_time, slot_to_time)){
-														start_str = end_time.format("HH:mm")+":00";
-														interval = (slot_to_time - end_time)/60000 | 0;
+										if((frm.doc.service_unit && frm.doc.service_unit == slot_details[i].service_unit) || (!frm.doc.service_unit)){
+											have_atleast_one_schedule_for_service_unit = true;
+											slot_html = slot_html + `<label>${slot_details[i].slot_name}</label>`;
+											slot_html = slot_html + `<br/>` + slot_details[i].avail_slot.map(slot => {
+												let disabled = '';
+												let background_color = "#cef6d1";
+												let start_str = slot.from_time;
+												let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
+												let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
+												let interval = (slot_to_time - slot_start_time)/60000 | 0;
+												//iterate in all booked appointments, update the start time and duration
+												slot_details[i].appointments.forEach(function(booked) {
+													let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
+													let end_time = booked_moment.clone().add(booked.duration, 'minutes');
+													if(slot_details[i].fixed_duration != 1){
+														if(end_time.isSame(slot_start_time) || end_time.isBetween(slot_start_time, slot_to_time)){
+															start_str = end_time.format("HH:mm")+":00";
+															interval = (slot_to_time - end_time)/60000 | 0;
+															return false;
+														}
+													}
+													// Check for overlaps considering appointment duration
+													if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
+														// There is an overlap
+														disabled = 'disabled="disabled"';
+														background_color = "#d2d2ff";
 														return false;
 													}
-												}
-												// Check for overlaps considering appointment duration
-												if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
-													// There is an overlap
-													disabled = 'disabled="disabled"';
-													background_color = "#d2d2ff";
-													return false;
-												}
-											});
-											// iterate in all absent events and disable the slots
-											slot_details[i].absent_events.forEach(function(event) {
-												let event_from_time = moment(event.from_time, 'HH:mm:ss');
-												let event_to_time = moment(event.to_time, 'HH:mm:ss');
-												// Check for overlaps considering event start and end time
-												if(slot_start_time.isBefore(event_to_time) && slot_to_time.isAfter(event_from_time)){
-													// There is an overlap
-													disabled = 'disabled="disabled"';
-													background_color = "#ffd7d7";
-													return false;
-												}
-											});
-											return `<button class="btn btn-default"
+												});
+												//iterate in all absent events and disable the slots
+												slot_details[i].absent_events.forEach(function(event) {
+													let event_from_time = moment(event.from_time, 'HH:mm:ss');
+													let event_to_time = moment(event.to_time, 'HH:mm:ss');
+													// Check for overlaps considering event start and end time
+													if(slot_start_time.isBefore(event_to_time) && slot_to_time.isAfter(event_from_time)){
+														// There is an overlap
+														disabled = 'disabled="disabled"';
+														background_color = "#ffd7d7";
+														return false;
+													}
+												});
+												return `<button class="btn btn-default"
 												data-name=${start_str}
 												data-duration=${interval}
 												data-service-unit="${slot_details[i].service_unit || ''}"
 												flag-fixed-duration=${slot_details[i].fixed_duration || 0}
 												style="margin: 0 10px 10px 0; width: 72px; background-color:${background_color};" ${disabled}>
 												${start_str.substring(0, start_str.length - 3)}
-											</button>`;
-										}).join("");
-										slot_html = slot_html + `<br/>`;
+												</button>`;
+											}).join("");
+											slot_html = slot_html + `<br/>`;
+										}
 									}
 								}
 
@@ -344,59 +338,56 @@ var check_and_set_availability = function(frm) {
 									slot_html = slot_html + `<br/>`;
 									var present_events = data.present_events
 									for (let i = 0; i < present_events.length; i++) {
-										slot_html = slot_html + `<label>${present_events[i].slot_name}</label>`;
-										slot_html = slot_html + `<br/>` + present_events[i].avail_slot.map(slot => {
-											let disabled = '';
-											let background_color = "#cef6d1";
-											let start_str = slot.from_time;
-											let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
-											let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
-											let interval = (slot_to_time - slot_start_time)/60000 | 0;
-											//checking current time in solt
-											var today = frappe.datetime.nowdate();
-											if(today == d.get_value('appointment_date')){
-												// disable before  current  time in current date
-												var curr_time= moment(frappe.datetime.now_time(), 'HH:mm:ss');
-												if(slot_start_time.isBefore(curr_time)){
-													disabled = 'disabled="disabled"';
-													background_color = "#FAEBD7";
-												}
-											}
-											//iterate in all booked appointments, update the start time and duration
-											present_events[i].appointments.forEach(function(booked) {
-												let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
-												let end_time = booked_moment.clone().add(booked.duration, 'minutes');
-												// Check for overlaps considering appointment duration
-												if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
-													// There is an overlap
-													disabled = 'disabled="disabled"';
-													background_color = "#d2d2ff";
-													return false;
-												}
-											});
-											//iterate in all absent events and disable the slots
-											present_events[i].absent_events.forEach(function(event) {
-												let event_from_time = moment(event.from_time, 'HH:mm:ss');
-												let event_to_time = moment(event.to_time, 'HH:mm:ss');
-												// Check for overlaps considering event start and end time
-												if(slot_start_time.isBefore(event_to_time) && slot_to_time.isAfter(event_from_time)){
-													// There is an overlap
-													disabled = 'disabled="disabled"';
-													background_color = "#ffd7d7";
-													return false;
-												}
-											});
-											return `<button class="btn btn-default"
-												data-name=${start_str}
-												data-duration=${interval}
-												data-service-unit="${present_events[i].service_unit || ''}"
-												flag-fixed-duration=${1}
-												style="margin: 0 10px 10px 0; width: 72px; background-color:${background_color};" ${disabled}>
-												${start_str.substring(0, start_str.length - 3)}
-											</button>`;
-										}).join("");
-										slot_html = slot_html + `<br/>`;
+										if((frm.doc.service_unit && frm.doc.service_unit == present_events[i].service_unit) || (!frm.doc.service_unit)){
+											have_atleast_one_schedule_for_service_unit = true;
+											slot_html = slot_html + `<label>${present_events[i].slot_name}</label>`;
+											slot_html = slot_html + `<br/>` + present_events[i].avail_slot.map(slot => {
+												let disabled = '';
+												let background_color = "#cef6d1";
+												let start_str = slot.from_time;
+												let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
+												let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
+												let interval = (slot_to_time - slot_start_time)/60000 | 0;
+												//iterate in all booked appointments, update the start time and duration
+												present_events[i].appointments.forEach(function(booked) {
+													let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
+													let end_time = booked_moment.clone().add(booked.duration, 'minutes');
+													// Check for overlaps considering appointment duration
+													if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
+														// There is an overlap
+														disabled = 'disabled="disabled"';
+														background_color = "#d2d2ff";
+														return false;
+													}
+												});
+												//iterate in all absent events and disable the slots
+												present_events[i].absent_events.forEach(function(event) {
+													let event_from_time = moment(event.from_time, 'HH:mm:ss');
+													let event_to_time = moment(event.to_time, 'HH:mm:ss');
+													// Check for overlaps considering event start and end time
+													if(slot_start_time.isBefore(event_to_time) && slot_to_time.isAfter(event_from_time)){
+														// There is an overlap
+														disabled = 'disabled="disabled"';
+														background_color = "#ffd7d7";
+														return false;
+													}
+												});
+												return `<button class="btn btn-default"
+													data-name=${start_str}
+													data-duration=${interval}
+													data-service-unit="${present_events[i].service_unit || ''}"
+													flag-fixed-duration=${1}
+													style="margin: 0 10px 10px 0; width: 72px; background-color:${background_color};" ${disabled}>
+													${start_str.substring(0, start_str.length - 3)}
+												</button>`;
+											}).join("");
+											slot_html = slot_html + `<br/>`;
+										}
 									}
+								}
+
+								if(frm.doc.service_unit && (have_atleast_one_schedule || data.present_events) && !have_atleast_one_schedule_for_service_unit){
+									slot_html = __("There are no schedules for service_unit {0}", [frm.doc.service_unit||'']).bold();
 								}
 
 								$wrapper
