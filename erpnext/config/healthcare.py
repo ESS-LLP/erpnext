@@ -41,6 +41,11 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Radiology Examination",
+					"label": _("Radiology Examination"),
+				},
+				{
+					"type": "doctype",
 					"name": "Inpatient Record",
 					"label": _("Inpatient Record"),
 				},
@@ -192,6 +197,16 @@ def get_data():
 					"type": "doctype",
 					"name": "Clinical Procedure Check List Template",
 					"label": _("Clinical Procedure Check List Template"),
+				},
+				{
+					"type": "doctype",
+					"name": "Modality Type",
+					"label": _("Modality Type")
+				},
+				{
+					"type": "doctype",
+					"name": "Radiology Procedure",
+					"label": _("Radiology Procedure")
 				}
 			]
 		}
