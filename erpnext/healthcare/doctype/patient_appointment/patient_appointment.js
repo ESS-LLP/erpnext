@@ -25,7 +25,8 @@ frappe.ui.form.on('Patient Appointment', {
 			return {
 				filters: {
 					"is_group": false,
-					"allow_appointments": true
+					"allow_appointments": true,
+					"modality_type": frm.doc.modality_type || ''
 				}
 			};
 		});
@@ -107,7 +108,16 @@ frappe.ui.form.on('Patient Appointment', {
 	},
 	check_availability: function(frm) {
 		if(frm.doc.patient){
-			check_and_set_availability(frm);
+			if(frm.doc.radiology_procedure && !frm.doc.service_unit){
+				frappe.msgprint({
+					title: __('Missing Fields'),
+					message: __("Service Unit is Mandatory"),
+					indicator: 'red'
+				});
+			}
+			else{
+				check_and_set_availability(frm);
+			}
 		}
 		else{
 			frappe.msgprint({
@@ -125,6 +135,15 @@ frappe.ui.form.on('Patient Appointment', {
 	},
 	get_procedure_from_encounter: function(frm) {
 		get_procedure_prescribed(frm);
+	},
+	radiology_procedure: function(frm) {
+		if(frm.doc.radiology_procedure){
+			frm.set_df_property("service_unit", "reqd", true);
+		}
+		else{
+			frm.set_df_property("service_unit", "reqd", false);
+			frm.set_value("modality_type", '');
+		}
 	}
 });
 
@@ -387,7 +406,7 @@ var check_and_set_availability = function(frm) {
 								}
 
 								if(frm.doc.service_unit && (have_atleast_one_schedule || data.present_events) && !have_atleast_one_schedule_for_service_unit){
-									slot_html = __("There are no schedules for service_unit {0}", [frm.doc.service_unit||'']).bold();
+									slot_html = __("There are no schedules for service unit {0}", [frm.doc.service_unit||'']).bold();
 								}
 
 								$wrapper
