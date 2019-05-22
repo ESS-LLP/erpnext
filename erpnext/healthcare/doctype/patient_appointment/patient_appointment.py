@@ -22,7 +22,9 @@ class PatientAppointment(Document):
 		# If appointment created for today set as open
 		if today == appointment_date:
 			frappe.db.set_value("Patient Appointment", self.name, "status", "Open")
-			self.reload()
+		elif today < appointment_date:
+			frappe.db.set_value("Patient Appointment", self.name, "status", "Scheduled")
+		self.reload()
 
 	def validate(self):
 		end_time = datetime.datetime.combine(getdate(self.appointment_date), get_time(self.appointment_time)) + datetime.timedelta(minutes=float(self.duration))
