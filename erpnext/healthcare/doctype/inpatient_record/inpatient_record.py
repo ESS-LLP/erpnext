@@ -57,6 +57,24 @@ class InpatientRecord(Document):
 			self.save(ignore_permissions = True)
 			frappe.db.set_value("Patient", self.patient, "inpatient_status", "Admitted")
 
+	def get_inpatient_invoice_details(self):
+		sales_invoice_list = []
+		group_wise_item_total = {}
+		group_wise_item_dict = {}
+		for si in frappe.get_list('Sales Invoice', {'inpatient_record': self.name, 'docstatus': 1}):
+			si_obj = frappe.get_doc("Sales Invoice", si.name)
+			sales_invoice_list.append(si_obj)
+			for item in si_obj.items:
+				item_group = frappe.get_value("Item", item.item_code, "item_group")
+				if not item_group in group_wise_item_dict:
+					group_wise_item_dict[item_group] = [item]
+					group_wise_item_total[item_group] = {"amount": item.amount}
+				else:
+					group_wise_item_dict[item_group].append(item)
+					data = group_wise_item_total[item_group]
+					group_wise_item_total[item_group] = {"amount": data['amount']+item.amount}
+		return sales_invoice_list, group_wise_item_dict, group_wise_item_total
+
 @frappe.whitelist()
 def schedule_inpatient(args):
 	dialog = json.loads(args)
