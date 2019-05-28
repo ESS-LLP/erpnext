@@ -36,6 +36,10 @@ data = {
 				'insert_after': 'patient', 'read_only': True
 			},
 			{
+				'fieldname': 'inpatient_record', 'label': 'Inpatient Record', 'fieldtype': 'Link', 'fetch_from': 'patient.inpatient_record',
+				'insert_after': 'patient_name', 'read_only': True, 'fetch_if_empty': True, 'options': 'Inpatient Record'
+			},
+			{
 				'fieldname': 'ref_practitioner', 'label': 'Referring Practitioner', 'fieldtype': 'Link', 'options': 'Healthcare Practitioner',
 				'insert_after': 'customer'
 			}
