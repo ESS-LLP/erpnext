@@ -95,12 +95,18 @@ frappe.ui.form.on('Patient Appointment', {
 			if(r.manage_appointment_invoice_automatically == 1){
 				frm.set_df_property("mode_of_payment", "hidden", 0);
 				frm.set_df_property("paid_amount", "hidden", 0);
+				frm.set_df_property("apply_discount_on", "hidden", 0);
+				frm.set_df_property("discount_by", "hidden", 0);
+				frm.set_df_property("discount_value", "hidden", 0);
 				frm.set_df_property("mode_of_payment", "reqd", 1);
 				frm.set_df_property("paid_amount", "reqd", 1);
 			}
 			else{
 				frm.set_df_property("mode_of_payment", "hidden", 1);
 				frm.set_df_property("paid_amount", "hidden", 1);
+				frm.set_df_property("apply_discount_on", "hidden", 1);
+				frm.set_df_property("discount_by", "hidden", 1);
+				frm.set_df_property("discount_value", "hidden", 1);
 				frm.set_df_property("mode_of_payment", "reqd", 0);
 				frm.set_df_property("paid_amount", "reqd", 0);
 			}

@@ -84,6 +84,12 @@ def invoice_appointment(appointment_doc):
 	sales_invoice.is_pos = True
 	sales_invoice.company = appointment_doc.company
 	sales_invoice.debit_to = get_receivable_account(appointment_doc.company)
+	if appointment_doc.discount_value and appointment_doc.discount_value > 0:
+		sales_invoice.apply_discount_on = appointment_doc.apply_discount_on
+		if appointment_doc.discount_by == "Fixed Amount":
+			sales_invoice.discount_amount = appointment_doc.discount_value
+		elif appointment_doc.discount_by == "Percentage":
+			sales_invoice.additional_discount_percentage = appointment_doc.discount_value
 
 	item_line = sales_invoice.append("items")
 	service_item, practitioner_charge = service_item_and_practitioner_charge(appointment_doc)
