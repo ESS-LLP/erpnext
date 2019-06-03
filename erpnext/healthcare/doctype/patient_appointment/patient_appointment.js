@@ -90,20 +90,30 @@ frappe.ui.form.on('Patient Appointment', {
 		}
 		frm.set_df_property("get_procedure_from_encounter", "read_only", frm.doc.__islocal ? 0 : 1);
 		frm.set_df_property("service_unit", "read_only", frm.doc.__islocal ? 0 : 1);
-		frm.set_df_property("procedure_template", "read_only", frm.doc.__islocal ? 0 : 1);
+		frm.set_df_property("radiology_procedure", "read_only", frm.doc.__islocal ? 0 : 1);
+		frm.set_df_property("mode_of_payment", "read_only", frm.doc.__islocal ? 0 : 1);
+		frm.set_df_property("paid_amount", "read_only", frm.doc.__islocal ? 0 : 1);
+		frm.set_df_property("apply_discount_on", "read_only", frm.doc.__islocal ? 0 : 1);
+		frm.set_df_property("discount_by", "read_only", frm.doc.__islocal ? 0 : 1);
+		frm.set_df_property("discount_value", "read_only", frm.doc.__islocal ? 0 : 1);
 		frappe.db.get_value('Healthcare Settings', {name: 'Healthcare Settings'}, 'manage_appointment_invoice_automatically', (r) => {
 			if(r.manage_appointment_invoice_automatically == 1){
 				frm.set_df_property("mode_of_payment", "hidden", 0);
 				frm.set_df_property("paid_amount", "hidden", 0);
+				frm.set_df_property("outstanding_amount", "hidden", 0);
+				frm.set_df_property("make_payment", "hidden", 0);
 				frm.set_df_property("apply_discount_on", "hidden", 0);
 				frm.set_df_property("discount_by", "hidden", 0);
 				frm.set_df_property("discount_value", "hidden", 0);
 				frm.set_df_property("mode_of_payment", "reqd", 1);
 				frm.set_df_property("paid_amount", "reqd", 1);
+				set_outstanding_amount(frm);
 			}
 			else{
 				frm.set_df_property("mode_of_payment", "hidden", 1);
 				frm.set_df_property("paid_amount", "hidden", 1);
+				frm.set_df_property("outstanding_amount", "hidden", 1);
+				frm.set_df_property("make_payment", "hidden", 1);
 				frm.set_df_property("apply_discount_on", "hidden", 1);
 				frm.set_df_property("discount_by", "hidden", 1);
 				frm.set_df_property("discount_value", "hidden", 1);
@@ -150,8 +160,45 @@ frappe.ui.form.on('Patient Appointment', {
 			frm.set_df_property("service_unit", "reqd", false);
 			frm.set_value("modality_type", '');
 		}
+	},
+	make_payment: function(frm) {
+		if(frm.doc.outstanding_amount && frm.doc.outstanding_amount > 0 && frm.doc.sales_invoice_id){
+			frappe.call({
+				method: "erpnext.accounts.doctype.payment_entry.payment_entry.get_payment_entry",
+				args: {
+					"dt": "Sales Invoice",
+					"dn": frm.doc.sales_invoice_id
+				},
+				callback: function(r) {
+					var doclist = frappe.model.sync(r.message);
+					frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+				}
+			});
+		}
 	}
 });
+
+var set_outstanding_amount = function(frm) {
+	if(frm.doc.invoiced == 1){
+		frappe.call({
+			method: "erpnext.healthcare.utils.get_sales_invoice_for_healthcare_doc",
+			args:{
+				doctype: "Patient Appointment",
+				docname: frm.doc.name
+			},
+			callback: function(r) {
+				if(r.message && r.message.outstanding_amount && r.message.outstanding_amount > 0){
+					frm.set_value("outstanding_amount", r.message.outstanding_amount);
+					frm.set_value("sales_invoice_id", r.message.name);
+				}
+				else{
+					frm.set_value("outstanding_amount", 0);
+					frm.set_value("sales_invoice_id", "");
+				}
+			}
+		});
+	}
+}
 
 var check_and_set_availability = function(frm) {
 	var selected_slot = null;
@@ -617,7 +664,9 @@ frappe.ui.form.on("Patient Appointment", "practitioner", function(frm) {
 			},
 			callback: function (data) {
 				frappe.model.set_value(frm.doctype,frm.docname, "department",data.message.department);
-				frappe.model.set_value(frm.doctype,frm.docname, "paid_amount",data.message.op_consulting_charge);
+				if(!frm.doc.paid_amount || (frm.doc.paid_amount > data.message.op_consulting_charge)){
+					frappe.model.set_value(frm.doctype,frm.docname, "paid_amount",data.message.op_consulting_charge);
+				}
 			}
 		});
 	}
