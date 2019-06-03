@@ -642,3 +642,19 @@ def on_trash_doc_having_item_reference(doc):
 			frappe.delete_doc("Item",doc.item)
 		except Exception:
 			frappe.throw(_("Not permitted. Please disable the {0}").format(doc.doctype))
+
+def exist_invoice_item_for_healthcare_doc(doctype, docname):
+	return frappe.db.exists(
+		"Sales Invoice Item",
+		{
+			"reference_dt": doctype,
+			"reference_dn": docname
+		}
+	)
+
+@frappe.whitelist()
+def get_sales_invoice_for_healthcare_doc(doctype, docname):
+	sales_item_exist = exist_invoice_item_for_healthcare_doc(doctype, docname)
+	if sales_item_exist:
+		return frappe.get_doc("Sales Invoice", frappe.db.get_value("Sales Invoice Item", sales_item_exist, "parent"))
+	return False
