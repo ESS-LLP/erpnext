@@ -82,6 +82,9 @@ def invoice_appointment(appointment_doc):
 	sales_invoice.appointment = appointment_doc.name
 	sales_invoice.due_date = getdate()
 	sales_invoice.is_pos = True
+	from erpnext.stock.get_item_details import get_pos_profile
+	pos_profile = get_pos_profile(appointment_doc.company)
+	sales_invoice.pos_profile = pos_profile.name
 	sales_invoice.company = appointment_doc.company
 	sales_invoice.debit_to = get_receivable_account(appointment_doc.company, appointment_doc.patient)
 	if appointment_doc.discount_value and appointment_doc.discount_value > 0:
