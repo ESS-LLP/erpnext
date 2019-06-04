@@ -50,11 +50,15 @@ def send_registration_sms(doc):
             frappe.msgprint(doc.name + " Has no mobile number to send registration SMS", alert=True)
 
 
-def get_receivable_account(company):
-    receivable_account = get_account(None, "receivable_account", "Healthcare Settings", company)
-    if receivable_account:
-        return receivable_account
-    return frappe.get_cached_value('Company',  company,  "default_receivable_account")
+def get_receivable_account(company, patient=None):
+	receivable_account = False
+	if patient:
+		receivable_account = get_account("Patient", None, patient, company)
+	if not receivable_account:
+		receivable_account = get_account(None, "receivable_account", "Healthcare Settings", company)
+	if receivable_account:
+		return receivable_account
+	return frappe.get_cached_value('Company',  company,  "default_receivable_account")
 
 def get_income_account(practitioner, company):
     if(practitioner):

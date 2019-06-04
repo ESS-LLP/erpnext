@@ -83,7 +83,7 @@ def invoice_appointment(appointment_doc):
 	sales_invoice.due_date = getdate()
 	sales_invoice.is_pos = True
 	sales_invoice.company = appointment_doc.company
-	sales_invoice.debit_to = get_receivable_account(appointment_doc.company)
+	sales_invoice.debit_to = get_receivable_account(appointment_doc.company, appointment_doc.patient)
 	if appointment_doc.discount_value and appointment_doc.discount_value > 0:
 		sales_invoice.apply_discount_on = appointment_doc.apply_discount_on
 		if appointment_doc.discount_by == "Fixed Amount":
