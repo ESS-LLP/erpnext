@@ -10,6 +10,16 @@ frappe.ui.form.on('Patient', {
 				]
 			};
 		});
+		frm.set_query('account', 'receivable_account', function(doc, cdt, cdn) {
+			var d  = locals[cdt][cdn];
+			return {
+				filters: {
+					'account_type': 'Receivable',
+					'company': d.company,
+					'is_group': 0
+				}
+			};
+		});
 		if (frappe.defaults.get_default("patient_master_name") != "Naming Series") {
 			frm.toggle_display("naming_series", false);
 		} else {

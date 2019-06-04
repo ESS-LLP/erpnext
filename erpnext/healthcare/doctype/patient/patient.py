@@ -94,7 +94,7 @@ def make_invoice(patient, company):
 	sales_invoice.due_date = getdate()
 	sales_invoice.company = company
 	sales_invoice.is_pos = '0'
-	sales_invoice.debit_to = get_receivable_account(company)
+	sales_invoice.debit_to = get_receivable_account(company, patient)
 
 	item_line = sales_invoice.append("items")
 	item_line.item_name = "Registeration Fee"
