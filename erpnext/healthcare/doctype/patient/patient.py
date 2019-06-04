@@ -23,6 +23,7 @@ class Patient(Document):
 
 	def on_update(self):
 		self.add_as_website_user()
+		self.update_customer()
 
 	def add_as_website_user(self):
 		if(self.email):
@@ -35,6 +36,16 @@ class Patient(Document):
 				})
 				user.flags.ignore_permissions = True
 				user.add_roles("Patient")
+
+	def update_customer(self):
+		if self.customer:
+			customer = frappe.get_doc("Customer", self.customer)
+			customer.set("accounts", [])
+			for receivable_account in self.receivable_account:
+				account_line = customer.append("accounts")
+				account_line.company = receivable_account.company
+				account_line.account = receivable_account.account
+			customer.save(ignore_permissions=True)
 
 	def autoname(self):
 		patient_master_name = frappe.defaults.get_global_default('patient_master_name')
