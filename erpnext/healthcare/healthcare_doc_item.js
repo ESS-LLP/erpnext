@@ -20,7 +20,7 @@ var item_action_buttons = function(frm) {
 var enable_disable_template = function(frm, disabled){
 	frappe.call({
 		method: "erpnext.healthcare.utils.disable_enable_template",
-		args: {doctype: "Radiology Procedure", docname: frm.doc.name, 'item_code': frm.doc.item || frm.doc.item_code, disabled: disabled},
+		args: {doctype: frm.doc.doctype, docname: frm.doc.name, 'item_code': frm.doc.item || frm.doc.item_code, disabled: disabled},
 		callback: function(){
 			frm.reload_doc();
 		}
