@@ -5,12 +5,12 @@ var item_action_buttons = function(frm) {
 			change_item_code(frm);
 		} );
 		if(frm.doc.disabled == 1){
-			frm.add_custom_button(__('Enable Template'), function() {
+			frm.add_custom_button(__('Enable'), function() {
 				enable_disable_template(frm, 0);
 			} );
 		}
 		else{
-			frm.add_custom_button(__('Disable Template'), function() {
+			frm.add_custom_button(__('Disable'), function() {
 				enable_disable_template(frm, 1);
 			} );
 		}
