@@ -99,7 +99,8 @@ frappe.ui.form.on('Patient Appointment', {
 		frappe.db.get_value('Healthcare Settings', {name: 'Healthcare Settings'}, 'manage_appointment_invoice_automatically', (r) => {
 			if(r.manage_appointment_invoice_automatically == 1){
 				frm.set_df_property("mode_of_payment", "hidden", 0);
-				frm.set_df_property("paid_amount", "hidden", 0);
+				frm.set_df_property("paid_amount", "hidden", frm.doc.__islocal ? 0 : 1);
+				frm.set_df_property("invoice_paid_amount", "hidden", 0);
 				frm.set_df_property("outstanding_amount", "hidden", 0);
 				frm.set_df_property("make_payment", "hidden", 0);
 				frm.set_df_property("apply_discount_on", "hidden", 0);
@@ -112,6 +113,7 @@ frappe.ui.form.on('Patient Appointment', {
 			else{
 				frm.set_df_property("mode_of_payment", "hidden", 1);
 				frm.set_df_property("paid_amount", "hidden", 1);
+				frm.set_df_property("invoice_paid_amount", "hidden", 1);
 				frm.set_df_property("outstanding_amount", "hidden", 1);
 				frm.set_df_property("make_payment", "hidden", 1);
 				frm.set_df_property("apply_discount_on", "hidden", 1);
@@ -187,9 +189,16 @@ var set_outstanding_amount = function(frm) {
 				docname: frm.doc.name
 			},
 			callback: function(r) {
-				if(r.message && r.message.outstanding_amount && r.message.outstanding_amount > 0){
-					frm.set_value("outstanding_amount", r.message.outstanding_amount);
+				if(r.message){
 					frm.set_value("sales_invoice_id", r.message.name);
+					if(r.message.outstanding_amount && r.message.outstanding_amount > 0){
+						frm.set_value("invoice_paid_amount", r.message.paid_amount);
+						frm.set_value("outstanding_amount", r.message.outstanding_amount);
+					}
+					else{
+						frm.set_value("invoice_paid_amount", r.message.rounded_total);
+						frm.set_value("outstanding_amount", 0);
+					}
 				}
 				else{
 					frm.set_value("outstanding_amount", 0);
