@@ -674,6 +674,7 @@ frappe.ui.form.on("Patient Appointment", "practitioner", function(frm) {
 			callback: function (data) {
 				frappe.model.set_value(frm.doctype,frm.docname, "department",data.message.department);
 				if(!frm.doc.paid_amount || (frm.doc.paid_amount > data.message.op_consulting_charge)){
+					frm.set_value("paid_amount", data.message.op_consulting_charge)
 					frappe.model.set_value(frm.doctype,frm.docname, "paid_amount",data.message.op_consulting_charge);
 				}
 			}
