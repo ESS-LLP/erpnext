@@ -78,8 +78,11 @@ def invoice_appointment(appointment_doc):
 	if not appointment_doc.name:
 		return False
 	sales_invoice = frappe.new_doc("Sales Invoice")
+	sales_invoice.patient = appointment_doc.patient
+	sales_invoice.patient_name = appointment_doc.patient_name
 	sales_invoice.customer = frappe.get_value("Patient", appointment_doc.patient, "customer")
 	sales_invoice.appointment = appointment_doc.name
+	sales_invoice.ref_practitioner = appointment_doc.referring_practitioner
 	sales_invoice.due_date = getdate()
 	sales_invoice.is_pos = True
 	from erpnext.stock.get_item_details import get_pos_profile
