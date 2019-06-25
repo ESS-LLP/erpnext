@@ -1008,9 +1008,9 @@ var get_checked_values= function($results) {
 	return $results.find('.list-item-container').map(function() {
 		let checked_values = {};
 		if ($(this).find('.list-row-check:checkbox:checked').length > 0 ) {
-			checked_values['dn'] = $(this).attr('data-dn');
-			checked_values['dt'] = $(this).attr('data-dt');
-			checked_values['item'] = $(this).attr('data-item');
+			checked_values['reference_dn'] = $(this).attr('data-dn');
+			checked_values['reference_dt'] = $(this).attr('data-dt');
+			checked_values['item_code'] = $(this).attr('data-item');
 			if($(this).attr('data-rate') != 'undefined'){
 				checked_values['rate'] = $(this).attr('data-rate');
 			}
