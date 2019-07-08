@@ -1,0 +1,32 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) 2019, Frappe Technologies Pvt. Ltd. and contributors
+# For license information, please see license.txt
+
+from __future__ import unicode_literals
+import frappe
+from frappe import _
+from frappe.model.document import Document
+from frappe.contacts.address_and_contact import load_address_and_contact
+
+class InsuranceCompany(Document):
+	def after_insert(self):
+		create_customer(self)
+		self.reload()
+	def	onload(self):
+		load_address_and_contact(self)
+
+def create_customer(doc):
+	customer_group = frappe.get_value("Selling Settings", None, "customer_group")
+	territory = frappe.get_value("Selling Settings", None, "territory")
+	if not (customer_group and territory):
+		customer_group = "Commercial"
+		territory = "Rest Of The World"
+		frappe.msgprint(_("Please set default customer group and territory in Selling Settings"), alert=True)
+	customer = frappe.get_doc({"doctype": "Customer",
+	"customer_name": doc.insurance_company_name,
+	"customer_group": customer_group,
+	"territory" : territory,
+	"customer_type": "Individual"
+	}).insert(ignore_permissions=True)
+	frappe.db.set_value("Insurance Company", doc.name, "customer", customer.name)
+	frappe.msgprint(_("Customer {0} is created.").format(customer.name), alert=True)
