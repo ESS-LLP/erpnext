@@ -1138,10 +1138,10 @@ var add_to_item_line = function(frm, checked_values, invoice_healthcare_services
 	else{
 		for(let i=0; i<checked_values.length; i++){
 			var si_item = frappe.model.add_child(frm.doc, 'Sales Invoice Item', 'items');
-			frappe.model.set_value(si_item.doctype, si_item.name, 'item_code', checked_values[i]['item']);
+			frappe.model.set_value(si_item.doctype, si_item.name, 'item_code', checked_values[i]['item_code']);
 			frappe.model.set_value(si_item.doctype, si_item.name, 'qty', 1);
-			frappe.model.set_value(si_item.doctype, si_item.name, 'reference_dt', checked_values[i]['dt']);
-			frappe.model.set_value(si_item.doctype, si_item.name, 'reference_dn', checked_values[i]['dn']);
+			frappe.model.set_value(si_item.doctype, si_item.name, 'reference_dt', checked_values[i]['reference_dt']);
+			frappe.model.set_value(si_item.doctype, si_item.name, 'reference_dn', checked_values[i]['reference_dn']);
 			if(checked_values[i]['qty'] > 1){
 				frappe.model.set_value(si_item.doctype, si_item.name, 'qty', parseFloat(checked_values[i]['qty']));
 			}
