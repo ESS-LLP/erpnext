@@ -363,6 +363,17 @@ def manage_doc_for_appoitnment(dt_from_appointment, appointment, invoiced):
 	if dn_from_appointment:
 		frappe.db.set_value(dt_from_appointment, dn_from_appointment, "invoiced", invoiced)
 
+def get_doc_for_appointment(doctype, appointment_id):
+	docname = frappe.db.exists(
+		doctype,
+		{
+			"appointment": appointment_id,
+		}
+	)
+	if docname:
+		return frappe.get_doc(doctype, docname)
+	return False
+
 @frappe.whitelist()
 def get_drugs_to_invoice(encounter):
 	encounter = frappe.get_doc("Patient Encounter", encounter)
