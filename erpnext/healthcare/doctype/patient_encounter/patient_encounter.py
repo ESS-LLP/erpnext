@@ -9,8 +9,8 @@ from frappe.utils import cstr
 
 class PatientEncounter(Document):
 	def on_update(self):
-		if(self.appointment):
-			frappe.db.set_value("Patient Appointment", self.appointment, "status", "Closed")
+		if self.appointment and self.docstatus == 0:
+			frappe.db.set_value("Patient Appointment", self.appointment, "status", "In Progress")
 		update_encounter_to_medical_record(self)
 
 	def after_insert(self):
@@ -20,6 +20,9 @@ class PatientEncounter(Document):
 		if(self.appointment):
 			frappe.db.set_value("Patient Appointment", self.appointment, "status", "Open")
 		delete_medical_record(self)
+
+	def on_submit(self):
+		frappe.db.set_value("Patient Appointment", self.appointment, "status", "Closed")
 
 def insert_encounter_to_medical_record(doc):
 	subject = set_subject_field(doc)

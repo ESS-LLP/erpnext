@@ -35,8 +35,8 @@ class ClinicalProcedure(Document):
 	def after_insert(self):
 		if self.prescription:
 			frappe.db.set_value("Procedure Prescription", self.prescription, "procedure_created", 1)
-		if self.appointment:
-			frappe.db.set_value("Patient Appointment", self.appointment, "status", "Closed")
+		if self.appointment and self.docstatus==0:
+			frappe.db.set_value("Patient Appointment", self.appointment, "status", "In Progress")
 		template = frappe.get_doc("Clinical Procedure Template", self.procedure_template)
 		if template.sample:
 			patient = frappe.get_doc("Patient", self.patient)
@@ -85,6 +85,7 @@ class ClinicalProcedure(Document):
 		if allow_start:
 			self.status = 'In Progress'
 			insert_clinical_procedure_to_medical_record(self)
+			frappe.db.set_value("Patient Appointment", self.appointment, "status", "Closed")
 		else:
 			self.status = 'Draft'
 		self.save()
