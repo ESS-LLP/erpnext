@@ -48,6 +48,9 @@ var create_multiple_dialog = function(listview){
 				},
 				callback: function(data) {
 					if(!data.exc){
+						if(!data.message){
+							frappe.msgprint(__("No Lab Test created"))
+						}
 						listview.refresh();
 					}
 				},
