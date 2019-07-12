@@ -1051,7 +1051,10 @@ var get_drugs_to_invoice = function(frm) {
 				description:'Quantity will be calculated only for items which has "Nos" as UoM. You may change as required for each invoice item.',
 				get_query: function(doc) {
 					return {
-						filters: { patient: dialog.get_value("patient"), docstatus: 1 }
+						filters: {
+							patient: dialog.get_value("patient"),
+							docstatus: ["<", 2]
+						}
 					};
 				}
 			},

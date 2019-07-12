@@ -80,7 +80,7 @@ def create_lab_test_from_encounter(encounter_id):
 	lab_test_ids = frappe.db.sql("""select lp.name, lp.lab_test_code, lp.invoiced
 	from `tabPatient Encounter` et, `tabLab Prescription` lp
 	where et.patient=%s and lp.parent=%s and
-	lp.parent=et.name and lp.lab_test_created=0 and et.docstatus=1""", (encounter.patient, encounter_id))
+	lp.parent=et.name and lp.lab_test_created=0 and et.docstatus<2""", (encounter.patient, encounter_id))
 
 	if lab_test_ids:
 		patient = frappe.get_doc("Patient", encounter.patient)
