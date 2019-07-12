@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cstr
 
@@ -23,6 +24,40 @@ class PatientEncounter(Document):
 
 	def on_submit(self):
 		frappe.db.set_value("Patient Appointment", self.appointment, "status", "Closed")
+
+	def before_cancel(self):
+		self.validate_orders()
+
+	# Call before delete
+	def on_trash(self):
+		self.validate_orders()
+
+	def validate_orders(self):
+		if self.lab_test_prescription:
+			can_not_delete = False
+			for lab_rx in self.lab_test_prescription:
+				if lab_rx.invoiced:
+					can_not_delete = True
+					msg = "Invoiced lab test prescription(s)"
+				elif lab_rx.lab_test_created:
+					can_not_delete = True
+					msg = "Lab Test created from procedure prescription"
+			if can_not_delete:
+				frappe.throw(_("Not permitted. "+msg))
+		if self.procedure_prescription:
+			can_not_delete = False
+			for procedure_rx in self.procedure_prescription:
+				if procedure_rx.invoiced:
+					can_not_delete = True
+					msg = "Invoiced procedure prescription(s)"
+				elif procedure_rx.procedure_created:
+					can_not_delete = True
+					msg = "Procedure created from procedure prescription"
+				elif procedure_rx.appointment_booked:
+					can_not_delete = True
+					msg = "Appointment booked for procedure from procedure prescription"
+			if can_not_delete:
+				frappe.throw(_("Not permitted. "+msg))
 
 def insert_encounter_to_medical_record(doc):
 	subject = set_subject_field(doc)
