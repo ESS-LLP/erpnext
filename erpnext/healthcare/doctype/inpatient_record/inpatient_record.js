@@ -17,6 +17,13 @@ frappe.ui.form.on('Inpatient Record', {
 			} );
 			frm.set_df_property("btn_transfer", "hidden", 1);
 		}
+		if(!frm.doc.__islocal && (frm.doc.status == "Admitted" || frm.doc.status == "Discharge Scheduled")){
+			if(frappe.defaults.get_default("auto_invoice_inpatient")){
+				frm.add_custom_button(__('Submit Invoices'), function() {
+					submit_all_ip_invoices(frm);
+				});
+			}
+		}
 		if(!frm.doc.__islocal && frm.doc.status == "Discharge Scheduled"){
 			frm.add_custom_button(__('Discharge'), function() {
 				discharge_patient(frm);
@@ -41,6 +48,20 @@ frappe.ui.form.on('Inpatient Record', {
 		transfer_patient_dialog(frm);
 	}
 });
+
+var submit_all_ip_invoices = function(frm) {
+	frappe.call({
+		doc: frm.doc,
+		method: "submit_all_invoices",
+		callback: function(data) {
+			if(!data.exc){
+				frm.reload_doc();
+			}
+		},
+		freeze: true,
+		freeze_message: "Submitting......!"
+	});
+}
 
 var discharge_patient = function(frm) {
 	frappe.call({

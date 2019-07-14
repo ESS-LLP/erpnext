@@ -11,6 +11,7 @@ from frappe.utils import time_diff_in_hours, rounded, getdate, add_days
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_income_account
 from erpnext.healthcare.doctype.fee_validity.fee_validity import create_fee_validity, update_fee_validity
 from erpnext.healthcare.doctype.lab_test.lab_test import create_multiple
+from erpnext.stock.get_item_details import get_item_details
 
 @frappe.whitelist()
 def get_healthcare_services_to_invoice(patient):
@@ -669,3 +670,20 @@ def get_sales_invoice_for_healthcare_doc(doctype, docname):
 	if sales_item_exist:
 		return frappe.get_doc("Sales Invoice", frappe.db.get_value("Sales Invoice Item", sales_item_exist, "parent"))
 	return False
+
+def sales_item_details_for_healthcare_doc(item_code, doc, wh=None):
+	price_list, price_list_currency = frappe.db.get_values("Price List", {"selling": 1}, ['name', 'currency'])[0]
+	args = {
+		'doctype': "Sales Invoice",
+		'item_code': item_code,
+		'company': doc.company,
+		'customer': frappe.db.get_value("Patient", doc.patient, "customer"),
+		'selling_price_list': price_list,
+		'price_list_currency': price_list_currency,
+		'plc_conversion_rate': 1.0,
+		'conversion_rate': 1.0
+	}
+	if wh:
+		args['warehouse'] = wh
+	item_details = get_item_details(args)
+	return item_details if item_details else False

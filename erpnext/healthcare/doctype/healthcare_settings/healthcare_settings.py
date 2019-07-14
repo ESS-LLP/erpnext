@@ -11,7 +11,7 @@ import json
 
 class HealthcareSettings(Document):
 	def validate(self):
-		for key in ["collect_registration_fee","manage_customer","patient_master_name",
+		for key in ["collect_registration_fee","manage_customer","patient_master_name", "auto_invoice_inpatient",
 		"require_test_result_approval","require_sample_collection", "default_medical_code_standard"]:
 			frappe.db.set_default(key, self.get(key, ""))
 		if(self.collect_registration_fee):

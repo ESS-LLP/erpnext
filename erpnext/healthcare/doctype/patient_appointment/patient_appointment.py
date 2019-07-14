@@ -12,7 +12,7 @@ import datetime
 from frappe.core.doctype.sms_settings.sms_settings import send_sms
 from erpnext.hr.doctype.employee.employee import is_holiday
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account,get_income_account
-from erpnext.healthcare.utils import validity_exists, service_item_and_practitioner_charge
+from erpnext.healthcare.utils import validity_exists, service_item_and_practitioner_charge, sales_item_details_for_healthcare_doc
 
 class PatientAppointment(Document):
 	def on_update(self):
@@ -71,10 +71,15 @@ class PatientAppointment(Document):
 
 		if frappe.db.get_value("Healthcare Settings", None, "manage_appointment_invoice_automatically") == '1' and \
 			frappe.db.get_value("Patient Appointment", self.name, "invoiced") != 1:
-			invoice_appointment(self)
+			sales_invoice = invoice_appointment(self, True)
+			sales_invoice.submit()
+			frappe.msgprint(_("Sales Invoice {0} created as paid".format(sales_invoice.name)), alert=True)
+
+		elif self.inpatient_record and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
+			invoice_appointment(self, False)
 
 @frappe.whitelist()
-def invoice_appointment(appointment_doc):
+def invoice_appointment(appointment_doc, is_pos):
 	if not appointment_doc.name:
 		return False
 	sales_invoice = frappe.new_doc("Sales Invoice")
@@ -84,10 +89,15 @@ def invoice_appointment(appointment_doc):
 	sales_invoice.appointment = appointment_doc.name
 	sales_invoice.ref_practitioner = appointment_doc.referring_practitioner
 	sales_invoice.due_date = getdate()
-	sales_invoice.is_pos = True
+	sales_invoice.inpatient_record = appointment_doc.inpatient_record
+	sales_invoice.is_pos = is_pos
 	from erpnext.stock.get_item_details import get_pos_profile
-	pos_profile = get_pos_profile(appointment_doc.company)
-	sales_invoice.pos_profile = pos_profile.name
+	if is_pos:
+		pos_profile = get_pos_profile(appointment_doc.company)
+		if pos_profile:
+			sales_invoice.pos_profile = pos_profile.name
+		else:
+			frappe.throw(_("Setup POS Profile for the Company, {0}".format(appointment_doc.company)))
 	sales_invoice.company = appointment_doc.company
 	sales_invoice.debit_to = get_receivable_account(appointment_doc.company, appointment_doc.patient)
 	if appointment_doc.discount_value and appointment_doc.discount_value > 0:
@@ -98,12 +108,21 @@ def invoice_appointment(appointment_doc):
 			sales_invoice.additional_discount_percentage = appointment_doc.discount_value
 
 	item_line = sales_invoice.append("items")
-	service_item, practitioner_charge = service_item_and_practitioner_charge(appointment_doc)
-	item_line.item_code = service_item
-	item_line.description = "Consulting Charges:  " + appointment_doc.practitioner
-	item_line.income_account = get_income_account(appointment_doc.practitioner, appointment_doc.company)
-	item_line.rate = practitioner_charge
-	item_line.amount = practitioner_charge
+	if appointment_doc.procedure_template:
+		service_item, practitioner_charge = service_item_and_practitioner_charge(appointment_doc)
+		item_line.item_code = frappe.db.get_value("Clinical Procedure Template", appointment_doc.procedure_template, "item")
+		item_details = sales_item_details_for_healthcare_doc(item_line.item_code, appointment_doc)
+		item_line.item_name = item_details.item_name
+		item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
+		item_line.rate = item_details.price_list_rate
+		item_line.amount = item_details.price_list_rate
+	else:
+		service_item, practitioner_charge = service_item_and_practitioner_charge(appointment_doc)
+		item_line.item_code = service_item
+		item_line.description = "Consulting Charges:  " + appointment_doc.practitioner
+		item_line.income_account = get_income_account(appointment_doc.practitioner, appointment_doc.company)
+		item_line.rate = practitioner_charge
+		item_line.amount = practitioner_charge
 	item_line.qty = 1
 	item_line.reference_dt = "Patient Appointment"
 	item_line.reference_dn = appointment_doc.name
@@ -115,8 +134,7 @@ def invoice_appointment(appointment_doc):
 	sales_invoice.set_missing_values(for_validate = True)
 
 	sales_invoice.save(ignore_permissions=True)
-	sales_invoice.submit()
-	frappe.msgprint(_("Sales Invoice {0} created as paid".format(sales_invoice.name)), alert=True)
+	return sales_invoice
 
 def appointment_cancel(appointment_id):
 	appointment = frappe.get_doc("Patient Appointment", appointment_id)

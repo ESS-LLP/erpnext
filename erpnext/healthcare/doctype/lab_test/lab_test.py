@@ -7,12 +7,20 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import getdate, cstr
+from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account
 
 class LabTest(Document):
 	def on_submit(self):
 		frappe.db.set_value(self.doctype,self.name,"submitted_date", getdate())
 		insert_lab_test_to_medical_record(self)
 		frappe.db.set_value("Lab Test", self.name, "status", "Completed")
+		if self.inpatient_record and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
+			self.invoice()
+
+	def invoice(self):
+		if not self.invoiced:
+			return invoice_lab_test(self)
+		return False
 
 	def on_cancel(self):
 		delete_lab_test_from_medical_record(self)
@@ -335,3 +343,45 @@ def delete_lab_test_from_medical_record(self):
 def get_lab_test_prescribed(patient):
 	return frappe.db.sql("""select cp.name, cp.lab_test_code, cp.parent, cp.invoiced, ct.practitioner, ct.encounter_date from `tabPatient Encounter` ct,
 	`tabLab Prescription` cp where ct.patient=%s and cp.parent=ct.name and cp.lab_test_created=0""", (patient))
+
+def invoice_lab_test(lab_test):
+	sales_invoice = frappe.new_doc("Sales Invoice")
+	sales_invoice.patient = lab_test.patient
+	sales_invoice.patient_name = frappe.db.get_value("Patient", lab_test.patient, "patient_name")
+	sales_invoice.customer = frappe.db.get_value("Patient", lab_test.patient, "customer")
+	sales_invoice.due_date = getdate()
+	sales_invoice.inpatient_record = lab_test.inpatient_record
+	sales_invoice.company = lab_test.company
+	sales_invoice.debit_to = get_receivable_account(lab_test.company, lab_test.patient)
+
+	item_line = sales_invoice.append("items")
+	item_line.item_code = frappe.db.get_value("Lab Test Template", lab_test.template, "item")
+	item_details = sales_item_details_for_healthcare_doc(item_line.item_code, lab_test)
+	item_line.item_name = item_details.item_name
+	item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
+	item_line.rate = item_details.price_list_rate
+	item_line.amount = item_details.price_list_rate
+	item_line.qty = 1
+	item_line.reference_dt = "Lab Test"
+	item_line.reference_dn = lab_test.name
+
+	sales_invoice.set_missing_values(for_validate = True)
+
+	sales_invoice.save(ignore_permissions=True)
+	return sales_invoice if sales_invoice else False
+
+def sales_item_details_for_healthcare_doc(item_code, doc):
+	price_list, price_list_currency = frappe.db.get_values("Price List", {"selling": 1}, ['name', 'currency'])[0]
+	args = {
+		'doctype': "Sales Invoice",
+		'item_code': item_code,
+		'company': doc.company,
+		'customer': frappe.db.get_value("Patient", doc.patient, "customer"),
+		'selling_price_list': price_list,
+		'price_list_currency': price_list_currency,
+		'plc_conversion_rate': 1.0,
+		'conversion_rate': 1.0
+	}
+	from erpnext.stock.get_item_details import get_item_details
+	item_details = get_item_details(args)
+	return item_details if item_details else False

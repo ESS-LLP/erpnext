@@ -6,12 +6,12 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cint, flt, nowdate, nowtime, cstr, to_timedelta
-from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_account
+from frappe.utils import cint, flt, nowdate, nowtime, cstr, to_timedelta, getdate
+from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_account, get_receivable_account
 from erpnext.healthcare.doctype.lab_test.lab_test import create_sample_doc, create_lab_test_doc
 from erpnext.stock.stock_ledger import get_previous_sle
-from erpnext.stock.get_item_details import get_item_details
 import datetime
+from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
 
 class ClinicalProcedure(Document):
 	def validate(self):
@@ -49,25 +49,12 @@ class ClinicalProcedure(Document):
 		if self.consume_stock and self.items:
 			create_stock_entry(self)
 		frappe.db.set_value("Clinical Procedure", self.name, "status", 'Completed')
-
 		if self.items:
 			consumable_total_amount = 0
 			consumption_details = False
 			for item in self.items:
 				if item.invoice_separately_as_consumables:
-					price_list, price_list_currency = frappe.db.get_values("Price List", {"selling": 1}, ['name', 'currency'])[0]
-					args = {
-						'doctype': "Sales Invoice",
-						'item_code': item.item_code,
-						'company': self.company,
-						'warehouse': self.warehouse,
-						'customer': frappe.db.get_value("Patient", self.patient, "customer"),
-						'selling_price_list': price_list,
-						'price_list_currency': price_list_currency,
-						'plc_conversion_rate': 1.0,
-						'conversion_rate': 1.0
-					}
-					item_details = get_item_details(args)
+					item_details = sales_item_details_for_healthcare_doc(item.item_code, self, self.warehouse)
 					item_price = item_details.price_list_rate * item.transfer_qty
 					item_consumption_details = item_details.item_name+"\t"+str(item.qty)+" "+item.uom+"\t"+str(item_price)
 					consumable_total_amount += item_price
@@ -79,6 +66,13 @@ class ClinicalProcedure(Document):
 				frappe.db.set_value("Clinical Procedure", self.name, "consumable_total_amount", consumable_total_amount)
 				frappe.db.set_value("Clinical Procedure", self.name, "consumption_details", consumption_details)
 
+		if self.inpatient_record and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
+			invoice_clinical_ptocedure(self)
+
+	def invoice(self):
+		if not self.invoiced and self.status == "Completed":
+			return invoice_clinical_ptocedure(self)
+		return False
 
 	def start(self):
 		allow_start = self.set_actual_qty()
@@ -284,3 +278,47 @@ def insert_clinical_procedure_to_medical_record(doc):
 	medical_record.reference_name = doc.name
 	medical_record.reference_owner = doc.owner
 	medical_record.save(ignore_permissions=True)
+
+def invoice_clinical_ptocedure(procedure):
+	sales_invoice = frappe.new_doc("Sales Invoice")
+	sales_invoice.patient = procedure.patient
+	sales_invoice.patient_name = frappe.db.get_value("Patient", procedure.patient, "patient_name")
+	sales_invoice.customer = frappe.db.get_value("Patient", procedure.patient, "customer")
+	sales_invoice.appointment = procedure.appointment
+	sales_invoice.inpatient_record = procedure.inpatient_record
+	if procedure.appointment:
+		sales_invoice.ref_practitioner = frappe.db.get_value("Patient Appointment", procedure.appointment, "ferring_practitioner")
+	sales_invoice.due_date = getdate()
+	sales_invoice.company = procedure.company
+	sales_invoice.debit_to = get_receivable_account(procedure.company, procedure.patient)
+
+	item_line = sales_invoice.append("items")
+	item_line.item_code = frappe.db.get_value("Clinical Procedure Template", procedure.procedure_template, "item")
+	item_details = sales_item_details_for_healthcare_doc(item_line.item_code, procedure)
+	item_line.item_name = item_details.item_name
+	item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
+	item_line.rate = item_details.price_list_rate
+	item_line.amount = item_details.price_list_rate
+	item_line.qty = 1
+	if procedure.appointment:
+		item_line.reference_dt = "Patient Appointment"
+		item_line.reference_dn = procedure.appointment
+	else:
+		item_line.reference_dt = "Clinical Procedure"
+		item_line.reference_dn = procedure.name
+
+	if procedure.invoice_separately_as_consumables and not procedure.consumption_invoiced and procedure.consume_stock:
+		item_line = sales_invoice.append("items")
+		item_line.item_code = frappe.db.get_value("Healthcare Settings", None, 'clinical_procedure_consumable_item')
+		item_line.item_name = frappe.db.get_value("Item", item_line.item_code, "item_name")
+		item_line.description = procedure.consumption_details
+		item_line.rate = procedure.consumable_total_amount
+		item_line.amount = procedure.consumable_total_amount
+		item_line.qty = 1
+		item_line.reference_dt = "Clinical Procedure"
+		item_line.reference_dn = procedure.name
+
+	sales_invoice.set_missing_values(for_validate = True)
+
+	sales_invoice.save(ignore_permissions=True)
+	return sales_invoice if sales_invoice else False

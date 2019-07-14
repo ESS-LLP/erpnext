@@ -57,6 +57,9 @@ class InpatientRecord(Document):
 			self.save(ignore_permissions = True)
 			frappe.db.set_value("Patient", self.patient, "inpatient_status", "Admitted")
 
+	def submit_all_invoices(self):
+		submit_all_ip_invoices(self.name)
+
 	def get_inpatient_invoice_details(self):
 		sales_invoice_list = []
 		group_wise_item_total = {}
@@ -74,6 +77,11 @@ class InpatientRecord(Document):
 					data = group_wise_item_total[item_group]
 					group_wise_item_total[item_group] = {"amount": data['amount']+item.amount}
 		return sales_invoice_list, group_wise_item_dict, group_wise_item_total
+
+def submit_all_ip_invoices(ip):
+	for si in frappe.get_list('Sales Invoice', {'inpatient_record': ip, 'docstatus': 0}):
+		if si and si.name:
+			frappe.get_doc("Sales Invoice", si.name).submit()
 
 @frappe.whitelist()
 def schedule_inpatient(args):

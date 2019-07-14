@@ -89,6 +89,7 @@ frappe.ui.form.on('Patient Appointment', {
 			});
 		}
 		frm.set_df_property("get_procedure_from_encounter", "read_only", frm.doc.__islocal ? 0 : 1);
+		frm.set_df_property("procedure_template", "read_only", frm.doc.__islocal ? 0 : 1);
 		frm.set_df_property("service_unit", "read_only", frm.doc.__islocal ? 0 : 1);
 		frm.set_df_property("radiology_procedure", "read_only", frm.doc.__islocal ? 0 : 1);
 		frm.set_df_property("mode_of_payment", "read_only", frm.doc.__islocal ? 0 : 1);
