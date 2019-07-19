@@ -32,7 +32,7 @@ var create_multiple_dialog = function(listview){
 					return {
 						filters: {
 							"patient": dialog.get_value("patient"),
-							"docstatus": 1 ? dialog.get_value("doctype") == 'Sales Invoice' : ["<", 2]
+							"docstatus": ["<", 2]
 						}
 					};
 				}
