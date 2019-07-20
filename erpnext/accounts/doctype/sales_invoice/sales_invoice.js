@@ -1035,6 +1035,13 @@ var get_checked_values= function($results) {
 			else{
 				checked_values['description'] = false;
 			}
+			if($(this).attr('data-cost-center') != 'undefined'
+				&& $(this).attr('data-cost-center') != 'null' && $(this).attr('data-cost-center') != 'false'){
+				checked_values['cost_center'] = $(this).attr('data-cost-center');
+			}
+			else{
+				checked_values['cost_center'] = false;
+			}
 			return checked_values;
 		}
 	}).get();
@@ -1105,11 +1112,14 @@ var list_row_data_items = function(head, $row, result, invoice_healthcare_servic
 	if(invoice_healthcare_services){
 		head ? $row.addClass('list-item--head')
 			: $row = $(`<div class="list-item-container"
-				data-dn= "${result.reference_name}" data-dt= "${result.reference_type}" data-item= "${result.service}"
+				data-dn= "${result.reference_name}"
+				data-dt= "${result.reference_type}"
+				data-item= "${result.service}"
 				data-rate = ${result.rate}
 				data-income-account = "${result.income_account}"
 				data-qty = ${result.qty}
-				data-description = "${result.description}">
+				data-description = "${result.description}"
+				data-cost-center = "${result.cost_center}">
 				</div>`).append($row);
 	}
 	else{
