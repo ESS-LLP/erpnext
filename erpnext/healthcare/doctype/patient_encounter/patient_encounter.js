@@ -380,6 +380,7 @@ frappe.ui.form.on("Patient Encounter", "appointment", function(frm){
 				frappe.model.set_value(frm.doctype,frm.docname, "type", data.message.appointment_type);
 				frappe.model.set_value(frm.doctype,frm.docname, "practitioner", data.message.practitioner);
 				frappe.model.set_value(frm.doctype,frm.docname, "invoiced", data.message.invoiced);
+				frappe.model.set_value(frm.doctype,frm.docname, "service_unit", data.message.service_unit);
 			}
 		});
 	}
@@ -388,6 +389,7 @@ frappe.ui.form.on("Patient Encounter", "appointment", function(frm){
 		frappe.model.set_value(frm.doctype,frm.docname, "type", "");
 		frappe.model.set_value(frm.doctype,frm.docname, "practitioner", "");
 		frappe.model.set_value(frm.doctype,frm.docname, "invoiced", 0);
+		frappe.model.set_value(frm.doctype,frm.docname, "service_unit", "");
 	}
 });
 
