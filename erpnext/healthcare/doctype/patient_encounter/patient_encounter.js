@@ -84,6 +84,13 @@ frappe.ui.form.on('Patient Encounter', {
 				}
 			};
 		});
+		frm.set_query("radiology_procedure", "radiology_procedure_prescription", function() {
+			return {
+				filters: {
+					is_billable:'1'
+				}
+			};
+		});
 		frm.set_query("medical_code", "codification_table", function() {
 			return {
 				filters: {
