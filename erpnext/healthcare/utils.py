@@ -166,7 +166,10 @@ def get_healthcare_services_to_invoice(patient):
 					inpatient_occupancy = frappe.get_doc("Inpatient Occupancy", inpatient_service[0])
 					service_unit_type = frappe.get_doc("Healthcare Service Unit Type", frappe.db.get_value("Healthcare Service Unit", inpatient_occupancy.service_unit, "service_unit_type"))
 					if service_unit_type and service_unit_type.is_billable == 1:
-						hours_occupied = time_diff_in_hours(inpatient_occupancy.check_out, inpatient_occupancy.check_in)
+						check_in = inpatient_occupancy.check_in
+						if inpatient_occupancy.invoiced_to:
+							check_in = inpatient_occupancy.invoiced_to
+						hours_occupied = time_diff_in_hours(inpatient_occupancy.check_out, check_in)
 						qty = 0.5
 						if hours_occupied > 0:
 							if service_unit_type.no_of_hours and service_unit_type.no_of_hours > 0:
@@ -271,6 +274,11 @@ def set_invoiced(item, method, ref_invoice=None):
 			frappe.db.set_value(item.reference_dt, item.reference_dn, "consumption_invoiced", invoiced)
 		else:
 			frappe.db.set_value(item.reference_dt, item.reference_dn, "invoiced", invoiced)
+	elif item.reference_dt == 'Inpatient Occupancy' and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
+		inpatient_occupancy = frappe.get_doc("Inpatient Occupancy", item.reference_dn)
+		if inpatient_occupancy.left == 1:
+			inpatient_occupancy.invoiced = invoiced
+			inpatient_occupancy.save(ignore_permissions=True)
 	else:
 		frappe.db.set_value(item.reference_dt, item.reference_dn, "invoiced", invoiced)
 

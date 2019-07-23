@@ -5,9 +5,13 @@
 from __future__ import unicode_literals
 import frappe, json
 from frappe import _
-from frappe.utils import today, now_datetime
+import datetime
+import math
+from frappe.utils import today, now_datetime, getdate, time_diff_in_hours, get_datetime, add_to_date, rounded
 from frappe.model.document import Document
 from frappe.desk.reportview import get_match_cond
+from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
+from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account
 
 class InpatientRecord(Document):
 	def after_insert(self):
@@ -42,6 +46,7 @@ class InpatientRecord(Document):
 		admit_patient(self, service_unit, check_in, expected_discharge)
 
 	def discharge(self):
+		self.submit_all_invoices()
 		discharge_patient(self)
 
 	def transfer(self, service_unit, check_in, leave_from, requested_transfer=False):
@@ -172,6 +177,7 @@ def check_out_inpatient(inpatient_record):
 			if inpatient_occupancy.left != 1:
 				inpatient_occupancy.left = True
 				inpatient_occupancy.check_out = now_datetime()
+				invoice_ip_occupancy()
 				frappe.db.set_value("Healthcare Service Unit", inpatient_occupancy.service_unit, "status", get_check_out_stats())
 
 def discharge_patient(inpatient_record):
@@ -289,3 +295,82 @@ def get_check_out_stats():
 	if not default_check_out_status:
 		return "Vacant"
 	return default_check_out_status
+
+@frappe.whitelist()
+def invoice_ip_occupancy():
+	if frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
+		auto_invoice_time = datetime.datetime.strptime(frappe.get_value("Healthcare Settings", None, "ip_service_unit_checkout_time"), "%H:%M:%S")
+		auto_invoice_dt = add_to_date(getdate(), hours=auto_invoice_time.hour, minutes=auto_invoice_time.minute,
+			seconds=auto_invoice_time.second)
+		fields = ["name", "service_unit", "check_in", "left", "check_out", "invoiced_to", "invoiced", "auto_invoiced", "parent"]
+		query = """
+			select
+				*
+			from
+				`tabInpatient Occupancy`
+			where
+				invoiced != 1
+		"""
+		ip_occupancies = frappe.db.sql(query, as_dict=True)
+		for ipo in ip_occupancies:
+			check_in_dt = ipo.check_in
+			if ipo.auto_invoiced and ipo.invoiced_to:
+				check_in_dt = ipo.invoiced_to
+			# if(get_datetime(auto_invoice_dt) >= get_datetime(check_in_dt) or (ipo.check_out and ipo.left == '1')):
+			if(get_datetime(auto_invoice_dt) >= get_datetime(check_in_dt)):
+				service_unit_type = frappe.get_doc("Healthcare Service Unit Type", frappe.db.get_value("Healthcare Service Unit", ipo.service_unit, "service_unit_type"))
+				if service_unit_type and service_unit_type.is_billable == 1:
+					ip = frappe.get_doc("Inpatient Record", ipo.parent)
+					sales_invoice = frappe.new_doc("Sales Invoice")
+					sales_invoice.patient = ip.patient
+					sales_invoice.patient_name = ip.patient_name
+					sales_invoice.customer = frappe.get_value("Patient", ip.patient, "customer")
+					sales_invoice.ref_practitioner = ip.primary_practitioner
+					sales_invoice.due_date = getdate()
+					sales_invoice.inpatient_record = ip.name
+					sales_invoice.company = ip.company
+					sales_invoice.debit_to = get_receivable_account(ip.company, ip.patient)
+					update_ip_occupancy_invoice(sales_invoice, ipo, service_unit_type, check_in_dt, ip)
+
+def update_ip_occupancy_invoice(sales_invoice, inpatient_occupancy, service_unit_type, check_in_dt, ip):
+	unit_in_no_of_hours = 0
+	if service_unit_type.no_of_hours and service_unit_type.no_of_hours > 0:
+		unit_in_no_of_hours = service_unit_type.no_of_hours
+	# if inpatient_occupancy.check_out and ipo.left == '1':
+	# 	check_out = inpatient_occupancy.check_out
+	check_out = get_datetime(check_in_dt) + datetime.timedelta(hours=unit_in_no_of_hours)
+	hours_occupied = time_diff_in_hours(check_out, check_in_dt)
+	qty = 0.5
+	if hours_occupied > 0:
+		if service_unit_type.no_of_hours and service_unit_type.no_of_hours > 0:
+			actual_qty = hours_occupied / service_unit_type.no_of_hours
+		else:
+			# 24 hours = 1 Day
+			actual_qty = hours_occupied / 24
+		floor = math.floor(actual_qty)
+		decimal_part = actual_qty - floor
+		if decimal_part > 0.5:
+			qty = rounded(floor + 1, 1)
+		elif decimal_part < 0.5 and decimal_part > 0:
+			qty = rounded(floor + 0.5, 1)
+		if qty <= 0:
+			qty = 0.5
+	item_line = sales_invoice.append("items")
+	item_line.item_code = service_unit_type.item
+	item_details = sales_item_details_for_healthcare_doc(service_unit_type.item, ip)
+	item_line.item_name = item_details.item_name
+	item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
+	item_line.rate = item_details.price_list_rate
+	item_line.reference_dt = "Inpatient Occupancy"
+	item_line.reference_dn = inpatient_occupancy.name
+	item_line.amount = item_line.rate * qty
+	item_line.qty = qty
+	sales_invoice.set_missing_values(for_validate = True)
+
+	sales_invoice.save(ignore_permissions=True)
+	sales_invoice.submit()
+	ipo = frappe.get_doc("Inpatient Occupancy", inpatient_occupancy.name)
+	ipo.auto_invoiced = True
+	ipo.invoiced_to = get_datetime(check_out)
+	ipo.save()
+	return sales_invoice

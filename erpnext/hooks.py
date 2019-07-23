@@ -229,7 +229,8 @@ scheduler_events = {
 		"erpnext.erpnext_integrations.doctype.amazon_mws_settings.amazon_mws_settings.schedule_get_order_details",
 		"erpnext.erpnext_integrations.doctype.plaid_settings.plaid_settings.automatic_synchronization",
 		"erpnext.projects.doctype.project.project.hourly_reminder",
-		"erpnext.projects.doctype.project.project.collect_project_status"
+		"erpnext.projects.doctype.project.project.collect_project_status",
+		"erpnext.healthcare.doctype.inpatient_record.inpatient_record.invoice_ip_occupancy"
 	],
 	"daily": [
 		"erpnext.stock.reorder_item.reorder_item",
