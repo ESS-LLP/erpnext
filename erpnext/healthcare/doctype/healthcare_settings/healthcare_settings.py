@@ -17,6 +17,8 @@ class HealthcareSettings(Document):
 		if(self.collect_registration_fee):
 			if self.registration_fee <= 0 :
 				frappe.throw(_("Registration fee can not be Zero"))
+		if self.auto_invoice_inpatient and not self.ip_service_unit_checkout_time:
+			frappe.throw(_("Configure Healthcare Service Unit Checkout Time for Invoice Inpatient Services Automatically"))
 		if self.inpatient_visit_charge_item:
 			validate_service_item(self.inpatient_visit_charge_item, "Configure a service Item for Inpatient Visit Charge Item")
 		if self.op_consulting_charge_item:
