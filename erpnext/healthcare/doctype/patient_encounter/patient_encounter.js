@@ -15,6 +15,23 @@ frappe.ui.form.on('Patient Encounter', {
 			{fieldname: 'lab_test_comment', columns: 4}
 		];
 	},
+	source: function(frm){
+		if(frm.doc.source=="Direct"){
+			frm.set_value("referring_practitioner", "");
+			frm.set_df_property("referring_practitioner", "hidden", 1);
+		}
+		else if(frm.doc.source=="Referral"){
+			frm.set_value("referring_practitioner", frm.doc.practitioner);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "read_only", 1);
+			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}
+		else if(frm.doc.source=="External Referral"){
+			frm.set_df_property("referring_practitioner", "read_only", 0);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}
+	},
 
 	refresh: function(frm) {
 		refresh_field('drug_prescription');
@@ -388,6 +405,10 @@ frappe.ui.form.on("Patient Encounter", "appointment", function(frm){
 				frappe.model.set_value(frm.doctype,frm.docname, "practitioner", data.message.practitioner);
 				frappe.model.set_value(frm.doctype,frm.docname, "invoiced", data.message.invoiced);
 				frappe.model.set_value(frm.doctype,frm.docname, "service_unit", data.message.service_unit);
+				frappe.model.set_value(frm.doctype,frm.docname, "source", data.message.source);
+				if(data.message.referring_practitioner){
+					frappe.model.set_value(frm.doctype,frm.docname, "referring_practitioner", data.message.referring_practitioner);
+				}
 			}
 		});
 	}
@@ -397,6 +418,7 @@ frappe.ui.form.on("Patient Encounter", "appointment", function(frm){
 		frappe.model.set_value(frm.doctype,frm.docname, "practitioner", "");
 		frappe.model.set_value(frm.doctype,frm.docname, "invoiced", 0);
 		frappe.model.set_value(frm.doctype,frm.docname, "service_unit", "");
+		frappe.model.set_value(frm.doctype,frm.docname, "source", "");
 	}
 });
 

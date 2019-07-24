@@ -10,6 +10,38 @@ frappe.ui.form.on('Inpatient Record', {
 			{fieldname: 'period', columns: 2}
 		];
 	},
+	onload:function(frm){
+		if(frm.doc.source=="Direct"){
+			frm.set_value("referring_practitioner", "");
+			frm.set_df_property("referring_practitioner", "hidden", 1);
+		}else if(frm.doc.source=="Referral"){
+			if(frm.doc.referring_practitioner==""){
+				frm.set_value("referring_practitioner", frm.doc.primary_practitioner);
+			}
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "read_only", 1);
+			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}else if(frm.doc.source=="External Referral"){
+			frm.set_df_property("referring_practitioner", "read_only", 0);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}
+	},
+	source: function(frm){
+		if(frm.doc.source=="Direct"){
+			frm.set_value("referring_practitioner", "");
+			frm.set_df_property("referring_practitioner", "hidden", 1);
+		}else if(frm.doc.source=="Referral"){
+			frm.set_value("referring_practitioner", frm.doc.primary_practitioner);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "read_only", 1);
+			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}else if(frm.doc.source=="External Referral"){
+			frm.set_df_property("referring_practitioner", "read_only", 0);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}
+	},
 	refresh: function(frm) {
 		if(!frm.doc.__islocal && frm.doc.status == "Admission Scheduled"){
 			frm.add_custom_button(__('Admit'), function() {

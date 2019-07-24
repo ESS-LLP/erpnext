@@ -26,6 +26,21 @@ frappe.ui.form.on('Clinical Procedure', {
 			}
 		});
 	},
+	source: function(frm){
+		if(frm.doc.source=="Direct"){
+			frm.set_value("referring_practitioner", "");
+			frm.set_df_property("referring_practitioner", "hidden", 1);
+		}else if(frm.doc.source=="Referral"){
+			frm.set_value("referring_practitioner", frm.doc.practitioner);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "read_only", 1);
+			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}else if(frm.doc.source=="External Referral"){
+			frm.set_df_property("referring_practitioner", "read_only", 0);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}
+	},
 	refresh: function(frm) {
 		frm.set_query("patient", function () {
 			return {
@@ -180,6 +195,10 @@ frappe.ui.form.on('Clinical Procedure', {
 					frm.set_value("start_time", data.message.appointment_time);
 					frm.set_value("notes", data.message.notes);
 					frm.set_value("service_unit", data.message.service_unit);
+					frm.set_value( "source", data.message.source);
+					if(data.message.referring_practitioner){
+						frm.set_value( "referring_practitioner", data.message.referring_practitioner);
+					}
 				}
 			});
 		}
@@ -279,22 +298,29 @@ var show_procedure_templates = function(frm, result){
 		<div class="col-xs-2">\
 		<a data-name="%(name)s" data-procedure-template="%(procedure_template)s"\
 		data-encounter="%(encounter)s" data-practitioner="%(practitioner)s"\
-		data-date="%(date)s"  data-department="%(department)s">\
+		data-date="%(date)s"  data-department="%(department)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s">\
 		<button class="btn btn-default btn-xs">Add\
 		</button></a></div></div><div class="col-xs-12"><hr/><div/>', {name:y[0], procedure_template: y[1],
 				encounter:y[2], consulting_practitioner:y[3], encounter_date:y[4],
-				practitioner:y[5]? y[5]:'', date: y[6]? y[6]:'', department: y[7]? y[7]:''})).appendTo(html_field);
+				practitioner:y[5]? y[5]:'', date: y[6]? y[6]:'', department: y[7]? y[7]:'', source:y[8], referring_practitioner:y[9]})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.procedure_template = $(this).attr("data-procedure-template");
 			frm.doc.procedure_prescription = $(this).attr("data-name");
 			frm.doc.practitioner = $(this).attr("data-practitioner");
 			frm.doc.start_date = $(this).attr("data-date");
 			frm.doc.medical_department = $(this).attr("data-department");
+			frm.doc.source =  $(this).attr("data-source");
+			frm.doc.referring_practitioner= $(this).attr("data-referring-practitioner")
+			if(frm.doc.referring_practitioner){
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+			}
 			refresh_field("procedure_template");
 			refresh_field("procedure_prescription");
 			refresh_field("start_date");
 			refresh_field("practitioner");
 			refresh_field("medical_department");
+			refresh_field("source");
+			refresh_field("referring_practitioner");
 			d.hide();
 			return false;
 		});

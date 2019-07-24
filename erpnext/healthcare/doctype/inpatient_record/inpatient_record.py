@@ -107,7 +107,6 @@ def schedule_inpatient(args):
 	# Procedure Prescription
 	if encounter and encounter.procedure_prescription:
 		set_ip_admission_child_records(inpatient_record, "procedure_prescription", encounter.procedure_prescription)
-
 	inpatient_record.save(ignore_permissions = True)
 
 def set_ip_admission_child_records(inpatient_record, table_name, encounter_table):
@@ -115,7 +114,6 @@ def set_ip_admission_child_records(inpatient_record, table_name, encounter_table
 		table = inpatient_record.append(table_name)
 		for df in table.meta.get("fields"):
 			table.set(df.fieldname, item.get(df.fieldname))
-
 def set_ip_admission_patient_details(inpatient_record, dialog):
 	patient_obj = frappe.get_doc('Patient', dialog['patient'])
 	inpatient_record.patient = dialog['patient']
@@ -131,8 +129,13 @@ def set_ip_admission_patient_details(inpatient_record, dialog):
 def set_ip_admission_record_details(inpatient_record, dialog):
 	inpatient_record.status = "Admission Scheduled"
 	inpatient_record.scheduled_date = today()
-	inpatient_record.referring_practitioner = dialog['ref_practitioner']
+	inpatient_record.ordering_practitioner = dialog['ref_practitioner']
 	inpatient_record.referring_encounter = dialog['encounter_id']
+	encounter = frappe.get_doc("Patient Encounter", dialog['encounter_id'])
+	if encounter.source:
+		inpatient_record.source=encounter.source
+	if encounter.referring_practitioner:
+		inpatient_record.referring_practitioner=encounter.referring_practitioner
 	inpatient_record.medical_department = dialog['medical_department']
 	inpatient_record.primary_practitioner = dialog['primary_practitioner']
 	inpatient_record.secondary_practitioner = dialog['secondary_practitioner']

@@ -8,6 +8,21 @@ frappe.ui.form.on('Patient Appointment', {
 			'Patient Encounter': 'Patient Encounter'
 		};
 	},
+	source: function(frm){
+		if(frm.doc.source=="Direct"){
+			frm.set_value("referring_practitioner", "");
+			frm.set_df_property("referring_practitioner", "hidden", 1);
+		}else if(frm.doc.source=="Referral"){
+			frm.set_value("referring_practitioner", frm.doc.practitioner);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "read_only", 1);
+			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}else if(frm.doc.source=="External Referral"){
+			frm.set_df_property("referring_practitioner", "read_only", 0);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}
+	},
 	refresh: function(frm) {
 		frm.set_query("patient", function () {
 			return {
