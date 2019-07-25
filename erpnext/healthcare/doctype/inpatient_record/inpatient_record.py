@@ -377,3 +377,18 @@ def update_ip_occupancy_invoice(sales_invoice, inpatient_occupancy, service_unit
 	ipo.invoiced_to = get_datetime(check_out)
 	ipo.save()
 	return sales_invoice
+
+@frappe.whitelist()
+def book_all_appointments(appointments_table, inpatient_record):
+	appointments_table = json.loads(appointments_table)
+	for appointment in appointments_table:
+		new_appointment = frappe.new_doc("Patient Appointment")
+		for key in appointment:
+			new_appointment.set(key, appointment[key] if appointment[key] else '')
+		new_appointment.status = "Scheduled"
+		inpatient_record = frappe.get_doc("Inpatient Record", inpatient_record)
+		new_appointment.source = inpatient_record.source
+		if inpatient_record.referring_practitioner:
+			new_appointment.referring_practitioner = inpatient_record.referring_practitioner
+		new_appointment.save(ignore_permissions = True)
+		frappe.msgprint(_("Appointment booked"), alert=True)
