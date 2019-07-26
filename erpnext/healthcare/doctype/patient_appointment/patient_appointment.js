@@ -156,7 +156,7 @@ frappe.ui.form.on('Patient Appointment', {
 			frm.set_df_property("referring_practitioner", "hidden", 1);
 		}else if(frm.doc.source=="Referral"){
 			if(frm.doc.referring_practitioner==""){
-				frm.set_value("referring_practitioner", frm.doc.primary_practitioner);
+				frm.set_value("referring_practitioner", frm.doc.practitioner);
 			}
 			frm.set_value("referring_practitioner", frm.doc.practitioner);
 			frm.set_df_property("referring_practitioner", "hidden", 0);
