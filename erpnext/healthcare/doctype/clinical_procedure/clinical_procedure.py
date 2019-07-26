@@ -119,6 +119,11 @@ class ClinicalProcedure(Document):
 				se_child.expense_account = expense_account
 		return stock_entry.as_dict()
 
+	def on_trash(self):
+		if self.prescription:
+			frappe.db.set_value("Procedure Prescription", self.prescription, "procedure_created", 0)
+
+
 def set_procedure_pre_post_tasks(doc):
 	if doc.procedure_template:
 		template = frappe.get_doc("Clinical Procedure Template", doc.procedure_template)
@@ -322,3 +327,63 @@ def invoice_clinical_ptocedure(procedure):
 
 	sales_invoice.save(ignore_permissions=True)
 	return sales_invoice if sales_invoice else False
+
+@frappe.whitelist()
+def create_multiple(docname):
+	procedure_created = False
+	procedure_created = create_clinical_procedure(docname)
+	if procedure_created:
+		frappe.msgprint(_("Procedure(s) "+procedure_created+" created."))
+	return procedure_created
+
+def create_clinical_procedure(encounter_id):
+	procedure_created = False
+	encounter = frappe.get_doc("Patient Encounter", encounter_id)
+	clinical_procedure_ids = frappe.db.sql("""select lp.name, lp.procedure, lp.invoiced
+		from `tabPatient Encounter` et, `tabProcedure Prescription` lp
+		where et.patient=%s and lp.parent=%s and
+		lp.parent=et.name and lp.procedure_created=0 and et.docstatus<2""", (encounter.patient, encounter_id))
+	if clinical_procedure_ids:
+		patient = frappe.get_doc("Patient", encounter.patient)
+		for clinical_procedure_id in clinical_procedure_ids:
+			template = get_clinical_procedure_template(clinical_procedure_id[1])
+			if template:
+				clinical_procedure = create_clinical_procedure_doc(clinical_procedure_id[2], encounter.practitioner, patient, template, encounter.source, clinical_procedure_id[0])
+				clinical_procedure.save(ignore_permissions = True)
+				frappe.db.set_value("Procedure Prescription", clinical_procedure_id[0], "procedure_created", 1)
+				if not procedure_created:
+					procedure_created = clinical_procedure.name
+				else:
+					procedure_created += ", "+clinical_procedure.name
+	return procedure_created
+
+def get_clinical_procedure_template(item):
+	template_id = check_template_exists(item)
+	if template_id:
+		return frappe.get_doc("Clinical Procedure Template", template_id)
+	return False
+
+def check_template_exists(item):
+	template_exists = frappe.db.exists(
+		"Clinical Procedure Template",
+		{
+			'item': item
+		}
+	)
+	if template_exists:
+		return template_exists
+	return False
+
+
+def create_clinical_procedure_doc(invoiced, practitioner, patient, template, source=None, prescription=None):
+	clinical_procedure = frappe.new_doc("Clinical Procedure")
+	clinical_procedure.invoiced = invoiced
+	clinical_procedure.practitioner = practitioner
+	clinical_procedure.patient = patient.name
+	clinical_procedure.patient_age = patient.get_age()
+	clinical_procedure.patient_sex = patient.sex
+	clinical_procedure.prescription = prescription
+	clinical_procedure.medical_department = template.medical_department
+	clinical_procedure.procedure_template = template.name
+	clinical_procedure.source = source
+	return clinical_procedure

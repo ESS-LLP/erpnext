@@ -95,7 +95,7 @@ def create_lab_test_from_encounter(encounter_id):
 		for lab_test_id in lab_test_ids:
 			template = get_lab_test_template(lab_test_id[1])
 			if template:
-				lab_test = create_lab_test_doc(lab_test_id[2], encounter.practitioner, patient, template)
+				lab_test = create_lab_test_doc(lab_test_id[2], encounter.practitioner, patient, template, encounter.source)
 				lab_test.save(ignore_permissions = True)
 				frappe.db.set_value("Lab Prescription", lab_test_id[0], "lab_test_created", 1)
 				if not lab_test_created:
@@ -149,7 +149,7 @@ def check_template_exists(item):
 		return template_exists
 	return False
 
-def create_lab_test_doc(invoiced, practitioner, patient, template):
+def create_lab_test_doc(invoiced, practitioner, patient, template, source="Direct"):
 	lab_test = frappe.new_doc("Lab Test")
 	lab_test.invoiced = invoiced
 	lab_test.practitioner = practitioner
@@ -163,6 +163,7 @@ def create_lab_test_doc(invoiced, practitioner, patient, template):
 	lab_test.lab_test_group = template.lab_test_group
 	lab_test.result_date = getdate()
 	lab_test.report_preference = patient.report_preference
+	lab_test.source = source
 	return lab_test
 
 def create_normals(template, lab_test):
