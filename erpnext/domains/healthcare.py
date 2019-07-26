@@ -53,6 +53,16 @@ data = {
 				'fieldname': 'reference_dn', 'label': 'Reference Name', 'fieldtype': 'Dynamic Link', 'options': 'reference_dt',
 				'insert_after': 'reference_dt'
 			}
+		],
+		'Delivery Note': [
+			{
+				'fieldname': 'patient', 'label': 'Patient', 'fieldtype': 'Link', 'options': 'Patient',
+				'insert_after': 'naming_series'
+			},
+			{
+				'fieldname': 'patient_name', 'label': 'Patient Name', 'fieldtype': 'Data', 'fetch_from': 'patient.patient_name',
+				'insert_after': 'patient', 'read_only': True
+			}
 		]
 	},
 	'on_setup': 'erpnext.healthcare.setup.setup_healthcare'

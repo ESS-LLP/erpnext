@@ -79,7 +79,31 @@ frappe.ui.form.on("Delivery Note", {
 	},
 	print_without_amount: function(frm) {
 		erpnext.stock.delivery_note.set_print_hide(frm.doc);
-	}
+	},
+	// Healthcare
+	patient: function(frm) {
+		if (frappe.boot.active_domains.includes("Healthcare")){
+			if(frm.doc.patient){
+				frappe.call({
+					method: "frappe.client.get_value",
+					args:{
+						doctype: "Patient",
+						filters: {"name": frm.doc.patient},
+						fieldname: "customer"
+					},
+					callback:function(r) {
+						if(r && r.message){
+							frm.set_value("customer", r.message.customer);
+							frm.refresh_fields();
+						}
+					}
+				});
+			}
+			else{
+					frm.set_value("customer", '');
+			}
+		}
+	},
 });
 
 frappe.ui.form.on("Delivery Note Item", {
@@ -302,4 +326,3 @@ erpnext.stock.delivery_note.set_print_hide = function(doc, cdt, cdn){
 			dn_fields['taxes'].print_hide = 0;
 	}
 }
-
