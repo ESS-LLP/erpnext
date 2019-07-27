@@ -67,11 +67,11 @@ class ClinicalProcedure(Document):
 				frappe.db.set_value("Clinical Procedure", self.name, "consumption_details", consumption_details)
 
 		if self.inpatient_record and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
-			invoice_clinical_ptocedure(self)
+			invoice_clinical_procedure(self)
 
 	def invoice(self):
 		if not self.invoiced and self.status == "Completed":
-			return invoice_clinical_ptocedure(self)
+			return invoice_clinical_procedure(self)
 		return False
 
 	def start(self):
@@ -284,7 +284,7 @@ def insert_clinical_procedure_to_medical_record(doc):
 	medical_record.reference_owner = doc.owner
 	medical_record.save(ignore_permissions=True)
 
-def invoice_clinical_ptocedure(procedure):
+def invoice_clinical_procedure(procedure):
 	sales_invoice = frappe.new_doc("Sales Invoice")
 	sales_invoice.patient = procedure.patient
 	sales_invoice.patient_name = frappe.db.get_value("Patient", procedure.patient, "patient_name")
