@@ -305,7 +305,7 @@ var show_procedure_templates = function(frm, result){
 				practitioner:y[5]? y[5]:'', date: y[6]? y[6]:'', department: y[7]? y[7]:'', source:y[8], referring_practitioner:y[9]})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.procedure_template = $(this).attr("data-procedure-template");
-			frm.doc.procedure_prescription = $(this).attr("data-name");
+			frm.doc.prescription = $(this).attr("data-name");
 			frm.doc.practitioner = $(this).attr("data-practitioner");
 			frm.doc.start_date = $(this).attr("data-date");
 			frm.doc.medical_department = $(this).attr("data-department");
@@ -315,7 +315,7 @@ var show_procedure_templates = function(frm, result){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
 			}
 			refresh_field("procedure_template");
-			refresh_field("procedure_prescription");
+			refresh_field("prescription");
 			refresh_field("start_date");
 			refresh_field("practitioner");
 			refresh_field("medical_department");
