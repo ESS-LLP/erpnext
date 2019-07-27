@@ -7,11 +7,11 @@ import frappe, json
 from frappe import _
 import datetime
 import math
-from frappe.utils import today, now_datetime, getdate, time_diff_in_hours, get_datetime, add_to_date, rounded
+from frappe.utils import today, now_datetime, getdate, time_diff_in_hours, get_datetime, add_to_date, rounded, flt
 from frappe.model.document import Document
 from frappe.desk.reportview import get_match_cond
 from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
-from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account
+from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account, get_account
 
 class InpatientRecord(Document):
 	def after_insert(self):
@@ -392,3 +392,36 @@ def book_all_appointments(appointments_table, inpatient_record):
 			new_appointment.referring_practitioner = inpatient_record.referring_practitioner
 		new_appointment.save(ignore_permissions = True)
 		frappe.msgprint(_("Appointment booked"), alert=True)
+
+@frappe.whitelist()
+def create_delivery_note(ip_record, item, qty, s_wh):
+	delivery_note = frappe.new_doc("Delivery Note")
+	doc = frappe.get_doc("Inpatient Record", ip_record)
+	delivery_note.company = doc.company
+	delivery_note.patient = doc.patient
+	delivery_note.patient_name = frappe.db.get_value("Patient", doc.patient, "patient_name")
+	delivery_note.customer = frappe.db.get_value("Patient", doc.patient, "customer")
+	delivery_note.inpatient_record = ip_record
+	delivery_note.set_warehouse = s_wh
+	expense_account = get_account(None, "expense_account", "Healthcare Settings", doc.company)
+
+	child = delivery_note.append('items')
+	item_details = sales_item_details_for_healthcare_doc(item, doc)
+	child.item_code = item
+	child.item_name = item_details.item_name
+	child.uom = item_details.uom
+	child.stock_uom = item_details.stock_uom
+	child.qty = flt(qty)
+	child.warehouse = s_wh
+	cost_center = frappe.get_cached_value('Company',  doc.company,  'cost_center')
+	child.cost_center = cost_center
+	#if not expense_account:
+	#	expense_account = frappe.db.get_value("Item", item_line.item_code, "expense_account")
+	child.expense_account = expense_account
+	child.description = frappe.db.get_value("Item", item, "description")
+	child.rate = item_details.price_list_rate
+	child.price_list_rate = item_details.price_list_rate
+	child.amount = item_details.price_list_rate * child.qty
+
+	delivery_note.insert(ignore_permissions = True)
+	delivery_note.submit()

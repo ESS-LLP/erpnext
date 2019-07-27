@@ -15,7 +15,7 @@ def get_data():
 			},
 			{
 				'label': _('Billing'),
-				'items': ['Sales Invoice']
+				'items': ['Sales Invoice', 'Delivery Note']
 			}
 		]
 	}

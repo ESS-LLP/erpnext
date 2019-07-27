@@ -55,6 +55,9 @@ frappe.ui.form.on('Inpatient Record', {
 					submit_all_ip_invoices(frm);
 				});
 			}
+			frm.add_custom_button(__('Record Consumption'), function() {
+				create_delivery_note(frm);
+			});
 		}
 		if(!frm.doc.__islocal && frm.doc.status == "Discharge Scheduled"){
 			frm.add_custom_button(__('Discharge'), function() {
@@ -112,6 +115,54 @@ var discharge_patient = function(frm) {
 		freeze: true,
 		freeze_message: "Process Discharge"
 	});
+};
+
+var create_delivery_note = function(frm){
+	var dialog = new frappe.ui.Dialog({
+		title: 'Record Consumption',
+		width: 100,
+		fields: [
+			{fieldtype: "Link", label: "Source Warehouse", fieldname: "s_wh", options: "Warehouse", reqd: 1},
+			{fieldtype: "Link", label: "Item", fieldname: "item", options: "Item", reqd: 1},
+			{fieldtype: "Float", label: "Quantity", fieldname: "qty", reqd: 1}
+		],
+		primary_action_label: __("Consume"),
+		primary_action : function(){
+			frappe.call({
+				method: 'erpnext.healthcare.doctype.inpatient_record.inpatient_record.create_delivery_note',
+				args:{
+					'ip_record': frm.doc.name,
+					's_wh': dialog.get_value('s_wh'),
+					'item': dialog.get_value('item'),
+					'qty': dialog.get_value('qty')
+				},
+				callback: function(data) {
+					if(!data.exc){
+						frm.reload_doc();
+					}
+				},
+				freeze: true,
+				freeze_message: "Creating Delivery Note"
+			});
+			dialog.hide();
+		}
+	});
+	dialog.fields_dict["item"].get_query = function(){
+		return {
+			filters: {
+				"is_stock_item": 1,
+				"disabled": ["!=", 1]
+			}
+		};
+	};
+	dialog.fields_dict["s_wh"].get_query = function(){
+		return {
+			filters: {
+				"is_group": ["!=", 1]
+			}
+		};
+	};
+	dialog.show();
 };
 
 var admit_patient_dialog = function(frm){
