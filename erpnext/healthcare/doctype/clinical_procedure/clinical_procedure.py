@@ -47,7 +47,8 @@ class ClinicalProcedure(Document):
 
 	def complete(self):
 		if self.consume_stock and self.items:
-			create_stock_entry(self)
+			# create_stock_entry(self)
+			create_delivery_note(self)
 		frappe.db.set_value("Clinical Procedure", self.name, "status", 'Completed')
 		if self.items:
 			consumable_total_amount = 0
@@ -236,6 +237,38 @@ def create_stock_entry(doc):
 
 	stock_entry.insert(ignore_permissions = True)
 	stock_entry.submit()
+
+def create_delivery_note(doc):
+	delivery_note = frappe.new_doc("Delivery Note")
+	delivery_note.company = doc.company
+	delivery_note.patient = doc.patient
+	delivery_note.patient_name = frappe.db.get_value("Patient", doc.patient, "patient_name")
+	delivery_note.customer = frappe.db.get_value("Patient", doc.patient, "customer")
+	delivery_note.inpatient_record = frappe.db.get_value("Patient", doc.patient, "inpatient_record")
+	delivery_note.set_warehouse = doc.warehouse
+	expense_account = get_account(None, "expense_account", "Healthcare Settings", doc.company)
+	for item in doc.items:
+		child = delivery_note.append('items')
+		item_details = sales_item_details_for_healthcare_doc(item.item_code, doc)
+		child.item_code = item.item_code
+		child.item_name = item.item_name
+		child.uom = item.uom
+		child.stock_uom = item.stock_uom
+		child.qty = flt(item.qty)
+		child.warehouse = doc.warehouse
+		cost_center = frappe.get_cached_value('Company',  doc.company,  'cost_center')
+		child.cost_center = cost_center
+		# if not expense_account:
+		# 	expense_account = frappe.db.get_value("Item", item_line.item_code, "expense_account")
+		child.expense_account = expense_account
+		child.description = frappe.db.get_value("Item", item.item_code, "description")
+		child.rate = item_details.price_list_rate
+		child.price_list_rate = item_details.price_list_rate
+		child.amount = item_details.price_list_rate * child.qty
+
+	if delivery_note.items:
+		delivery_note.insert(ignore_permissions = True)
+		delivery_note.submit()
 
 @frappe.whitelist()
 def create_procedure(appointment):
