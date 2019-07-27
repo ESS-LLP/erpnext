@@ -70,6 +70,11 @@ frappe.ui.form.on('Inpatient Record', {
 				}
 			};
 		});
+		if (frm.doc.docstatus == 0 ) {
+			frm.add_custom_button(__("Payment"), function() {
+				frm.events.make_payment_entry(frm);
+			});
+		}
 		if(!frm.doc.__islocal && frm.doc.status == "Admission Scheduled"){
 			frm.add_custom_button(__('Admit'), function() {
 				admit_patient_dialog(frm);
@@ -113,7 +118,17 @@ frappe.ui.form.on('Inpatient Record', {
 	},
 	btn_transfer: function(frm) {
 		transfer_patient_dialog(frm);
-	}
+	},
+	make_payment_entry: function(frm) {
+		return frappe.call({
+			method: "create_payment_entry",
+			doc: frm.doc,
+			callback: function(r) {
+				var doc = frappe.model.sync(r.message);
+				frappe.set_route("Form", doc[0].doctype, doc[0].name);
+			}
+		});
+	},
 });
 
 var submit_all_ip_invoices = function(frm) {
