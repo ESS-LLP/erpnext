@@ -106,7 +106,7 @@ def schedule_inpatient(args):
 		set_ip_admission_child_records(inpatient_record, "lab_test_prescription", encounter.lab_test_prescription)
 	# Procedure Prescription
 	if encounter and encounter.procedure_prescription:
-		set_ip_admission_child_records(inpatient_record, "procedure_prescription", encounter.procedure_prescription)
+		set_ip_admission_child_records(inpatient_record, "inpatient_record_procedure", encounter.procedure_prescription)
 	inpatient_record.save(ignore_permissions = True)
 
 def set_ip_admission_child_records(inpatient_record, table_name, encounter_table):
@@ -114,6 +114,7 @@ def set_ip_admission_child_records(inpatient_record, table_name, encounter_table
 		table = inpatient_record.append(table_name)
 		for df in table.meta.get("fields"):
 			table.set(df.fieldname, item.get(df.fieldname))
+
 def set_ip_admission_patient_details(inpatient_record, dialog):
 	patient_obj = frappe.get_doc('Patient', dialog['patient'])
 	inpatient_record.patient = dialog['patient']

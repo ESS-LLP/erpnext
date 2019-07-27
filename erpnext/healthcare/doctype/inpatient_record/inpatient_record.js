@@ -32,10 +32,17 @@ frappe.ui.form.on('Inpatient Record', {
 			frm.set_value("referring_practitioner", "");
 			frm.set_df_property("referring_practitioner", "hidden", 1);
 		}else if(frm.doc.source=="Referral"){
-			frm.set_value("referring_practitioner", frm.doc.primary_practitioner);
-			frm.set_df_property("referring_practitioner", "hidden", 0);
-			frm.set_df_property("referring_practitioner", "read_only", 1);
-			frm.set_df_property("referring_practitioner", "reqd", 1);
+			if(frm.doc.__islocal){
+				frm.set_value("referring_practitioner", "");
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "read_only", 0);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+			else{
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
 		}else if(frm.doc.source=="External Referral"){
 			frm.set_df_property("referring_practitioner", "read_only", 0);
 			frm.set_df_property("referring_practitioner", "hidden", 0);
@@ -43,6 +50,26 @@ frappe.ui.form.on('Inpatient Record', {
 		}
 	},
 	refresh: function(frm) {
+		if(frm.doc.__islocal ){
+			frm.set_df_property("ordering_practitioner", "read_only", 0);
+			frm.set_df_property("referring_encounter", "read_only", 0);
+			frm.set_df_property("diagnosis	", "read_only", 0);
+			frm.set_df_property("chief_complaint", "read_only", 0);
+		}
+		else{
+			frm.set_df_property("ordering_practitioner", "read_only", 1);
+			frm.set_df_property("referring_encounter", "read_only", 1);
+			frm.set_df_property("diagnosis	", "read_only", 1);
+			frm.set_df_property("chief_complaint", "read_only", 1);
+		}
+		frm.set_query("referring_encounter", function(){
+			return {
+				filters: {
+					"patient": frm.doc.patient,
+					"practitioner": frm.doc.ordering_practitioner
+				}
+			};
+		});
 		if(!frm.doc.__islocal && frm.doc.status == "Admission Scheduled"){
 			frm.add_custom_button(__('Admit'), function() {
 				admit_patient_dialog(frm);
@@ -712,3 +739,20 @@ function exists_appointment(patient, practitioner, appointment_date, callback) {
 	});
 }
 }
+frappe.ui.form.on('Inpatient Record Procedure',{
+	standard_selling_rate:function(frm){
+		set_total_standard_selling_rate(frm)
+	},
+});
+var set_total_standard_selling_rate = function(frm){
+	var total_amount=0
+	for (var i in frm.doc.inpatient_record_procedure) {
+		console.log(i);
+		
+		var item = frm.doc.inpatient_record_procedure[i];
+		if(item.standard_selling_rate ){
+			total_amount=total_amount+item.standard_selling_rate
+		}
+	}
+	frm.set_value("total_standard_selling_rate", total_amount)
+};
