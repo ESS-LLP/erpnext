@@ -82,6 +82,11 @@ class PatientAppointment(Document):
 def invoice_appointment(appointment_doc, is_pos):
 	if not appointment_doc.name:
 		return False
+	sales_invoice = set_invoice_details_for_appointment(appointment_doc, is_pos)
+	sales_invoice.save(ignore_permissions=True)
+	return sales_invoice
+
+def set_invoice_details_for_appointment(appointment_doc, is_pos):
 	sales_invoice = frappe.new_doc("Sales Invoice")
 	sales_invoice.patient = appointment_doc.patient
 	sales_invoice.patient_name = appointment_doc.patient_name
@@ -132,8 +137,6 @@ def invoice_appointment(appointment_doc, is_pos):
 	payments_line.amount = appointment_doc.paid_amount
 
 	sales_invoice.set_missing_values(for_validate = True)
-
-	sales_invoice.save(ignore_permissions=True)
 	return sales_invoice
 
 def appointment_cancel(appointment_id):
@@ -556,3 +559,9 @@ def get_procedure_prescribed(patient):
 	from `tabPatient Encounter` ct, `tabProcedure Prescription` pp
 	where ct.patient='{0}' and pp.parent=ct.name and pp.appointment_booked=0
 	order by ct.creation desc""".format(patient))
+
+@frappe.whitelist()
+def invoice_from_appointment(appointment_id):
+	appointment = frappe.get_doc("Patient Appointment", appointment_id)
+	sales_invoice = set_invoice_details_for_appointment(appointment, False)
+	return sales_invoice.as_dict() if sales_invoice else False

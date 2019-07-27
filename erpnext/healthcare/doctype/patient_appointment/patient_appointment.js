@@ -124,6 +124,11 @@ frappe.ui.form.on('Patient Appointment', {
 				frm.set_df_property("paid_amount", "reqd", 0);
 			}
 		});
+		if(!frm.doc.__islocal && frappe.user.has_role("Accounts User")){
+			frm.add_custom_button(__('Sales Invoice'), function(){
+				btn_create_invoice(frm);
+			},"Create");
+		}
 	},
 	check_availability: function(frm) {
 		if(frm.doc.patient){
@@ -792,3 +797,22 @@ var show_radiology_procedure = function(frm, result){
 	}
 	d.show();
 };
+
+var btn_create_invoice = function(frm){
+	var doc = frm.doc
+	frappe.call({
+		method: 'erpnext.healthcare.doctype.patient_appointment.patient_appointment.invoice_from_appointment',
+		args:{
+			appointment_id: doc.name
+		},
+		callback: function(r){
+			if(!r.exc){
+				frm.reload_doc();
+				var doclist = frappe.model.sync(r.message);
+				frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+			}
+		},
+		freeze: true,
+		freeze_message: __("Creating invoice......")
+	});
+}
