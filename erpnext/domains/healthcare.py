@@ -67,7 +67,21 @@ data = {
 				'fieldname': 'inpatient_record', 'label': 'Inpatient Record', 'fieldtype': 'Link', 'fetch_from': 'patient.inpatient_record',
 				'insert_after': 'patient_name', 'read_only': True, 'fetch_if_empty': True, 'options': 'Inpatient Record'
 			}
-		]
+		],
+		'Payment Entry': [
+			{
+				'fieldname': 'patient', 'label': 'Patient', 'fieldtype': 'Link', 'options': 'Patient',
+				'insert_after': 'party_section'
+			},
+			{
+				'fieldname': 'patient_name', 'label': 'Patient Name', 'fieldtype': 'Data', 'fetch_from': 'patient.patient_name',
+				'insert_after': 'patient', 'read_only': True
+			},
+			{
+				'fieldname': 'inpatient_record', 'label': 'Inpatient Record', 'fieldtype': 'Link', 'fetch_from': 'patient.inpatient_record',
+				'insert_after': 'patient_name', 'read_only': True, 'fetch_if_empty': True, 'options': 'Inpatient Record'
+			}
+		],
 	},
 	'on_setup': 'erpnext.healthcare.setup.setup_healthcare'
 }

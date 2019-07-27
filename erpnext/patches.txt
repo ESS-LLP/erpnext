@@ -612,3 +612,4 @@ erpnext.patches.v11_0.rename_healthcare_service_unit_status_field
 erpnext.patches.v12_0.set_practitioner_name
 erpnext.patches.v12_0.set_ip_record_field_in_si
 erpnext.patches.v12_0.healthcare_patient_in_delivery_note
+erpnext.patches.v12_0.healthcare_patient_in_payment_entry
