@@ -90,7 +90,7 @@ class InpatientRecord(Document):
 		payment_entry.posting_date =  today()
 		payment_entry.payment_type="Receive"
 		payment_entry.party_type="Customer"
-		payment_entry.party=self.patient
+		payment_entry.party = frappe.get_value("Patient", self.patient, "customer")
 		payment_entry.patient=self.patient
 		payment_entry.paid_amount=self.total_standard_selling_rate
 		payment_entry.setup_party_account_field()
