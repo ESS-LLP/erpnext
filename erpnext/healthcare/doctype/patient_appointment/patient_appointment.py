@@ -482,6 +482,9 @@ def create_encounter(appointment):
 	encounter.visit_department = appointment.department
 	encounter.patient_sex = appointment.patient_sex
 	encounter.encounter_date = appointment.appointment_date
+	encounter.source=appointment.source
+	if appointment.referring_practitioner:
+		encounter.referring_practitioner=appointment.referring_practitioner
 	if appointment.invoiced:
 		encounter.invoiced = True
 	return encounter.as_dict()
