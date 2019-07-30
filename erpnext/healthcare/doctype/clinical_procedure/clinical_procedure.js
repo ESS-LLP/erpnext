@@ -71,9 +71,12 @@ frappe.ui.form.on('Clinical Procedure', {
 			};
 		});
 		if(frm.doc.__islocal){
-			frm.add_custom_button(__('Get from Patient Encounter'), function () {
+			frm.add_custom_button(__('Patient Encounter'), function () {
 				get_procedure_prescribed(frm);
-			});
+			}, __("Get form"));
+			frm.add_custom_button(__('Inpatient Record'), function () {
+				get_inpatient_procedure_prescribed(frm);
+			}, __("Get form"));
 		}
 		if(frm.doc.consume_stock){
 			frm.set_indicator_formatter('item_code',
@@ -268,10 +271,24 @@ frappe.ui.form.on('Clinical Procedure', {
 var get_procedure_prescribed = function(frm){
 	if(frm.doc.patient){
 		frappe.call({
-			method:"erpnext.healthcare.doctype.patient_appointment.patient_appointment.get_procedure_prescribed",
+			method:"erpnext.healthcare.doctype.clinical_procedure.clinical_procedure.get_procedure_prescribed",
 			args: {patient: frm.doc.patient},
 			callback: function(r){
 				show_procedure_templates(frm, r.message);
+			}
+		});
+	}
+	else{
+		frappe.msgprint("Please select Patient to get prescribed procedure");
+	}
+};
+var get_inpatient_procedure_prescribed = function(frm){
+	if(frm.doc.patient){
+		frappe.call({
+			method:"erpnext.healthcare.doctype.clinical_procedure.clinical_procedure.get_inpatient_procedure_prescribed",
+			args: {patient: frm.doc.patient},
+			callback: function(r){
+				show_inpatient_procedure_templates(frm, r.message);
 			}
 		});
 	}
@@ -319,6 +336,60 @@ var show_procedure_templates = function(frm, result){
 			refresh_field("start_date");
 			refresh_field("practitioner");
 			refresh_field("medical_department");
+			refresh_field("source");
+			refresh_field("referring_practitioner");
+			d.hide();
+			return false;
+		});
+	});
+	if(!result || result.length < 1){
+		var msg = "There are no procedure prescribed for patient "+frm.doc.patient;
+		$(repl('<div class="text-left">%(msg)s</div>', {msg: msg})).appendTo(html_field);
+	}
+	d.show();
+};
+var show_inpatient_procedure_templates = function(frm, result){
+	var d = new frappe.ui.Dialog({
+		title: __("Prescribed Procedures"),
+		fields: [
+			{
+				fieldtype: "HTML", fieldname: "inpatient_procedure_template"
+			}
+		]
+	});
+	var html_field = d.fields_dict.inpatient_procedure_template.$wrapper;
+	html_field.empty();
+	$.each(result, function(x, y){
+		var row = $(repl('<div class="col-xs-12" style="padding-top:12px; text-align:center;" >\
+		<div class="col-xs-5"> %(iprecord)s <br> %(primery_practitioner)s </div>\
+		<div class="col-xs-5"> %(procedure_template)s <br>%(sec_practitioner)s </div>\
+		<div class="col-xs-2">\
+		<a data-name="%(name)s" data-procedure-template="%(procedure_template)s"\
+		data-practitioner="%(primery_practitioner)s" data-prescription="%(prescription)s"\
+		data-date="%(iprecord_date)s" data-secondary-practitioner="%(sec_practitioner)s"\
+		data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s">\
+		<button class="btn btn-default btn-xs">Add\
+		</button></a></div></div><div class="col-xs-12"><hr/><div/>', {name:y[0], procedure_template: y[1],
+			iprecord:y[2], primery_practitioner:y[3], sec_practitioner:y[4]? y[4]:'',
+			source:y[5], referring_practitioner:y[6], prescription:y[7]})).appendTo(html_field);
+		row.find("a").click(function() {
+			frm.doc.procedure_template = $(this).attr("data-procedure-template");
+			if($(this).attr("data-prescription") != 'null'){
+				frm.doc.prescription = $(this).attr("data-prescription");
+			}
+			frm.doc.practitioner = $(this).attr("data-practitioner");
+			frm.doc.inpatient_record_procedure = $(this).attr("data-name");
+			frm.doc.secondary_practitioner = $(this).attr("data-secondary-practitioner");
+			frm.doc.source =  $(this).attr("data-source");
+			frm.doc.referring_practitioner= $(this).attr("data-referring-practitioner")
+			if(frm.doc.referring_practitioner){
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+			}
+			refresh_field("procedure_template");
+			refresh_field("prescription");
+			refresh_field("secondary_practitioner");
+			refresh_field("practitioner");
+			refresh_field("inpatient_record_procedure");
 			refresh_field("source");
 			refresh_field("referring_practitioner");
 			d.hide();

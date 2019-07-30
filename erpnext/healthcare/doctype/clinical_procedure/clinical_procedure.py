@@ -35,6 +35,14 @@ class ClinicalProcedure(Document):
 	def after_insert(self):
 		if self.prescription:
 			frappe.db.set_value("Procedure Prescription", self.prescription, "procedure_created", 1)
+			ip_record_procdure = frappe.db.exists(
+				"Inpatient Record Procedure",
+				{"prescription": self.prescription}
+			)
+			if ip_record_procdure:
+				frappe.db.set_value("Inpatient Record Procedure", ip_record_procdure, "procedure_created", 1)
+		if self.inpatient_record_procedure:
+			frappe.db.set_value("Inpatient Record Procedure", self.inpatient_record_procedure, "procedure_created", 1)
 		if self.appointment and self.docstatus==0:
 			frappe.db.set_value("Patient Appointment", self.appointment, "status", "In Progress")
 		template = frappe.get_doc("Clinical Procedure Template", self.procedure_template)
@@ -420,3 +428,19 @@ def create_clinical_procedure_doc(invoiced, practitioner, patient, template, sou
 	clinical_procedure.procedure_template = template.name
 	clinical_procedure.source = source
 	return clinical_procedure
+
+@frappe.whitelist()
+def get_inpatient_procedure_prescribed(patient):
+	return frappe.db.sql("""select pp.name, pp.procedure, pp.parent, pp.practitioner,pp.secondary_practitioner,
+	ct.source, ct.referring_practitioner, pp.prescription
+	from `tabInpatient Record` ct, `tabInpatient Record Procedure` pp
+	where ct.patient='{0}' and pp.parent=ct.name and pp.procedure_created=0
+	order by ct.creation desc""".format(patient))
+
+@frappe.whitelist()
+def get_procedure_prescribed(patient):
+	return frappe.db.sql("""select pp.name, pp.procedure, pp.parent, ct.practitioner,
+	ct.encounter_date, pp.practitioner, pp.date, pp.department, ct.source, ct.referring_practitioner
+	from `tabPatient Encounter` ct, `tabProcedure Prescription` pp
+	where ct.patient='{0}' and pp.parent=ct.name and pp.procedure_created=0
+	order by ct.creation desc""".format(patient))

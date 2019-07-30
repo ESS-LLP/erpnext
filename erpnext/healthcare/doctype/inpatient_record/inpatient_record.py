@@ -128,6 +128,8 @@ def set_ip_admission_child_records(inpatient_record, table_name, encounter_table
 		table = inpatient_record.append(table_name)
 		for df in table.meta.get("fields"):
 			table.set(df.fieldname, item.get(df.fieldname))
+		if(table_name == "inpatient_record_procedure"):
+			table.set("prescription", item.get("name"))
 
 def set_ip_admission_patient_details(inpatient_record, dialog):
 	patient_obj = frappe.get_doc('Patient', dialog['patient'])
