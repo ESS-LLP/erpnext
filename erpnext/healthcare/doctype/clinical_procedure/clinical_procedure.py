@@ -273,6 +273,8 @@ def create_delivery_note(doc):
 		child.rate = item_details.price_list_rate
 		child.price_list_rate = item_details.price_list_rate
 		child.amount = item_details.price_list_rate * child.qty
+		child.reference_dt = "Clinical Procedure"
+		child.reference_dn = doc.name
 
 	if delivery_note.items:
 		delivery_note.insert(ignore_permissions = True)

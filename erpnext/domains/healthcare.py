@@ -68,6 +68,16 @@ data = {
 				'insert_after': 'patient_name', 'read_only': True, 'fetch_if_empty': True, 'options': 'Inpatient Record'
 			}
 		],
+		'Delivery Note Item': [
+			{
+				'fieldname': 'reference_dt', 'label': 'Reference DocType', 'fieldtype': 'Link', 'options': 'DocType',
+				'insert_after': 'page_break'
+			},
+			{
+				'fieldname': 'reference_dn', 'label': 'Reference Name', 'fieldtype': 'Dynamic Link', 'options': 'reference_dt',
+				'insert_after': 'reference_dt'
+			}
+		],
 		'Payment Entry': [
 			{
 				'fieldname': 'patient', 'label': 'Patient', 'fieldtype': 'Link', 'options': 'Patient',
