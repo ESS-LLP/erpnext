@@ -144,6 +144,9 @@ frappe.ui.form.on('Clinical Procedure Item', {
 	qty: function(frm, cdt, cdn){
 		var d = locals[cdt][cdn];
 		frappe.model.set_value(cdt, cdn, "transfer_qty", d.qty*d.conversion_factor);
+		if(frm.doc.doctype == "Clinical Procedure Template"){
+			frappe.model.set_value(cdt, cdn, "procedure_qty", d.qty);
+		}
 	},
 	uom: function(doc, cdt, cdn){
 		var d = locals[cdt][cdn];

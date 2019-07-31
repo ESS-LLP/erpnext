@@ -141,23 +141,6 @@ def get_healthcare_services_to_invoice(patient):
 						item_to_invoice.append({'reference_type': 'Procedure Prescription', 'reference_name': rx_obj.name,
 						'service': frappe.db.get_value("Clinical Procedure Template", rx_obj.procedure, "item"), 'cost_center': cost_center})
 
-			procedures = frappe.get_list("Clinical Procedure",
-			{'patient': patient.name, 'invoice_separately_as_consumables': True, 'consumption_invoiced': False,
-			'consume_stock': True, 'status': 'Completed'})
-			if procedures:
-				cost_center = False
-				service_item = get_healthcare_service_item('clinical_procedure_consumable_item')
-				if not service_item:
-					msg = _(("Please Configure {0} in ").format("Clinical Procedure Consumable Item") \
-						+ """<b><a href="#Form/Healthcare Settings">Healthcare Settings</a></b>""")
-					frappe.throw(msg)
-				for procedure in procedures:
-					procedure_obj = frappe.get_doc("Clinical Procedure", procedure['name'])
-					if procedure_obj.service_unit:
-						cost_center = frappe.db.get_value("Healthcare Service Unit", procedure_obj.service_unit, "cost_center")
-					item_to_invoice.append({'reference_type': 'Clinical Procedure', 'reference_name': procedure_obj.name,
-					'service': service_item, 'rate': procedure_obj.consumable_total_amount,'cost_center': cost_center, 'description': procedure_obj.consumption_details})
-
 			inpatient_services = frappe.db.sql("""select io.name, io.parent from `tabInpatient Record` ip,
 			`tabInpatient Occupancy` io where ip.patient=%s and io.parent=ip.name and
 			io.left=1 and io.invoiced=0""", (patient.name))
@@ -266,20 +249,16 @@ def manage_invoice_submit_cancel(doc, method):
 def set_invoiced(item, method, ref_invoice=None):
 	invoiced = False
 	if(method=="on_submit"):
-		validate_invoiced_on_submit(item)
+		if not item.delivery_note:
+			validate_invoiced_on_submit(item)
 		invoiced = True
 
-	if item.reference_dt == 'Clinical Procedure':
-		if get_healthcare_service_item('clinical_procedure_consumable_item') == item.item_code:
-			frappe.db.set_value(item.reference_dt, item.reference_dn, "consumption_invoiced", invoiced)
-		else:
-			frappe.db.set_value(item.reference_dt, item.reference_dn, "invoiced", invoiced)
-	elif item.reference_dt == 'Inpatient Occupancy' and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
+	if item.reference_dt == 'Inpatient Occupancy' and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
 		inpatient_occupancy = frappe.get_doc("Inpatient Occupancy", item.reference_dn)
 		if inpatient_occupancy.left == 1:
 			inpatient_occupancy.invoiced = invoiced
 			inpatient_occupancy.save(ignore_permissions=True)
-	else:
+	elif not item.delivery_note:
 		frappe.db.set_value(item.reference_dt, item.reference_dn, "invoiced", invoiced)
 
 	if item.reference_dt == 'Patient Appointment':
@@ -297,11 +276,7 @@ def set_invoiced(item, method, ref_invoice=None):
 		manage_prescriptions(invoiced, item.reference_dt, item.reference_dn, "Clinical Procedure", "procedure_created")
 
 def validate_invoiced_on_submit(item):
-	if item.reference_dt == 'Clinical Procedure' and get_healthcare_service_item('clinical_procedure_consumable_item') == item.item_code:
-			is_invoiced = frappe.db.get_value(item.reference_dt, item.reference_dn, "consumption_invoiced")
-	else:
-		is_invoiced = frappe.db.get_value(item.reference_dt, item.reference_dn, "invoiced")
-	if is_invoiced == 1:
+	if frappe.db.get_value(item.reference_dt, item.reference_dn, "invoiced") == 1:
 		frappe.throw(_("The item referenced by {0} - {1} is already invoiced"\
 		).format(item.reference_dt, item.reference_dn))
 
@@ -723,3 +698,32 @@ def sales_item_details_for_healthcare_doc(item_code, doc, wh=None):
 		args['warehouse'] = wh
 	item_details = get_item_details(args)
 	return item_details if item_details else False
+
+def get_procedure_delivery_item(patient, procedure=False):
+	query = """
+		select
+			di.name, dn.name
+		from
+			`tabDelivery Note` dn, `tabDelivery Note Item` di
+		where
+			dn.patient=%s and di.parent=dn.name and dn.status='To Bill'
+	"""
+	if procedure:
+		query += """and di.reference_dn=%s"""
+		return frappe.db.sql(query, (patient, procedure))
+	else:
+		query += """and di.reference_dn is NULL"""
+		return frappe.db.sql(query, (patient))
+
+def item_reduce_procedure_rate(dn_item, procedure_items):
+	for item in procedure_items:
+		print(item.invoice_additional_quantity_used)
+		if item.item_code == dn_item.item_code:
+			if item.invoice_additional_quantity_used:
+				if dn_item.qty <= item.procedure_qty:
+					return dn_item.qty*dn_item.rate
+				else:
+					return item.procedure_qty*dn_item.rate
+			else:
+				return dn_item.qty*dn_item.rate
+	return 0

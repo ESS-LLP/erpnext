@@ -11,7 +11,7 @@ from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import g
 from erpnext.healthcare.doctype.lab_test.lab_test import create_sample_doc, create_lab_test_doc
 from erpnext.stock.stock_ledger import get_previous_sle
 import datetime
-from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
+from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc, get_procedure_delivery_item, item_reduce_procedure_rate
 
 class ClinicalProcedure(Document):
 	def validate(self):
@@ -19,12 +19,6 @@ class ClinicalProcedure(Document):
 			if not self.warehouse:
 				frappe.throw(_("Set warehouse for Procedure {0} ").format(self.name))
 			self.set_actual_qty()
-
-		if self.items:
-			self.invoice_separately_as_consumables = False
-			for item in self.items:
-				if item.invoice_separately_as_consumables == 1:
-					self.invoice_separately_as_consumables = True
 
 	def before_insert(self):
 		if self.consume_stock:
@@ -55,25 +49,8 @@ class ClinicalProcedure(Document):
 
 	def complete(self):
 		if self.consume_stock and self.items:
-			# create_stock_entry(self)
 			create_delivery_note(self)
 		frappe.db.set_value("Clinical Procedure", self.name, "status", 'Completed')
-		if self.items:
-			consumable_total_amount = 0
-			consumption_details = False
-			for item in self.items:
-				if item.invoice_separately_as_consumables:
-					item_details = sales_item_details_for_healthcare_doc(item.item_code, self, self.warehouse)
-					item_price = item_details.price_list_rate * item.transfer_qty
-					item_consumption_details = item_details.item_name+"\t"+str(item.qty)+" "+item.uom+"\t"+str(item_price)
-					consumable_total_amount += item_price
-					if not consumption_details:
-						consumption_details = "Clinical Procedure ("+self.name+"):\n\t"+item_consumption_details
-					else:
-						consumption_details += "\n\t"+item_consumption_details
-			if consumable_total_amount > 0:
-				frappe.db.set_value("Clinical Procedure", self.name, "consumable_total_amount", consumable_total_amount)
-				frappe.db.set_value("Clinical Procedure", self.name, "consumption_details", consumption_details)
 
 		if self.inpatient_record and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
 			invoice_clinical_procedure(self)
@@ -218,8 +195,9 @@ def set_stock_items(doc, stock_detail_parent, parenttype):
 		se_child.conversion_factor = flt(d["conversion_factor"])
 		if d["batch_no"]:
 			se_child.batch_no = d["batch_no"]
-		if parenttype == "Clinical Procedure Template":
-			se_child.invoice_separately_as_consumables = d["invoice_separately_as_consumables"]
+		if parenttype == "Clinical Procedure Template" and doc.doctype == "Clinical Procedure":
+			se_child.invoice_additional_quantity_used = d["invoice_additional_quantity_used"]
+			se_child.procedure_qty = flt(d["qty"])
 	return doc
 
 def get_item_dict(table, parent, parenttype):
@@ -340,29 +318,42 @@ def invoice_clinical_procedure(procedure):
 	sales_invoice.company = procedure.company
 	sales_invoice.debit_to = get_receivable_account(procedure.company, procedure.patient)
 
+	reduce_from_procedure_rate = 0
+	cost_center = False
+	if procedure.service_unit:
+		cost_center = frappe.db.get_value("Healthcare Service Unit", procedure.service_unit, "cost_center")
+	if procedure.consume_stock:
+		delivery_note_items = get_procedure_delivery_item(procedure.patient, procedure.name)
+		if delivery_note_items:
+			for delivery_note_item in delivery_note_items:
+				dn_item = frappe.get_doc("Delivery Note Item", delivery_note_item[0])
+				reduce_from_procedure_rate += item_reduce_procedure_rate(dn_item, procedure.items)
+				item_line = sales_invoice.append("items")
+				item_line.item_code = dn_item.item_code
+				item_details = sales_item_details_for_healthcare_doc(item_line.item_code, procedure)
+				item_line.item_name = item_details.item_name
+				item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
+				item_line.rate = dn_item.rate
+				item_line.qty = dn_item.qty
+				item_line.amount = item_line.rate*item_line.qty
+				item_line.reference_dt = dn_item.reference_dt
+				item_line.reference_dn = dn_item.reference_dn
+				item_line.cost_center = cost_center if cost_center else ''
+				item_line.delivery_note = delivery_note_item[1] if delivery_note_item[1] else ''
+
 	item_line = sales_invoice.append("items")
 	item_line.item_code = frappe.db.get_value("Clinical Procedure Template", procedure.procedure_template, "item")
 	item_details = sales_item_details_for_healthcare_doc(item_line.item_code, procedure)
 	item_line.item_name = item_details.item_name
 	item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
-	item_line.rate = item_details.price_list_rate
-	item_line.amount = item_details.price_list_rate
+	item_line.rate = float(procedure.standard_selling_rate) - reduce_from_procedure_rate
 	item_line.qty = 1
+	item_line.amount = item_line.rate*item_line.qty
+	item_line.cost_center = cost_center if cost_center else ''
 	if procedure.appointment:
 		item_line.reference_dt = "Patient Appointment"
 		item_line.reference_dn = procedure.appointment
 	else:
-		item_line.reference_dt = "Clinical Procedure"
-		item_line.reference_dn = procedure.name
-
-	if procedure.invoice_separately_as_consumables and not procedure.consumption_invoiced and procedure.consume_stock:
-		item_line = sales_invoice.append("items")
-		item_line.item_code = frappe.db.get_value("Healthcare Settings", None, 'clinical_procedure_consumable_item')
-		item_line.item_name = frappe.db.get_value("Item", item_line.item_code, "item_name")
-		item_line.description = procedure.consumption_details
-		item_line.rate = procedure.consumable_total_amount
-		item_line.amount = procedure.consumable_total_amount
-		item_line.qty = 1
 		item_line.reference_dt = "Clinical Procedure"
 		item_line.reference_dn = procedure.name
 

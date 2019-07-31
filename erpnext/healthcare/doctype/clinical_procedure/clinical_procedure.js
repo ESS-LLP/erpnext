@@ -42,6 +42,8 @@ frappe.ui.form.on('Clinical Procedure', {
 		}
 	},
 	refresh: function(frm) {
+		var df = frappe.meta.get_docfield("Clinical Procedure Item", "invoice_additional_quantity_used", frm.doc.name);
+		df.read_only = 1;
 		frm.set_query("patient", function () {
 			return {
 				filters: {"disabled": 0}
