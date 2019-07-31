@@ -55,8 +55,25 @@ frappe.ui.form.on('Patient', {
 		if(frm.doc.dob){
 			$(frm.fields_dict['age_html'].wrapper).html("AGE : " + get_age(frm.doc.dob));
 		}
+	},
+	validate: function (frm) {
+		set_barcode(frm);
 	}
 });
+
+var set_barcode = function(frm) {
+	var cur_doc = frm.doc;
+	$(frm.fields_dict['barcode_image'].wrapper).html('<svg id="code128"></svg>');
+	$.getScript("https://cdn.jsdelivr.net/npm/jsbarcode@3.9.0/dist/JsBarcode.all.min.js", function( data, textStatus, jqxhr ) {
+		JsBarcode("#code128", cur_doc.name, {
+					background: "#FFFFFF",
+					height:"20",
+					width:"1"
+		});
+		var svg = $('#code128').parent().html();
+		frappe.model.set_value(cur_doc.doctype, cur_doc.name, "barcode_svg", svg);
+	});
+};
 
 frappe.ui.form.on("Patient", "dob", function(frm) {
 	if(frm.doc.dob) {
