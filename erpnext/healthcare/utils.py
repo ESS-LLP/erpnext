@@ -712,7 +712,7 @@ def get_procedure_delivery_item(patient, procedure=False):
 		query += """and di.reference_dn=%s"""
 		return frappe.db.sql(query, (patient, procedure))
 	else:
-		query += """and di.reference_dt='Inpatient Record' and di.reference_dn is NOT NULL"""
+		query += """and di.reference_dn is NULL"""
 		return frappe.db.sql(query, (patient))
 
 def item_reduce_procedure_rate(dn_item, procedure_items):
