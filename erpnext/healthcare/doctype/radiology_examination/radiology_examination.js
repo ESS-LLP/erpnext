@@ -18,9 +18,23 @@ frappe.ui.form.on('Radiology Examination', {
 					patient_details_html += "Department : " + data.message.department + "<br/>"
 					patient_details_html += "Source: " + data.message.source + "<br/>"
 					frm.fields_dict.patient_details_html.html(patient_details_html);
-					frm.set_value( "source", data.message.source);
-					if(data.message.referring_practitioner){
-						frm.set_value( "referring_practitioner", data.message.referring_practitioner);
+					if(frm.doc.appointment ){
+						frm.set_value( "source", data.message.source);
+						if(data.message.referring_practitioner){
+							frm.set_value( "referring_practitioner", data.message.referring_practitioner);
+						}
+						frm.set_df_property("source", "read_only", 1);
+						if(data.message.referring_practitioner !=""){
+							frm.set_df_property("referring_practitioner", "hidden", 0);
+							frm.set_df_property("referring_practitioner", "read_only", 1);
+						}
+						frm.set_df_property("patient", "read_only", 1);
+					}
+					else
+					{
+						frm.set_df_property("patient", "read_only", 0);
+						frm.set_value( "source", "");
+						frm.set_value( "referring_practitioner", "");
 					}
 				}
 			});
@@ -46,21 +60,62 @@ frappe.ui.form.on('Radiology Examination', {
 			});
 		}
 	},
+	inpatient_record:function(frm) {
+		if(frm.doc.inpatient_record){
+			frappe.call({
+				method: "frappe.client.get",
+				args: {
+					doctype: "Inpatient Record",
+					name: frm.doc.inpatient_record
+				},
+				callback: function(r) {
+					frm.set_value("source",r.message.source);
+					frm.set_value("referring_practitioner", r.message.referring_practitioner);
+				}
+			});
+			frm.set_df_property("source", "hidden", 0);
+			frm.set_df_property("source", "read_only", 1);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "read_only", 1);
+			refresh_field("source");
+			refresh_field("referring_practitioner");
+		}
+	},
 	source: function(frm){
 		if(frm.doc.source=="Direct"){
 			frm.set_value("referring_practitioner", "");
 			frm.set_df_property("referring_practitioner", "hidden", 1);
-		}
-		else if(frm.doc.source=="Referral"){
-			frm.set_value("referring_practitioner", frm.doc.practitioner);
-			frm.set_df_property("referring_practitioner", "hidden", 0);
-			frm.set_df_property("referring_practitioner", "read_only", 1);
-			frm.set_df_property("referring_practitioner", "reqd", 1);
-		}
-		else if(frm.doc.source=="External Referral"){
-			frm.set_df_property("referring_practitioner", "read_only", 0);
-			frm.set_df_property("referring_practitioner", "hidden", 0);
-			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}else if(frm.doc.source=="Referral"){
+			if(frm.doc.referring_practitioner==""){
+				if(frm.doc.practitioner){
+					frm.set_value("referring_practitioner", frm.doc.practitioner);
+					frm.set_df_property("referring_practitioner", "hidden", 0);
+					frm.set_df_property("referring_practitioner", "read_only", 1);
+					frm.set_df_property("referring_practitioner", "reqd", 1);
+				}
+				else{
+					frm.set_df_property("referring_practitioner", "read_only", 0);
+					frm.set_df_property("referring_practitioner", "hidden", 0);
+					frm.set_df_property("referring_practitioner", "reqd", 1);
+				}
+			}
+			else{
+				frm.set_df_property("source", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+		}else if(frm.doc.source=="External Referral"){
+			if(!frm.doc.referring_practitioner){
+				frm.set_df_property("referring_practitioner", "read_only", 0);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+			else{
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
 		}
 	},
 	refresh :  function(frm){
@@ -68,6 +123,14 @@ frappe.ui.form.on('Radiology Examination', {
 			frm.add_custom_button(__('Get from Patient Encounter'), function () {
 				get_radiology_procedure_prescribed(frm);
 			});
+		}
+		if(frm.doc.appointment ){
+			frm.set_df_property("patient", "read_only", 1);
+		}
+		else
+		{
+			frm.set_df_property("patient", "read_only", 0);
+			refresh_field("patient");
 		}
 	}
 });

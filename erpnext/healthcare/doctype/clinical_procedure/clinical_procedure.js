@@ -26,19 +26,62 @@ frappe.ui.form.on('Clinical Procedure', {
 			}
 		});
 	},
+	inpatient_record:function(frm) {
+		if(frm.doc.inpatient_record){
+			frappe.call({
+				method: "frappe.client.get",
+				args: {
+					doctype: "Inpatient Record",
+					name: frm.doc.inpatient_record
+				},
+				callback: function(r) {
+					frm.set_value("source",r.message.source);
+					frm.set_value("referring_practitioner", r.message.referring_practitioner);
+				}
+			});
+			frm.set_df_property("source", "hidden", 0);
+			frm.set_df_property("source", "read_only", 1);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "read_only", 1);
+			refresh_field("source");
+			refresh_field("referring_practitioner");
+		}
+	},
 	source: function(frm){
 		if(frm.doc.source=="Direct"){
 			frm.set_value("referring_practitioner", "");
 			frm.set_df_property("referring_practitioner", "hidden", 1);
 		}else if(frm.doc.source=="Referral"){
-			frm.set_value("referring_practitioner", frm.doc.practitioner);
-			frm.set_df_property("referring_practitioner", "hidden", 0);
-			frm.set_df_property("referring_practitioner", "read_only", 1);
-			frm.set_df_property("referring_practitioner", "reqd", 1);
+			if(!frm.doc.referring_practitioner){
+				if(frm.doc.practitioner){
+					frm.set_value("referring_practitioner", frm.doc.practitioner);
+					frm.set_df_property("referring_practitioner", "hidden", 0);
+					frm.set_df_property("referring_practitioner", "read_only", 1);
+					frm.set_df_property("referring_practitioner", "reqd", 1);
+				}
+				else{
+					frm.set_df_property("referring_practitioner", "read_only", 0);
+					frm.set_df_property("referring_practitioner", "hidden", 0);
+					frm.set_df_property("referring_practitioner", "reqd", 1);
+				}
+			}
+			else{
+				frm.set_df_property("source", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
 		}else if(frm.doc.source=="External Referral"){
-			frm.set_df_property("referring_practitioner", "read_only", 0);
-			frm.set_df_property("referring_practitioner", "hidden", 0);
-			frm.set_df_property("referring_practitioner", "reqd", 1);
+			if(!frm.doc.referring_practitioner){
+				frm.set_df_property("referring_practitioner", "read_only", 0);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+			else{
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
 		}
 	},
 	refresh: function(frm) {
@@ -157,6 +200,41 @@ frappe.ui.form.on('Clinical Procedure', {
 			frm.add_fetch("procedure_template", "medical_department", "medical_department");
 			frm.set_value("start_time", null);
 		}
+		if(frm.doc.source=="Direct"){
+			frm.set_value("referring_practitioner", "");
+			frm.set_df_property("referring_practitioner", "hidden", 1);
+		}else if(frm.doc.source=="Referral"){
+			if(!frm.doc.referring_practitioner){
+				if(frm.doc.practitioner){
+					frm.set_value("referring_practitioner", frm.doc.practitioner);
+					frm.set_df_property("referring_practitioner", "hidden", 0);
+					frm.set_df_property("referring_practitioner", "read_only", 1);
+					frm.set_df_property("referring_practitioner", "reqd", 1);
+				}
+				else{
+					frm.set_df_property("referring_practitioner", "read_only", 0);
+					frm.set_df_property("referring_practitioner", "hidden", 0);
+					frm.set_df_property("referring_practitioner", "reqd", 1);
+				}
+			}
+			else{
+				frm.set_df_property("source", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+		}else if(frm.doc.source=="External Referral"){
+			if(!frm.doc.referring_practitioner){
+				frm.set_df_property("referring_practitioner", "read_only", 0);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+			else{
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+		}
 	},
 	patient: function(frm) {
 		if(frm.doc.patient){
@@ -204,6 +282,7 @@ frappe.ui.form.on('Clinical Procedure', {
 					if(data.message.referring_practitioner){
 						frm.set_value( "referring_practitioner", data.message.referring_practitioner);
 					}
+
 				}
 			});
 		}
@@ -329,9 +408,11 @@ var show_procedure_templates = function(frm, result){
 			frm.doc.start_date = $(this).attr("data-date");
 			frm.doc.medical_department = $(this).attr("data-department");
 			frm.doc.source =  $(this).attr("data-source");
+			frm.set_df_property("source", "read_only", 1);
 			frm.doc.referring_practitioner= $(this).attr("data-referring-practitioner")
 			if(frm.doc.referring_practitioner){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "read_only", 1);
 			}
 			refresh_field("procedure_template");
 			refresh_field("prescription");
@@ -383,9 +464,11 @@ var show_inpatient_procedure_templates = function(frm, result){
 			frm.doc.inpatient_record_procedure = $(this).attr("data-name");
 			frm.doc.secondary_practitioner = $(this).attr("data-secondary-practitioner");
 			frm.doc.source =  $(this).attr("data-source");
+			frm.set_df_property("source", "read_only", 1);
 			frm.doc.referring_practitioner= $(this).attr("data-referring-practitioner")
 			if(frm.doc.referring_practitioner){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "read_only", 1);
 			}
 			refresh_field("procedure_template");
 			refresh_field("prescription");

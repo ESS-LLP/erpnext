@@ -21,21 +21,62 @@ frappe.ui.form.on('Lab Test', {
 			{fieldname: 'result_value', columns: 7}
 		];
 	},
+	inpatient_record:function(frm) {
+		if(frm.doc.inpatient_record){
+			frappe.call({
+				method: "frappe.client.get",
+				args: {
+					doctype: "Inpatient Record",
+					name: frm.doc.inpatient_record
+				},
+				callback: function(r) {
+					frm.set_value("source",r.message.source);
+					frm.set_value("referring_practitioner", r.message.referring_practitioner);
+				}
+			});
+			frm.set_df_property("source", "hidden", 0);
+			frm.set_df_property("source", "read_only", 1);
+			frm.set_df_property("referring_practitioner", "hidden", 0);
+			frm.set_df_property("referring_practitioner", "read_only", 1);
+			refresh_field("source");
+			refresh_field("referring_practitioner");
+		}
+	},
 	source: function(frm){
 		if(frm.doc.source=="Direct"){
 			frm.set_value("referring_practitioner", "");
 			frm.set_df_property("referring_practitioner", "hidden", 1);
-		}
-		else if(frm.doc.source=="Referral"){
-			frm.set_value("referring_practitioner", frm.doc.practitioner);
-			frm.set_df_property("referring_practitioner", "hidden", 0);
-			frm.set_df_property("referring_practitioner", "read_only", 1);
-			frm.set_df_property("referring_practitioner", "reqd", 1);
-		}
-		else if(frm.doc.source=="External Referral"){
-			frm.set_df_property("referring_practitioner", "read_only", 0);
-			frm.set_df_property("referring_practitioner", "hidden", 0);
-			frm.set_df_property("referring_practitioner", "reqd", 1);
+		}else if(frm.doc.source=="Referral"){
+			if(!frm.doc.referring_practitioner){
+				if(frm.doc.practitioner){
+					frm.set_value("referring_practitioner", frm.doc.practitioner);
+					frm.set_df_property("referring_practitioner", "hidden", 0);
+					frm.set_df_property("referring_practitioner", "read_only", 1);
+					frm.set_df_property("referring_practitioner", "reqd", 1);
+				}
+				else{
+					frm.set_df_property("referring_practitioner", "read_only", 0);
+					frm.set_df_property("referring_practitioner", "hidden", 0);
+					frm.set_df_property("referring_practitioner", "reqd", 1);
+				}
+			}
+			else{
+				frm.set_df_property("source", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+		}else if(frm.doc.source=="External Referral"){
+			if(!frm.doc.referring_practitioner){
+				frm.set_df_property("referring_practitioner", "read_only", 0);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+			else{
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
 		}
 	},
 	refresh :  function(frm){
@@ -85,6 +126,41 @@ frappe.ui.form.on('Lab Test', {
 					frappe.model.set_value(frm.doctype,frm.docname,"employee_designation", arg.message.designation);
 				}
 			});
+		}
+		if(frm.doc.source=="Direct"){
+			frm.set_value("referring_practitioner", "");
+			frm.set_df_property("referring_practitioner", "hidden", 1);
+		}else if(frm.doc.source=="Referral"){
+			if(!frm.doc.referring_practitioner){
+				if(frm.doc.practitioner){
+					frm.set_value("referring_practitioner", frm.doc.practitioner);
+					frm.set_df_property("referring_practitioner", "hidden", 0);
+					frm.set_df_property("referring_practitioner", "read_only", 1);
+					frm.set_df_property("referring_practitioner", "reqd", 1);
+				}
+				else{
+					frm.set_df_property("referring_practitioner", "read_only", 0);
+					frm.set_df_property("referring_practitioner", "hidden", 0);
+					frm.set_df_property("referring_practitioner", "reqd", 1);
+				}
+			}
+			else{
+				frm.set_df_property("source", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+		}else if(frm.doc.source=="External Referral"){
+			if(!frm.doc.referring_practitioner){
+				frm.set_df_property("referring_practitioner", "read_only", 0);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+			else{
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
 		}
 	}
 });
@@ -185,9 +261,11 @@ var show_lab_tests = function(frm, result){
 			frm.doc.prescription = $(this).attr("data-name");
 			frm.doc.practitioner = $(this).attr("data-practitioner");
 			frm.doc.source =  $(this).attr("data-source");
+			frm.set_df_property("source", "read_only", 1);
 			frm.doc.referring_practitioner= $(this).attr("data-referring-practitioner")
 			if(frm.doc.referring_practitioner){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "read_only", 1);
 			}
 			frm.set_df_property("template", "read_only", 1);
 			frm.set_df_property("patient", "read_only", 1);
