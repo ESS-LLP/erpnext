@@ -439,6 +439,8 @@ def create_delivery_note(ip_record, item, qty, s_wh):
 	child.rate = item_details.price_list_rate
 	child.price_list_rate = item_details.price_list_rate
 	child.amount = item_details.price_list_rate * child.qty
+	child.reference_dt = "Inpatient Record"
+	child.reference_dn = ip_record
 
 	delivery_note.insert(ignore_permissions = True)
 	delivery_note.submit()
