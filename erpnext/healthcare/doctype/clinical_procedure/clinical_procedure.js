@@ -453,7 +453,7 @@ var show_inpatient_procedure_templates = function(frm, result){
 		data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s">\
 		<button class="btn btn-default btn-xs">Add\
 		</button></a></div></div><div class="col-xs-12"><hr/><div/>', {name:y[0], procedure_template: y[1],
-			iprecord:y[2], primery_practitioner:y[3], sec_practitioner:y[4]? y[4]:'',
+			iprecord:y[2], primery_practitioner:y[3]? y[3]:'', sec_practitioner:y[4]? y[4]:'',
 			source:y[5], referring_practitioner:y[6], prescription:y[7]})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.procedure_template = $(this).attr("data-procedure-template");
