@@ -755,6 +755,10 @@ function exists_appointment(patient, practitioner, appointment_date, callback) {
 }
 }
 frappe.ui.form.on('Inpatient Record Procedure',{
+	procedure: function(frm, cdt, cdn){
+		frappe.model.set_value(cdt, cdn, "source", frm.doc.source);
+		frappe.model.set_value(cdt, cdn, "referring_practitioner", frm.doc.referring_practitioner);
+	},
 	standard_selling_rate:function(frm){
 		set_total_standard_selling_rate(frm)
 	},
@@ -762,8 +766,6 @@ frappe.ui.form.on('Inpatient Record Procedure',{
 var set_total_standard_selling_rate = function(frm){
 	var total_amount=0
 	for (var i in frm.doc.inpatient_record_procedure) {
-		console.log(i);
-		
 		var item = frm.doc.inpatient_record_procedure[i];
 		if(item.standard_selling_rate ){
 			total_amount=total_amount+item.standard_selling_rate
