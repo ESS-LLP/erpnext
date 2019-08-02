@@ -382,7 +382,7 @@ def create_clinical_procedure(encounter_id):
 		for clinical_procedure_id in clinical_procedure_ids:
 			template = get_clinical_procedure_template(clinical_procedure_id[1])
 			if template:
-				clinical_procedure = create_clinical_procedure_doc(clinical_procedure_id[2], encounter.practitioner, patient, template, encounter.source, clinical_procedure_id[0])
+				clinical_procedure = create_clinical_procedure_doc(clinical_procedure_id[2], encounter.practitioner, patient, template, encounter.source, clinical_procedure_id[0], encounter.referring_practitioner)
 				clinical_procedure.save(ignore_permissions = True)
 				frappe.db.set_value("Procedure Prescription", clinical_procedure_id[0], "procedure_created", 1)
 				if not procedure_created:
@@ -409,7 +409,7 @@ def check_template_exists(item):
 	return False
 
 
-def create_clinical_procedure_doc(invoiced, practitioner, patient, template, source=None, prescription=None):
+def create_clinical_procedure_doc(invoiced, practitioner, patient, template, source=None, prescription=None, ref_practitioner=None):
 	clinical_procedure = frappe.new_doc("Clinical Procedure")
 	clinical_procedure.invoiced = invoiced
 	clinical_procedure.practitioner = practitioner
@@ -420,6 +420,7 @@ def create_clinical_procedure_doc(invoiced, practitioner, patient, template, sou
 	clinical_procedure.medical_department = template.medical_department
 	clinical_procedure.procedure_template = template.name
 	clinical_procedure.source = source
+	clinical_procedure.referring_practitioner = ref_practitioner
 	return clinical_procedure
 
 @frappe.whitelist()
