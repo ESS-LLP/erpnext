@@ -100,6 +100,13 @@ frappe.ui.form.on('Clinical Procedure', {
 				}
 			};
 		});
+		frm.set_query("warehouse", function(){
+			return {
+				filters: {
+					"is_group": false
+				}
+			};
+		});
 		frm.set_query("service_unit", function(){
 			return {
 				filters: {

@@ -200,6 +200,13 @@ frappe.ui.form.on('Patient Encounter', {
 				}
 			};
 		});
+		frm.set_query("service_unit", function(){
+			return {
+				filters: {
+					"is_group": false
+				}
+			};
+		});
 		frm.set_df_property("appointment", "read_only", frm.doc.__islocal ? 0:1);
 		frm.set_df_property("patient", "read_only", frm.doc.__islocal ? 0:1);
 		frm.set_df_property("patient_age", "read_only", frm.doc.__islocal ? 0:1);

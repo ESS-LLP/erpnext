@@ -110,7 +110,13 @@ frappe.ui.form.on('Lab Test', {
 				});
 			});
 		}
-
+		frm.set_query("service_unit", function(){
+			return {
+				filters: {
+					"is_group": false
+				}
+			};
+		});
 	},
 	onload: function (frm) {
 		frm.add_fetch("practitioner", "department", "department");

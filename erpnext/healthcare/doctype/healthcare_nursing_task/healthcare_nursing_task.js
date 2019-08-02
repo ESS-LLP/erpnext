@@ -3,6 +3,12 @@
 
 frappe.ui.form.on('Healthcare Nursing Task', {
 	refresh: function(frm) {
-
+		frm.set_query("service_unit", function(){
+			return {
+				filters: {
+					"is_group": false
+				}
+			};
+		});
 	}
 });

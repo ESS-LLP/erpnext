@@ -132,6 +132,13 @@ frappe.ui.form.on('Radiology Examination', {
 			frm.set_df_property("patient", "read_only", 0);
 			refresh_field("patient");
 		}
+		frm.set_query("service_unit", function(){
+			return {
+				filters: {
+					"is_group": false
+				}
+			};
+		});
 	}
 });
 var get_radiology_procedure_prescribed = function(frm){
@@ -197,4 +204,3 @@ var show_radiology_procedure = function(frm, result){
 	}
 	d.show();
 };
-

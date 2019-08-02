@@ -2,6 +2,15 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Practitioner Event', {
+	refresh: function(frm) {
+		frm.set_query("service_unit", function(){
+			return {
+				filters: {
+					"is_group": false
+				}
+			};
+		});
+	},
 	from_date: function(frm) {
 		if(frm.doc.from_date){
 			frm.set_value("to_date", frm.doc.from_date);

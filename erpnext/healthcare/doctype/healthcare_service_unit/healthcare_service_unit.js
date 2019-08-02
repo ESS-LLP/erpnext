@@ -28,6 +28,13 @@ frappe.ui.form.on('Healthcare Service Unit', {
 				}
 			};
 		});
+		frm.set_query("warehouse", function(){
+			return {
+				filters: {
+					"is_group": false
+				}
+			};
+		});
 	},
 	set_root_readonly: function(frm) {
 		// read-only for root healthcare service unit
