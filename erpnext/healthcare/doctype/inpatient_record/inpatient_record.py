@@ -73,7 +73,7 @@ class InpatientRecord(Document):
 			si_obj = frappe.get_doc("Sales Invoice", si.name)
 			sales_invoice_list.append(si_obj)
 			for item in si_obj.items:
-				item_group = frappe.get_value("Item", item.item_code, "item_group")
+				item_group = get_item_group_as_group(item.item_code)
 				if not item_group in group_wise_item_dict:
 					group_wise_item_dict[item_group] = [item]
 					group_wise_item_total[item_group] = {"amount": item.amount}
@@ -96,6 +96,14 @@ class InpatientRecord(Document):
 		payment_entry.setup_party_account_field()
 		payment_entry.set_missing_values()
 		return payment_entry.as_dict()
+
+def get_item_group_as_group(item_code):
+	item_group = frappe.get_value("Item", item_code, "item_group")
+	is_group = frappe.get_value("Item Group", item_group, "is_group")
+	if is_group:
+		return item_group
+	else:
+		return frappe.get_value("Item Group", item_group, "parent_item_group")
 
 def submit_all_ip_invoices(ip):
 	for si in frappe.get_list('Sales Invoice', {'inpatient_record': ip, 'docstatus': 0}):
