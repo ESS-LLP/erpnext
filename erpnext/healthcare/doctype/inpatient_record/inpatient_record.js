@@ -70,6 +70,14 @@ frappe.ui.form.on('Inpatient Record', {
 				}
 			};
 		});
+		frm.set_query("admission_service_unit_type", function(){
+			return {
+				filters: {
+					"inpatient_occupancy": 1,
+					"allow_appointments": 0
+				}
+			};
+		});
 		if (frm.doc.docstatus == 0 ) {
 			frm.add_custom_button(__("Payment"), function() {
 				frm.events.make_payment_entry(frm);
