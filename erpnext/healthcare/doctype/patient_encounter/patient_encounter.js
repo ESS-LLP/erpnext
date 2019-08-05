@@ -156,7 +156,7 @@ frappe.ui.form.on('Patient Encounter', {
 		},"Create");
 
 		frm.add_custom_button(__("Procedure"),function(){
-			btn_create_procedure(frm);
+			get_procedure_prescribed(frm);
 		},"Create");
 
 		frm.set_query("patient", function () {
@@ -630,4 +630,76 @@ var calculate_age = function(birth) {
 	age.setTime(ageMS);
 	var years =  age.getFullYear() - 1970;
 	return  years + " Year(s) " + age.getMonth() + " Month(s) " + age.getDate() + " Day(s)";
+};
+
+
+var get_procedure_prescribed = function(frm){
+	if(frm.doc.patient){
+		frappe.call({
+			method:"erpnext.healthcare.doctype.clinical_procedure.clinical_procedure.get_procedure_prescribed",
+			args: {
+				patient: frm.doc.patient,
+				encounter: frm.doc.name
+			},
+			callback: function(r){
+				if(!r.message || r.message.length < 1){
+					btn_create_procedure(frm);
+				}
+				else{
+					show_procedure_templates(frm, r.message);
+				}
+			}
+		});
+	}
+	else{
+		frappe.msgprint("Please select Patient to get prescribed procedure");
+	}
+};
+
+var show_procedure_templates = function(frm, result){
+	var d = new frappe.ui.Dialog({
+		title: __("Prescribed Procedures"),
+		fields: [
+			{	fieldtype: "HTML", fieldname: "procedure_template" }
+		],
+		primary_action_label: __("Create New"),
+		primary_action: function() {
+			btn_create_procedure(frm);
+			d.hide();
+		}
+	});
+	var html_field = d.fields_dict.procedure_template.$wrapper;
+	html_field.empty();
+	$.each(result, function(x, y){
+		var row = $(repl('<div class="col-xs-12" style="padding-top:12px; text-align:center;" >\
+		<div class="col-xs-5"> %(encounter)s <br> %(consulting_practitioner)s <br> %(encounter_date)s </div>\
+		<div class="col-xs-5"> %(procedure_template)s <br>%(practitioner)s  <br> %(date)s</div>\
+		<div class="col-xs-2">\
+		<a data-name="%(name)s" data-procedure-template="%(procedure_template)s"\
+		data-encounter="%(encounter)s" data-practitioner="%(practitioner)s"\
+		data-date="%(date)s"  data-department="%(department)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s">\
+		<button class="btn btn-default btn-xs">Create\
+		</button></a></div></div><div class="col-xs-12"><hr/><div/>', {name:y[0], procedure_template: y[1],
+				encounter:y[2], consulting_practitioner:y[3], encounter_date:y[4],
+				practitioner:y[5]? y[5]:'', date: y[6]? y[6]:'', department: y[7]? y[7]:'', source:y[8], referring_practitioner:y[9]})).appendTo(html_field);
+		row.find("a").click(function() {
+			frappe.call({
+			method: "erpnext.healthcare.doctype.clinical_procedure.clinical_procedure.create_procedure_from_encounter",
+			args: {
+				patient_encounter: frm.doc.name,
+				procedure_template: $(this).attr("data-procedure-template"),
+				prescription: $(this).attr("data-name"),
+				start_date: $(this).attr("data-date")
+			},
+			callback: function(r){
+					frm.reload_doc();
+					var doclist = frappe.model.sync(r.message);
+					frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+			},
+			freeze: true,
+			freeze_message: "Creating Clinical Procedure..."
+		});
+	});
+	});
+	d.show();
 };

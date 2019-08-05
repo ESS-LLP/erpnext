@@ -424,6 +424,17 @@ def create_clinical_procedure_doc(invoiced, practitioner, patient, template, sou
 	return clinical_procedure
 
 @frappe.whitelist()
+def create_procedure_from_encounter(patient_encounter, procedure_template, prescription):
+	encounter = frappe.get_doc("Patient Encounter", patient_encounter)
+	patient = encounter.patient
+	procedure = create_clinical_procedure_doc(False, encounter.practitioner, frappe.get_doc("Patient", patient),
+		frappe.get_doc("Clinical Procedure Template", procedure_template), source=encounter.source, ref_practitioner=encounter.referring_practitioner)
+	procedure.prescription = prescription
+	procedure.save(ignore_permissions = True)
+	return procedure.as_dict()
+
+
+@frappe.whitelist()
 def get_inpatient_procedure_prescribed(patient):
 	return frappe.db.sql("""select pp.name, pp.procedure, pp.parent, pp.practitioner,pp.secondary_practitioner,
 	ct.source, ct.referring_practitioner, pp.prescription
@@ -432,9 +443,21 @@ def get_inpatient_procedure_prescribed(patient):
 	order by ct.creation desc""".format(patient))
 
 @frappe.whitelist()
-def get_procedure_prescribed(patient):
-	return frappe.db.sql("""select pp.name, pp.procedure, pp.parent, ct.practitioner,
-	ct.encounter_date, pp.practitioner, pp.date, pp.department, ct.source, ct.referring_practitioner
-	from `tabPatient Encounter` ct, `tabProcedure Prescription` pp
-	where ct.patient='{0}' and pp.parent=ct.name and pp.procedure_created=0
-	order by ct.creation desc""".format(patient))
+def get_procedure_prescribed(patient, encounter=False):
+	query = """
+		select
+			pp.name, pp.procedure, pp.parent, ct.practitioner,
+			ct.encounter_date, pp.practitioner, pp.date, pp.department, ct.source, ct.referring_practitioner
+		from
+			`tabPatient Encounter` ct, `tabProcedure Prescription` pp
+		where
+			ct.patient='{0}' and pp.procedure_created=0 and pp.parent=ct.name"""
+
+	if encounter:
+		query += """ and pp.parent=%(encounter)s"""
+
+	query += """ order by ct.creation desc"""
+
+	return frappe.db.sql(query.format(patient),{
+		'encounter': encounter
+	})
