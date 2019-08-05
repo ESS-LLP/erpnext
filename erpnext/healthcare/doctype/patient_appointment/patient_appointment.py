@@ -556,13 +556,30 @@ def get_events(start, end, filters=None):
 	return data
 
 @frappe.whitelist()
-def get_procedure_prescribed(patient):
-	return frappe.db.sql("""select pp.name, pp.procedure, pp.parent, ct.practitioner,
-	ct.encounter_date, pp.practitioner, pp.date, pp.department, ct.source, ct.referring_practitioner
-	from `tabPatient Encounter` ct, `tabProcedure Prescription` pp
-	where ct.patient='{0}' and pp.parent=ct.name and pp.appointment_booked=0
-	order by ct.creation desc""".format(patient))
+def get_procedure_prescribed(patient, encounter_practitioner=False, procedure_practitioner=False):
+	query = """
+		select
+			pp.name, pp.procedure, pp.parent, ct.practitioner, ct.encounter_date, pp.practitioner, pp.date,
+			pp.department, ct.source, ct.referring_practitioner
+		from
+			`tabPatient Encounter` ct, `tabProcedure Prescription` pp
+		where
+			ct.patient='{0}' and pp.parent=ct.name and pp.appointment_booked=0"""
 
+	if encounter_practitioner:
+		query +=""" and ct.practitioner=%(encounter_practitioner)s"""
+
+	if procedure_practitioner:
+		query +=""" and pp.practitioner=%(procedure_practitioner)s"""
+
+	query +="""
+		order by
+			ct.creation desc"""
+
+	return frappe.db.sql(query.format(patient),{
+		"encounter_practitioner": encounter_practitioner,
+		"procedure_practitioner": procedure_practitioner
+	})
 @frappe.whitelist()
 def invoice_from_appointment(appointment_id):
 	appointment = frappe.get_doc("Patient Appointment", appointment_id)
