@@ -58,13 +58,16 @@ def get_healthcare_services_to_invoice(patient):
 								visits = fee_validity.visited
 							fee_validity_details.append({'practitioner': patient_appointment_obj.practitioner,
 							'valid_till': valid_till, 'visits': visits})
+						
+						service_item, practitioner_charge = service_item_and_practitioner_charge(patient_appointment_obj)
+						if not practitioner_charge: # skip billing if charge not configured
+							skip_invoice = True
 
 						if not skip_invoice:
 							practitioner_charge = 0
 							income_account = None
 							service_item = None
 							if patient_appointment_obj.practitioner:
-								service_item, practitioner_charge = service_item_and_practitioner_charge(patient_appointment_obj)
 								income_account = get_income_account(patient_appointment_obj.practitioner, patient_appointment_obj.company)
 							item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
 							'service': service_item, 'rate': practitioner_charge, 'cost_center': cost_center,
@@ -83,6 +86,8 @@ def get_healthcare_services_to_invoice(patient):
 						service_item = None
 						if encounter_obj.practitioner:
 							service_item, practitioner_charge = service_item_and_practitioner_charge(encounter_obj)
+							if not practitioner_charge: # skip billing if charge not configured
+								continue
 							income_account = get_income_account(encounter_obj.practitioner, encounter_obj.company)
 
 						item_to_invoice.append({'reference_type': 'Patient Encounter', 'reference_name': encounter_obj.name,
@@ -188,12 +193,12 @@ def service_item_and_practitioner_charge(doc):
 		service_item = get_practitioner_service_item(doc.practitioner, "op_consulting_charge_item")
 		if not service_item:
 			service_item = get_healthcare_service_item("op_consulting_charge_item")
-	if not service_item:
-		throw_config_service_item(is_ip)
-
+	
 	practitioner_charge = get_practitioner_charge(doc.practitioner, is_ip)
-	if not practitioner_charge:
-		throw_config_practitioner_charge(is_ip, doc.practitioner)
+	
+	# service_item required if practitioner_charge is valid
+	if practitioner_charge and not service_item:
+		throw_config_service_item(is_ip)
 
 	return service_item, practitioner_charge
 
@@ -204,15 +209,6 @@ def throw_config_service_item(is_ip):
 
 	msg = _(("Please Configure {0} in ").format(service_item_lable) \
 		+ """<b><a href="#Form/Healthcare Settings">Healthcare Settings</a></b>""")
-	frappe.throw(msg)
-
-def throw_config_practitioner_charge(is_ip, practitioner):
-	charge_name = "OP Consulting Charge"
-	if is_ip:
-		charge_name = "Inpatient Visit Charge"
-
-	msg = _(("Please Configure {0} for Healthcare Practitioner").format(charge_name) \
-		+ """ <b><a href="#Form/Healthcare Practitioner/{0}">{0}</a></b>""".format(practitioner))
 	frappe.throw(msg)
 
 def get_practitioner_service_item(practitioner, service_item_field):
