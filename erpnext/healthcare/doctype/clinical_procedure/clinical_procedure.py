@@ -53,7 +53,7 @@ class ClinicalProcedure(Document):
 		frappe.db.set_value("Clinical Procedure", self.name, "status", 'Completed')
 
 		if self.inpatient_record and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
-			invoice_clinical_procedure(self)
+			self.invoice()
 
 	def invoice(self):
 		if not self.invoiced and self.status == "Completed":

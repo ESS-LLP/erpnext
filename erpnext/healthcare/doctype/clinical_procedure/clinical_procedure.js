@@ -87,6 +87,10 @@ frappe.ui.form.on('Clinical Procedure', {
 	refresh: function(frm) {
 		var df = frappe.meta.get_docfield("Clinical Procedure Item", "invoice_additional_quantity_used", frm.doc.name);
 		df.read_only = 1;
+		if(frm.doc.docstatus==1 && frm.doc.status == "Completed"){
+			var df = frappe.meta.get_docfield("Clinical Procedure Item", "qty", frm.doc.name);
+			df.read_only = 1;
+		}
 		frm.set_query("patient", function () {
 			return {
 				filters: {"disabled": 0}
@@ -135,7 +139,7 @@ frappe.ui.form.on('Clinical Procedure', {
 				function(doc) { return (doc.qty<=doc.actual_qty) ? "green" : "orange" ; });
 		}
 
-		if (!frm.doc.__islocal && frm.doc.status == 'In Progress'){
+		if (frm.doc.docstatus==1 && frm.doc.status == 'In Progress'){
 
 			if(frm.doc.consume_stock){
 				var btn_label = 'Complete and Consume';
@@ -161,7 +165,7 @@ frappe.ui.form.on('Clinical Procedure', {
 					}
 				);
 			});
-		}else if (!frm.doc.__islocal && frm.doc.status == 'Draft') {
+		}else if (frm.doc.docstatus==1 && frm.doc.status == 'Draft') {
 			frm.add_custom_button(__("Start"), function () {
 				frappe.call({
 					doc: frm.doc,
