@@ -58,7 +58,7 @@ def get_healthcare_services_to_invoice(patient):
 								visits = fee_validity.visited
 							fee_validity_details.append({'practitioner': patient_appointment_obj.practitioner,
 							'valid_till': valid_till, 'visits': visits})
-						
+
 						service_item, practitioner_charge = service_item_and_practitioner_charge(patient_appointment_obj)
 						if not practitioner_charge: # skip billing if charge not configured
 							skip_invoice = True
@@ -66,7 +66,6 @@ def get_healthcare_services_to_invoice(patient):
 						if not skip_invoice:
 							practitioner_charge = 0
 							income_account = None
-							service_item = None
 							if patient_appointment_obj.practitioner:
 								income_account = get_income_account(patient_appointment_obj.practitioner, patient_appointment_obj.company)
 							item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
@@ -193,9 +192,9 @@ def service_item_and_practitioner_charge(doc):
 		service_item = get_practitioner_service_item(doc.practitioner, "op_consulting_charge_item")
 		if not service_item:
 			service_item = get_healthcare_service_item("op_consulting_charge_item")
-	
+
 	practitioner_charge = get_practitioner_charge(doc.practitioner, is_ip)
-	
+
 	# service_item required if practitioner_charge is valid
 	if practitioner_charge and not service_item:
 		throw_config_service_item(is_ip)
