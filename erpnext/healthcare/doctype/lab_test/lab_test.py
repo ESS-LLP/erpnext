@@ -171,6 +171,9 @@ def create_normals(template, lab_test):
 	normal = lab_test.append("normal_test_items")
 	normal.lab_test_name = template.lab_test_name
 	normal.lab_test_uom = template.lab_test_uom
+	normal.type = template.type
+	if normal.type=="Select":
+		normal.options = template.options
 	if lab_test.patient_sex=="Female":
 		normal.normal_range=template.lab_test_normal_range_female
 	else:
@@ -192,6 +195,9 @@ def create_compounds(template, lab_test, is_group):
 			normal.normal_range = normal_test_template.normal_range_female
 		else:
 			normal.normal_range = normal_test_template.normal_range
+		normal.type = normal_test_template.type
+		if normal.type=="Select":
+			normal.options = normal_test_template.options
 		normal.require_result_value = 1
 		normal.template = template.name
 

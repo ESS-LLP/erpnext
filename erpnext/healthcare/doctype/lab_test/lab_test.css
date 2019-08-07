@@ -1,0 +1,34 @@
+table
+{
+    table-layout: auto;
+    width: 100%;
+    padding: 2px 3px;
+    border: #d2d9de;
+    font-size: 12px;
+}
+th, td
+{
+    text-align: left;
+    padding: 10px 15px;
+    padding-left: 10px;
+    padding-right: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    height: 39px;
+}
+th
+{
+  color: #8d99a6;
+  background-color: #f7fafc;
+
+}
+.dropdown_select
+{
+    background-color: transparent;
+    border: none;
+    -webkit-appearance: none;
+    width:100%
+    /* width: auto;
+    margin: 10px */
+}

@@ -8,6 +8,9 @@ cur_frm.cscript.custom_refresh = function(doc) {
 };
 
 frappe.ui.form.on('Lab Test', {
+	validate: function(frm) {
+		get_input_data(frm);
+	},
 	setup: function(frm) {
 		frm.get_field('normal_test_items').grid.editable_fields = [
 			{fieldname: 'lab_test_name', columns: 3},
@@ -168,6 +171,8 @@ frappe.ui.form.on('Lab Test', {
 				frm.set_df_property("referring_practitioner", "reqd", 1);
 			}
 		}
+		frm.set_df_property("normal_test_items", "hidden", 1);
+		lab_test_html_tables(frm);
 	}
 });
 
@@ -403,3 +408,70 @@ var calculate_age = function(birth) {
 	var	years =  age.getFullYear() - 1970;
 	return  years + " Year(s) " + age.getMonth() + " Month(s) " + age.getDate() + " Day(s)";
 };
+
+
+var lab_test_html_tables = function(frm) {
+	frm.fields_dict.lab_test_html.html("");
+	var lab_test_table_html = `<table border="1px grey"  bordercolor="silver" style="width: 100%; height="100"">
+	<th><b> </b></th>
+	<th><b> Test Name	</b></th>
+	<th><b> Event </b></th>
+	<th><b> Result Value </b></th>
+	<th><b> UOM </b></th>
+	<th><b> Normal Range </b></th>`;
+
+  frm.doc.normal_test_items.forEach(function(val, i){
+		var i = i+1
+		lab_test_table_html += `<tr style="text-align: center;"><td height="20">`
+		lab_test_table_html += i
+		lab_test_table_html += `<td style="width: 20%">` + (val.lab_test_name ? val.lab_test_name : '')+ "</td>"
+		lab_test_table_html += `<td style="width: 30%">` + (val.event ? val.event : '') + "</td>"
+		if (val.type != "Select"){
+			lab_test_table_html += `<td class="${val.name}" contenteditable = 'true' onclick="make_dirty()">` + (val.result_value ? val.result_value : '') + "</td>"
+		}
+		else {
+			if(val.options.length > 0){
+				var res = val.options.split(",");
+				if(res.length > 0){
+					lab_test_table_html += `<td style="width: 20%"><select id="mySelect" class="dropdown_select ${val.name}" onchange="make_dirty()">`;
+					lab_test_table_html += `<option value=""></option>`;
+					res.forEach(function(option, j) {
+						lab_test_table_html += `<option value="${option}" ${val.result_value==option ? 'selected' : ''}>${option}</option>`;
+					});
+					lab_test_table_html += `</select></td>`
+				}
+				else{
+					lab_test_table_html += `<td style="width: 20%" class="${val.name}" contenteditable = 'true'>` + (val.result_value ? val.result_value : '') + "</td>"
+				}
+			}
+			else{
+				lab_test_table_html += `<td style="width: 20%" class="${val.name}" contenteditable = 'true'>` + (val.result_value ? val.result_value : '') + "</td>"
+			}
+		}
+		lab_test_table_html +=`<td style="width: 10%">` + (val.lab_test_uom ? val.lab_test_uom : '') + "</td>"
+		lab_test_table_html +=`<td style="width: 20%">` + (val.normal_range ? val.normal_range : '') + "</td>"
+		lab_test_table_html += `</tr>`
+	});
+	lab_test_table_html +=	`</table>`
+	lab_test_table_html += `<script>
+		function make_dirty() {
+			cur_frm.dirty()
+		}
+	</script>`
+	frm.fields_dict.lab_test_html.html(lab_test_table_html);
+}
+
+var get_input_data = function(frm){
+	frm.doc.normal_test_items.forEach(function(val, i){
+		var result = "";
+		if(val.type == "Data"){
+			result = $(frm.fields_dict["lab_test_html"].wrapper).find('.'+val.name)[0].innerText;
+		}
+		else{
+			result = $(frm.fields_dict["lab_test_html"].wrapper).find('.'+val.name).find(':selected').text();
+		}
+		frappe.model.set_value(val.doctype, val.name, 'result_value', result)
+	});
+	frm.refresh_fields();
+
+}
