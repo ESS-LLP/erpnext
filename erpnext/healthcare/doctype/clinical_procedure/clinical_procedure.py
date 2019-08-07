@@ -50,10 +50,12 @@ class ClinicalProcedure(Document):
 	def complete(self):
 		if self.consume_stock and self.items:
 			create_delivery_note(self)
-		frappe.db.set_value("Clinical Procedure", self.name, "status", 'Completed')
+
+		self.status = "Completed"
 
 		if self.inpatient_record and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
 			self.invoice()
+		self.save()
 
 	def invoice(self):
 		if not self.invoiced and self.status == "Completed":
