@@ -80,7 +80,7 @@ class PatientAppointment(Document):
 
 @frappe.whitelist()
 def invoice_appointment(appointment_doc, is_pos):
-	if not appointment_doc.name:
+	if not appointment_doc.name or appointment_doc.procedure_template:
 		return False
 	sales_invoice = set_invoice_details_for_appointment(appointment_doc, is_pos)
 	sales_invoice.save(ignore_permissions=True)
@@ -115,12 +115,20 @@ def set_invoice_details_for_appointment(appointment_doc, is_pos):
 	if appointment_doc.service_unit:
 		cost_center = frappe.db.get_value("Healthcare Service Unit", appointment_doc.service_unit, "cost_center")
 	item_line = sales_invoice.append("items")
-	service_item, practitioner_charge = service_item_and_practitioner_charge(appointment_doc)
-	item_line.item_code = service_item
-	item_line.description = "Consulting Charges:  " + appointment_doc.practitioner
-	item_line.income_account = get_income_account(appointment_doc.practitioner, appointment_doc.company)
-	item_line.rate = practitioner_charge
-	item_line.amount = practitioner_charge
+	if appointment_doc.radiology_procedure:
+		item_line.item_code = frappe.db.get_value("Radiology Procedure", appointment_doc.radiology_procedure, "item")
+		item_details = sales_item_details_for_healthcare_doc(item_line.item_code, appointment_doc)
+		item_line.item_name = item_details.item_name
+		item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
+		item_line.rate = item_details.price_list_rate
+		item_line.amount = item_details.price_list_rate
+	else:
+		service_item, practitioner_charge = service_item_and_practitioner_charge(appointment_doc)
+		item_line.item_code = service_item
+		item_line.description = "Consulting Charges:  " + appointment_doc.practitioner
+		item_line.income_account = get_income_account(appointment_doc.practitioner, appointment_doc.company)
+		item_line.rate = practitioner_charge
+		item_line.amount = practitioner_charge
 	item_line.cost_center = cost_center if cost_center else ''
 	item_line.qty = 1
 	item_line.reference_dt = "Patient Appointment"
