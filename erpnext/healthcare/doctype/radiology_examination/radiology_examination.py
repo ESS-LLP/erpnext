@@ -5,9 +5,12 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from erpnext.healthcare.utils import manage_healthcare_doc_cancel
 
 class RadiologyExamination(Document):
-	pass
+	def on_cancel(self):
+		manage_healthcare_doc_cancel(self)
+
 @frappe.whitelist()
 def get_radiology_procedure_prescribed(patient, encounter_practitioner=False):
 	query = """

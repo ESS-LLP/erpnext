@@ -7,6 +7,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cstr
+from erpnext.healthcare.utils import manage_healthcare_doc_cancel
 
 class PatientEncounter(Document):
 	def on_update(self):
@@ -18,6 +19,7 @@ class PatientEncounter(Document):
 		insert_encounter_to_medical_record(self)
 
 	def on_cancel(self):
+		manage_healthcare_doc_cancel(self)
 		if(self.appointment):
 			frappe.db.set_value("Patient Appointment", self.appointment, "status", "Open")
 		delete_medical_record(self)

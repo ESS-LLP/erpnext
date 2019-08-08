@@ -11,7 +11,7 @@ from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import g
 from erpnext.healthcare.doctype.lab_test.lab_test import create_sample_doc, create_lab_test_doc
 from erpnext.stock.stock_ledger import get_previous_sle
 import datetime
-from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc, get_procedure_delivery_item, item_reduce_procedure_rate
+from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc, get_procedure_delivery_item, item_reduce_procedure_rate, manage_healthcare_doc_cancel
 
 class ClinicalProcedure(Document):
 	def validate(self):
@@ -111,6 +111,8 @@ class ClinicalProcedure(Document):
 		if self.prescription:
 			frappe.db.set_value("Procedure Prescription", self.prescription, "procedure_created", 0)
 
+	def on_cancel(self):
+		manage_healthcare_doc_cancel(self)
 
 def set_procedure_pre_post_tasks(doc):
 	if doc.procedure_template:

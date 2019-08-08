@@ -742,3 +742,9 @@ def item_reduce_procedure_rate(dn_item, procedure_items):
 			else:
 				return dn_item.qty*dn_item.rate
 	return 0
+
+@frappe.whitelist()
+def manage_healthcare_doc_cancel(doc):
+	if frappe.get_meta(doc.doctype).has_field("invoiced"):
+		if doc.invoiced:
+			frappe.throw(_("Can not cancel invoiced {0}").format(doc.doctype))
