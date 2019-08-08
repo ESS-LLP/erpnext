@@ -141,32 +141,6 @@ def set_invoice_details_for_appointment(appointment_doc, is_pos):
 	sales_invoice.set_missing_values(for_validate = True)
 	return sales_invoice
 
-def appointment_cancel(appointment_id):
-	appointment = frappe.get_doc("Patient Appointment", appointment_id)
-	# If invoiced --> fee_validity update with -1 visit
-	if appointment.invoiced:
-		sales_invoice = exists_sales_invoice(appointment)
-		if sales_invoice and cancel_sales_invoice(sales_invoice):
-			frappe.msgprint(
-				_("Appointment {0} and Sales Invoice {1} cancelled".format(appointment.name, sales_invoice.name))
-			)
-		else:
-			validity = validity_exists(appointment.practitioner, appointment.patient)
-			if validity:
-				fee_validity = frappe.get_doc("Fee Validity", validity[0][0])
-				if appointment_valid_in_fee_validity(appointment, fee_validity.valid_till, True, fee_validity.ref_invoice):
-					visited = fee_validity.visited - 1
-					frappe.db.set_value("Fee Validity", fee_validity.name, "visited", visited)
-					frappe.msgprint(
-						_("Appointment cancelled, Please review and cancel the invoice {0}".format(fee_validity.ref_invoice))
-					)
-				else:
-					frappe.msgprint(_("Appointment cancelled"))
-			else:
-				frappe.msgprint(_("Appointment cancelled"))
-	else:
-		frappe.msgprint(_("Appointment cancelled"))
-
 def appointment_valid_in_fee_validity(appointment, valid_end_date, invoiced, ref_invoice):
 	valid_days = frappe.db.get_value("Healthcare Settings", None, "valid_days")
 	max_visit = frappe.db.get_value("Healthcare Settings", None, "max_visit")
@@ -442,11 +416,13 @@ def get_availability_data(date, practitioner):
 
 @frappe.whitelist()
 def update_status(appointment_id, status):
+	if status == "Cancelled" and frappe.db.get_value("Patient Appointment", appointment_id, "invoiced") == 1:
+		frappe.throw(_("Can not cancel invoiced Patient Appointment"))
 	frappe.db.set_value("Patient Appointment", appointment_id, "status", status)
 	appointment_booked = True
 	if status == "Cancelled":
 		appointment_booked = False
-		appointment_cancel(appointment_id)
+		frappe.msgprint(_("Appointment cancelled"))
 
 	procedure_prescription = frappe.db.get_value("Patient Appointment", appointment_id, "procedure_prescription")
 	if procedure_prescription:
