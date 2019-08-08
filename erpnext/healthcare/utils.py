@@ -34,6 +34,11 @@ def get_healthcare_services_to_invoice(patient):
 						if frappe.db.get_value("Clinical Procedure Template", patient_appointment_obj.procedure_template, "is_billable") == 1:
 							item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
 							'service': patient_appointment_obj.procedure_template, 'cost_center': cost_center})
+
+					elif patient_appointment_obj.radiology_procedure:
+						if frappe.db.get_value("Radiology Procedure", patient_appointment_obj.radiology_procedure, "is_billable") == 1:
+							item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
+							'service': patient_appointment_obj.radiology_procedure, 'cost_center': cost_center})
 					else:
 						practitioner_exist_in_list = False
 						skip_invoice = False
@@ -144,6 +149,19 @@ def get_healthcare_services_to_invoice(patient):
 					if frappe.db.get_value("Clinical Procedure Template", rx_obj.procedure, "is_billable") == 1:
 						item_to_invoice.append({'reference_type': 'Procedure Prescription', 'reference_name': rx_obj.name,
 						'service': frappe.db.get_value("Clinical Procedure Template", rx_obj.procedure, "item"), 'cost_center': cost_center})
+
+			r_procedures = frappe.get_list("Radiology Examination", {'patient': patient.name, 'invoiced': False})
+			if r_procedures:
+				for procedure in r_procedures:
+					cost_center = False
+					procedure_obj = frappe.get_doc("Radiology Examination", procedure['name'])
+					if procedure_obj.service_unit:
+						cost_center = frappe.db.get_value("Healthcare Service Unit", procedure_obj.service_unit, "cost_center")
+					if not procedure_obj.appointment:
+						if procedure_obj.radiology_procedure and (frappe.db.get_value("Radiology Procedure", procedure_obj.radiology_procedure, "is_billable") == 1):
+							procedure_service_item = frappe.db.get_value("Radiology Procedure", procedure_obj.radiology_procedure, "item")
+							item_to_invoice.append({'reference_dt': 'Radiology Examination', 'reference_dn': procedure_obj.name,
+								'cost_center': cost_center if cost_center else '', 'service': procedure_service_item})
 
 			inpatient_services = frappe.db.sql("""select io.name, io.parent from `tabInpatient Record` ip,
 			`tabInpatient Occupancy` io where ip.patient=%s and io.parent=ip.name and
@@ -259,6 +277,8 @@ def set_invoiced(item, method, ref_invoice=None):
 	if item.reference_dt == 'Patient Appointment':
 		if frappe.db.get_value('Patient Appointment', item.reference_dn, 'procedure_template'):
 			dt_from_appointment = "Clinical Procedure"
+		elif frappe.db.get_value('Patient Appointment', item.reference_dn, 'radiology_procedure'):
+			dt_from_appointment = "Radiology Examination"
 		else:
 			manage_fee_validity(item.reference_dn, method, ref_invoice)
 			dt_from_appointment = "Patient Encounter"
