@@ -80,7 +80,7 @@ class PatientAppointment(Document):
 
 @frappe.whitelist()
 def invoice_appointment(appointment_doc, is_pos):
-	if not appointment_doc.name or appointment_doc.procedure_template:
+	if not appointment_doc.name:
 		return False
 	sales_invoice = set_invoice_details_for_appointment(appointment_doc, is_pos)
 	sales_invoice.save(ignore_permissions=True)
@@ -115,8 +115,15 @@ def set_invoice_details_for_appointment(appointment_doc, is_pos):
 	if appointment_doc.service_unit:
 		cost_center = frappe.db.get_value("Healthcare Service Unit", appointment_doc.service_unit, "cost_center")
 	item_line = sales_invoice.append("items")
-	if appointment_doc.radiology_procedure:
-		item_line.item_code = frappe.db.get_value("Radiology Procedure", appointment_doc.radiology_procedure, "item")
+	item_code = False
+
+	if appointment_doc.procedure_template:
+		item_code = frappe.db.get_value("Clinical Procedure Template", appointment_doc.procedure_template, "item")
+	elif appointment_doc.radiology_procedure:
+		item_code = frappe.db.get_value("Radiology Procedure", appointment_doc.radiology_procedure, "item")
+
+	if item_code:
+		item_line.item_code = item_code
 		item_details = sales_item_details_for_healthcare_doc(item_line.item_code, appointment_doc)
 		item_line.item_name = item_details.item_name
 		item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
@@ -129,14 +136,16 @@ def set_invoice_details_for_appointment(appointment_doc, is_pos):
 		item_line.income_account = get_income_account(appointment_doc.practitioner, appointment_doc.company)
 		item_line.rate = practitioner_charge
 		item_line.amount = practitioner_charge
+
 	item_line.cost_center = cost_center if cost_center else ''
 	item_line.qty = 1
 	item_line.reference_dt = "Patient Appointment"
 	item_line.reference_dn = appointment_doc.name
 
-	payments_line = sales_invoice.append("payments")
-	payments_line.mode_of_payment = appointment_doc.mode_of_payment
-	payments_line.amount = appointment_doc.paid_amount
+	if appointment_doc.mode_of_payment or appointment_doc.paid_amount:
+		payments_line = sales_invoice.append("payments")
+		payments_line.mode_of_payment = appointment_doc.mode_of_payment
+		payments_line.amount = appointment_doc.paid_amount
 
 	sales_invoice.set_missing_values(for_validate = True)
 	return sales_invoice
