@@ -40,7 +40,7 @@ class PatientAppointment(Document):
 			(appointment_time>%s and appointment_time<%s) or
 			(appointment_time=%s))
 		""", (self.appointment_date, self.name, self.practitioner, self.patient,
-		self.appointment_time, end_time.time(), self.appointment_time, end_time.time(), self.appointment_time))
+		self.appointment_time, self.appointment_time, self.appointment_time, end_time.time(), self.appointment_time))
 
 		if overlaps:
 			frappe.throw(_("""Appointment overlaps with {0}.<br> {1} has appointment scheduled

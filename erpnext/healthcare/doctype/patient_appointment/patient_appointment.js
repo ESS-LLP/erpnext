@@ -151,6 +151,20 @@ frappe.ui.form.on('Patient Appointment', {
 				btn_create_invoice(frm);
 			},"Create");
 		}
+		frappe.call({
+			"method": "frappe.client.get",
+			args: {
+				doctype: "Healthcare Practitioner",
+				filters: {
+					'user_id': frappe.session.user
+				}
+			},
+			callback: function (data) {
+				if(data.message){
+					frm.set_df_property("self_appointment", "hidden", 0);
+				}
+			}
+		});
 	},
 	check_availability: function(frm) {
 		if(frm.doc.patient){
@@ -163,6 +177,41 @@ frappe.ui.form.on('Patient Appointment', {
 			}
 			else{
 				check_and_set_availability(frm);
+			}
+		}
+		else{
+			frappe.msgprint({
+				title: __('Missing Fields'),
+				message: __("Patient is Mandatory"),
+				indicator: 'red'
+			});
+		}
+	},
+
+	self_appointment: function(frm) {
+		if(frm.doc.patient){
+			if(frm.doc.radiology_procedure && !frm.doc.service_unit){
+				frappe.msgprint({
+					title: __('Missing Fields'),
+					message: __("Service Unit is Mandatory"),
+					indicator: 'red'
+				});
+			}
+			else{
+				frappe.call({
+					"method": "frappe.client.get",
+					args: {
+						doctype: "Healthcare Practitioner",
+						filters: {
+							'user_id': frappe.session.user
+						}
+					},
+					callback: function (data) {
+						if(data.message){
+							self_appointment(frm, data);
+						}
+					}
+				});
 			}
 		}
 		else{
@@ -892,4 +941,88 @@ var btn_create_invoice = function(frm){
 		freeze: true,
 		freeze_message: __("Creating invoice......")
 	});
+}
+
+var self_appointment = function (frm, data) {
+	var selected_slot = null;
+	var service_unit = null;
+	var duration = null;
+	show_availability();
+
+	function show_empty_state(practitioner, appointment_date) {
+		frappe.msgprint({
+			title: __('Not Available'),
+			message: __("Healthcare Practitioner {0} not available on {1}", [practitioner.bold(), appointment_date.bold()]),
+			indicator: 'red'
+		});
+	}
+
+	function show_availability() {
+		let selected_practitioner = '';
+		let selected_appointment_date = '';
+		var d = new frappe.ui.Dialog({
+			title: __("Available slots"),
+			fields: [
+				{ fieldtype: 'Link', options: 'Medical Department', read_only:1, fieldname: 'department', label: 'Medical Department'},
+				{ fieldtype: 'Link', options: 'Healthcare Practitioner', read_only:1, fieldname: 'practitioner', label: 'Healthcare Practitioner'},
+				{ fieldtype: 'Column Break'},
+				{ fieldtype: 'Link', options: 'Appointment Type', reqd:1, fieldname: 'appointment_type', label: 'Appointment Type'},
+				{ fieldtype: 'Int', fieldname: 'duration', reqd:1, label: 'Duration'},
+				{ fieldtype: 'Column Break'},
+				{ fieldtype: 'Date', reqd:1, fieldname: 'appointment_date', label: 'Date'},
+				{ fieldtype: 'Time', reqd:1, fieldname: 'appointment_time', label: 'Time'}
+			],
+			primary_action_label: __("Book"),
+			primary_action: function() {
+				frm.set_value('appointment_time', d.get_value('appointment_time'));
+				frm.set_value('service_unit', frm.doc.service_unit);
+				frm.set_value('duration', d.get_value('duration'));
+				frm.set_value('practitioner', d.get_value('practitioner'));
+				frm.set_value('department', d.get_value('department'));
+				frm.set_value('appointment_date', d.get_value('appointment_date'));
+				frm.set_value('appointment_type', d.get_value('appointment_type'))
+				d.hide();
+				frm.enable_save();
+				frm.save();
+				frm.enable_save();
+				d.get_primary_btn().attr('disabled', true);
+			}
+		});
+
+		d.set_values({
+			'department': data.message.department,
+			'practitioner': data.message.name,
+			'appointment_date': frm.doc.appointment_date,
+			'appointment_type': frm.doc.appointment_type
+		});
+
+		// Field Change Handler
+		var fd = d.fields_dict;
+		d.fields_dict["appointment_type"].df.onchange = () => {
+			frappe.db.get_value("Appointment Type", d.get_value('appointment_type'), 'default_duration', function(r) {
+				if(r && r.default_duration){
+					d.set_values({
+						'duration': r.default_duration
+					});
+				}
+			});
+		}
+		d.fields_dict["appointment_date"].df.onchange = () => {
+			if(d.get_value('appointment_date') && d.get_value('appointment_date') != selected_appointment_date){
+				selected_appointment_date = d.get_value('appointment_date');
+				var today = frappe.datetime.nowdate();
+				if(today > selected_appointment_date){
+					frappe.msgprint(__("you cannot book appointments for past date"));
+					d.set_values({
+						"appointment_date": ""
+					});
+				}
+			}
+			else if(!d.get_value("appointment_date")){
+				selected_appointment_date = '';
+			}
+		}
+		d.show();
+		d.$wrapper.find('.modal-dialog').css("width", "800px");
+	}
 }
