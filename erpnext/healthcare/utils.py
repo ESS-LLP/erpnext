@@ -69,7 +69,6 @@ def get_healthcare_services_to_invoice(patient):
 							skip_invoice = True
 
 						if not skip_invoice:
-							practitioner_charge = 0
 							income_account = None
 							if patient_appointment_obj.practitioner:
 								income_account = get_income_account(patient_appointment_obj.practitioner, patient_appointment_obj.company)
