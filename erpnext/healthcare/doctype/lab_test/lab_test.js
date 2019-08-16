@@ -120,6 +120,9 @@ frappe.ui.form.on('Lab Test', {
 				}
 			};
 		});
+		if(frm.doc.normal_test_items && !frm.doc.__islocal){
+			lab_test_html_tables(frm);
+		}
 	},
 	onload: function (frm) {
 		frm.add_fetch("practitioner", "department", "department");
@@ -172,7 +175,6 @@ frappe.ui.form.on('Lab Test', {
 			}
 		}
 		frm.set_df_property("normal_test_items", "hidden", 1);
-		lab_test_html_tables(frm);
 	}
 });
 
@@ -462,16 +464,17 @@ var lab_test_html_tables = function(frm) {
 }
 
 var get_input_data = function(frm){
-	frm.doc.normal_test_items.forEach(function(val, i){
-		var result = "";
-		if(val.type == "Data"){
-			result = $(frm.fields_dict["lab_test_html"].wrapper).find('.'+val.name)[0].innerText;
-		}
-		else{
-			result = $(frm.fields_dict["lab_test_html"].wrapper).find('.'+val.name).find(':selected').text();
-		}
-		frappe.model.set_value(val.doctype, val.name, 'result_value', result)
-	});
+	if(frm.doc.normal_test_items && !frm.doc.__islocal){
+		frm.doc.normal_test_items.forEach(function(val, i){
+			var result = "";
+			if(val.type == "Data"){
+				result = $(frm.fields_dict["lab_test_html"].wrapper).find('.'+val.name)[0].innerText;
+			}
+			else{
+				result = $(frm.fields_dict["lab_test_html"].wrapper).find('.'+val.name).find(':selected').text();
+			}
+			frappe.model.set_value(val.doctype, val.name, 'result_value', result)
+		});
+	}
 	frm.refresh_fields();
-
 }
