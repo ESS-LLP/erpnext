@@ -152,12 +152,13 @@ frappe.ui.form.on('Patient Appointment', {
 			},"Create");
 		}
 		frappe.call({
-			"method": "frappe.client.get",
+			"method": "frappe.client.get_value",
 			args: {
 				doctype: "Healthcare Practitioner",
 				filters: {
 					'user_id': frappe.session.user
-				}
+				},
+				fieldname: ["name"]
 			},
 			callback: function (data) {
 				if(data.message){
