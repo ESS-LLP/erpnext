@@ -92,6 +92,13 @@ frappe.ui.form.on('Inpatient Record', {
 				}
 			};
 		});
+		frm.set_query("insurance", function(){
+			return {
+				filters: {
+					"patient": frm.doc.patient
+				}
+			};
+		});
 		if (!frm.doc.__islocal && frm.doc.docstatus == 0) {
 			frm.add_custom_button(__("Payment"), function() {
 				frm.events.make_payment_entry(frm);

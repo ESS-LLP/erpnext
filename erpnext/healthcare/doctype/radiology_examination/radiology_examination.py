@@ -16,7 +16,7 @@ def get_radiology_procedure_prescribed(patient, encounter_practitioner=False):
 	query = """
 		select
 			cp.name, cp.radiology_procedure_name, cp.parent, cp.invoiced, ct.encounter_date, ct.source, ct.referring_practitioner,
-			ct.practitioner
+			ct.practitioner, ct.insurance
 		from
 			`tabPatient Encounter` ct, `tabRadiology Procedure Prescription` cp
 		where

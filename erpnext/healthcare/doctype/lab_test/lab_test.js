@@ -35,6 +35,10 @@ frappe.ui.form.on('Lab Test', {
 				callback: function(r) {
 					frm.set_value("source",r.message.source);
 					frm.set_value("referring_practitioner", r.message.referring_practitioner);
+					if(r.message.insurance){
+						frm.set_value("insurance", r.message.insurance)
+						frm.set_df_property("insurance", "read_only", 1);
+					}
 				}
 			});
 			frm.set_df_property("source", "hidden", 0);
@@ -274,7 +278,7 @@ var show_lab_tests = function(frm, result){
 		<div class="col-xs-1">\
 		<a data-name="%(name)s" data-lab-test="%(lab_test)s"\
 		data-encounter="%(encounter)s" data-practitioner="%(practitioner)s" \
-		data-invoiced="%(invoiced)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s data-insurance="%(insurance)s"" href="#"><button class="btn btn-default btn-xs">Get Lab Test\
+		data-invoiced="%(invoiced)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s" data-insurance="%(insurance)s" href="#"><button class="btn btn-default btn-xs">Get Lab Test\
 		</button></a></div></div>', {name:y[0], lab_test: y[1], encounter:y[2], invoiced:y[3], practitioner:y[4], date:y[5], source:y[6], referring_practitioner:y[7],insurance:y[8]})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.template = $(this).attr("data-lab-test");

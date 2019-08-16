@@ -310,7 +310,10 @@ frappe.ui.form.on('Clinical Procedure', {
 					if(data.message.referring_practitioner){
 						frm.set_value( "referring_practitioner", data.message.referring_practitioner);
 					}
-					frm.set_value("insurance", data.message.insurance);
+					if(data.message.insurance){
+						frm.set_value("insurance", data.message.insurance)
+						frm.set_df_property("insurance", "read_only", 1);
+					}
 				}
 			});
 		}
@@ -424,11 +427,11 @@ var show_procedure_templates = function(frm, result){
 		<div class="col-xs-2">\
 		<a data-name="%(name)s" data-procedure-template="%(procedure_template)s"\
 		data-encounter="%(encounter)s" data-practitioner="%(practitioner)s"\
-		data-date="%(date)s"  data-department="%(department)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s">\
+		data-date="%(date)s"  data-department="%(department)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s" data-insurance="%(insurance)s">\
 		<button class="btn btn-default btn-xs">Add\
 		</button></a></div></div><div class="col-xs-12"><hr/><div/>', {name:y[0], procedure_template: y[1],
 				encounter:y[2], consulting_practitioner:y[3], encounter_date:y[4],
-				practitioner:y[5]? y[5]:'', date: y[6]? y[6]:'', department: y[7]? y[7]:'', source:y[8], referring_practitioner:y[9]})).appendTo(html_field);
+				practitioner:y[5]? y[5]:'', date: y[6]? y[6]:'', department: y[7]? y[7]:'', source:y[8], referring_practitioner:y[9], insurance:y[10]})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.procedure_template = $(this).attr("data-procedure-template");
 			frm.doc.prescription = $(this).attr("data-name");
@@ -438,6 +441,10 @@ var show_procedure_templates = function(frm, result){
 			frm.doc.source =  $(this).attr("data-source");
 			frm.set_df_property("source", "read_only", 1);
 			frm.doc.referring_practitioner= $(this).attr("data-referring-practitioner")
+			frm.doc.insurance = $(this).attr("data-insurance");
+			if(frm.doc.insurance){
+				frm.set_df_property("insurance", "read_only", 1);
+			}
 			if(frm.doc.referring_practitioner){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
 				frm.set_df_property("referring_practitioner", "read_only", 1);
@@ -478,11 +485,11 @@ var show_inpatient_procedure_templates = function(frm, result){
 		<a data-name="%(name)s" data-procedure-template="%(procedure_template)s"\
 		data-practitioner="%(primery_practitioner)s" data-prescription="%(prescription)s"\
 		data-date="%(iprecord_date)s" data-secondary-practitioner="%(sec_practitioner)s"\
-		data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s">\
+		data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s" data-insurance="%(insurance)s">\
 		<button class="btn btn-default btn-xs">Add\
 		</button></a></div></div><div class="col-xs-12"><hr/><div/>', {name:y[0], procedure_template: y[1],
 			iprecord:y[2], primery_practitioner:y[3]? y[3]:'', sec_practitioner:y[4]? y[4]:'',
-			source:y[5], referring_practitioner:y[6], prescription:y[7]})).appendTo(html_field);
+			source:y[5], referring_practitioner:y[6], prescription:y[7], insurance:y[8]})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.procedure_template = $(this).attr("data-procedure-template");
 			if($(this).attr("data-prescription") != 'null'){
@@ -494,6 +501,10 @@ var show_inpatient_procedure_templates = function(frm, result){
 			frm.doc.source =  $(this).attr("data-source");
 			frm.set_df_property("source", "read_only", 1);
 			frm.doc.referring_practitioner= $(this).attr("data-referring-practitioner")
+			frm.doc.insurance = $(this).attr("data-insurance");
+			if(frm.doc.insurance){
+				frm.set_df_property("insurance", "read_only", 1);
+			}
 			if(frm.doc.referring_practitioner){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
 				frm.set_df_property("referring_practitioner", "read_only", 1);

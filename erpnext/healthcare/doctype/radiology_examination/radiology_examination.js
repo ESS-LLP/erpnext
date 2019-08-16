@@ -36,6 +36,10 @@ frappe.ui.form.on('Radiology Examination', {
 						frm.set_value( "source", "");
 						frm.set_value( "referring_practitioner", "");
 					}
+					if(data.message.insurance){
+						frm.set_value("insurance", data.message.insurance)
+						frm.set_df_property("insurance", "read_only", 1);
+					}
 				}
 			});
 	},
@@ -71,6 +75,10 @@ frappe.ui.form.on('Radiology Examination', {
 				callback: function(r) {
 					frm.set_value("source",r.message.source);
 					frm.set_value("referring_practitioner", r.message.referring_practitioner);
+					if(r.message.insurance){
+						frm.set_value("insurance", r.message.insurance)
+						frm.set_df_property("insurance", "read_only", 1);
+					}
 				}
 			});
 			frm.set_df_property("source", "hidden", 0);
@@ -139,6 +147,13 @@ frappe.ui.form.on('Radiology Examination', {
 				}
 			};
 		});
+		frm.set_query("insurance", function(){
+			return {
+				filters: {
+					"patient": frm.doc.patient
+				}
+			};
+		});
 	}
 });
 var get_radiology_procedure_prescribed = function(frm){
@@ -175,11 +190,10 @@ var show_radiology_procedure = function(frm, result){
 		<div class="col-xs-1">\
 		<a data-name="%(name)s" data-radiology-procedure="%(radiology_procedure)s"\
 		data-encounter="%(encounter)s"\
-		data-invoiced="%(invoiced)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s" href="#"><button class="btn btn-default btn-xs">Get Radiology\
-		</button></a></div></div>', {name:y[0], radiology_procedure: y[1], encounter:y[2], invoiced:y[3],  date:y[4], source:y[5], referring_practitioner:y[6]})).appendTo(html_field);
+		data-invoiced="%(invoiced)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s" data-insurance="%(insurance)s" href="#"><button class="btn btn-default btn-xs">Get Radiology\
+		</button></a></div></div>', {name:y[0], radiology_procedure: y[1], encounter:y[2], invoiced:y[3],  date:y[4], source:y[5], referring_practitioner:y[6], insurance:y[8]})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.radiology_procedure = $(this).attr("data-radiology-procedure");
-			// frm.set_df_property("radiology_procedure", "read_only", 1);
 			frm.set_df_property("patient", "read_only", 1);
 			frm.doc.invoiced = 0;
 			if($(this).attr("data-invoiced") == 1){
@@ -189,6 +203,10 @@ var show_radiology_procedure = function(frm, result){
 			frm.doc.referring_practitioner= $(this).attr("data-referring-practitioner")
 			if(frm.doc.referring_practitioner){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
+			}
+			frm.doc.insurance = $(this).attr("data-insurance");
+			if(frm.doc.insurance){
+				frm.set_df_property("insurance", "read_only", 1);
 			}
 			refresh_field("source");
 			refresh_field("referring_practitioner");

@@ -34,6 +34,10 @@ frappe.ui.form.on('Patient Appointment', {
 							frm.set_value("referring_practitioner", "");
 							frm.set_df_property("referring_practitioner", "read_only", 0);
 						}
+						if(r.message.insurance){
+							frm.set_value("insurance", r.message.insurance)
+							frm.set_df_property("insurance", "read_only", 1);
+						}
 					}
 				}
 			});

@@ -63,12 +63,17 @@ frappe.ui.form.on('Patient Encounter', {
 				callback: function(r) {
 					frm.set_value("source",r.message.source);
 					frm.set_value("referring_practitioner", r.message.referring_practitioner);
+					if(r.message.insurance){
+						frm.set_value("insurance",r.message.insurance)
+						frm.set_df_property("insurance", "read_only", 1);
+					}
 				}
 			});
 			frm.set_df_property("source", "hidden", 0);
 			frm.set_df_property("source", "read_only", 1);
 			frm.set_df_property("referring_practitioner", "hidden", 0);
 			frm.set_df_property("referring_practitioner", "read_only", 1);
+			refresh_field("insurance");
 			refresh_field("source");
 			refresh_field("referring_practitioner");
 		}
