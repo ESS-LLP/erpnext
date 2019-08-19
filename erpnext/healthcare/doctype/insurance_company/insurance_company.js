@@ -22,7 +22,7 @@ frappe.ui.form.on('Insurance Company', {
 				}
 			};
 		});
-		frm.set_query("pre_cliam_account", function() {
+		frm.set_query("submission_claim_account", function() {
 			return {
 				filters: {
 					'account_type': 'Receivable',
