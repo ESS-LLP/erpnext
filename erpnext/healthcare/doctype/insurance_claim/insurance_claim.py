@@ -57,16 +57,16 @@ class InsuranceClaim(Document):
 			accounts = []
 			tax_amount = 0.0
 			accounts.append({
-				"account": insurance_company.pre_cliam_account,
+				"account": insurance_company.submission_claim_account,
 				"credit_in_account_currency":float(self.claim_amount),
 				"party_type": "Customer",
 				"party": insurance_company.customer
 			})
 			accounts.append({
 				"account": get_party_account("Customer", insurance_company.customer, insurance_company.company),
-					"debit_in_account_currency": float(self.claim_amount)+tax_amount,
-					"party_type": "Customer",
-					"party": insurance_company.customer
+				"debit_in_account_currency": float(self.claim_amount)+tax_amount,
+				"party_type": "Customer",
+				"party": insurance_company.customer
 			})
 			journal_entry.set("accounts", accounts)
 			journal_entry.save(ignore_permissions = True)

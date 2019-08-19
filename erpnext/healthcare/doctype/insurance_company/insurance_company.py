@@ -16,17 +16,24 @@ class InsuranceCompany(Document):
 		load_address_and_contact(self)
 
 def create_customer(doc):
-	customer_group = frappe.get_value("Selling Settings", None, "customer_group")
+	customer_group = frappe.db.exists("Customer Group",{
+	"customer_group_name": "Insurance Company"})
+	if not customer_group:
+		customer_group=frappe.get_doc({
+		"customer_group_name": "Insurance Company",
+		"parent_customer_group": "All Customer Groups",
+		"doctype": "Customer Group"
+		}).insert().name
 	territory = frappe.get_value("Selling Settings", None, "territory")
-	if not (customer_group and territory):
-		customer_group = "Commercial"
+	if not (territory):
 		territory = "Rest Of The World"
-		frappe.msgprint(_("Please set default customer group and territory in Selling Settings"), alert=True)
+		frappe.msgprint(_("Please set default  territory in Selling Settings"), alert=True)
+
 	customer = frappe.get_doc({"doctype": "Customer",
 	"customer_name": doc.insurance_company_name,
 	"customer_group": customer_group,
 	"territory" : territory,
-	"customer_type": "Individual"
+	"customer_type": "Company"
 	}).insert(ignore_permissions=True)
 	frappe.db.set_value("Insurance Company", doc.name, "customer", customer.name)
 	frappe.msgprint(_("Customer {0} is created.").format(customer.name), alert=True)

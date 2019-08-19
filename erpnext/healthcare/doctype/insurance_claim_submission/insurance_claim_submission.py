@@ -42,7 +42,7 @@ class InsuranceClaimSubmission(Document):
 				"party": insurance_company.customer,
 			})
 		accounts.append({
-				"account": insurance_company.pre_cliam_account,
+				"account": insurance_company.submission_claim__account,
 				"debit_in_account_currency": self.total_claim_amount,
 				"party_type": "Customer",
 				"party": insurance_company.customer,
@@ -63,7 +63,7 @@ class InsuranceClaimSubmission(Document):
 		payment_entry.paid_amount=self.total_approved_amount
 		payment_entry.setup_party_account_field()
 		payment_entry.set_missing_values()
-		return payment_entry.as_dict()	
+		return payment_entry.as_dict()
 @frappe.whitelist()
 def get_claim_submission_item(insurance_company, patient=False):
 	query = """
