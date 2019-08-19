@@ -1183,7 +1183,7 @@ class SalesInvoice(SellingController):
 			for key in checked_item:
 				if checked_item[key]:
 					item_line.set(key, checked_item[key])
-			if not checked_item['rate']:
+			if 'rate' not in checked_item or not checked_item['rate']:
 				item_line.rate = item_details.price_list_rate
 			item_line.amount = float(item_line.rate) * float(item_line.qty)
 			if item_line.discount_percentage and float(item_line.discount_percentage) > 0:
