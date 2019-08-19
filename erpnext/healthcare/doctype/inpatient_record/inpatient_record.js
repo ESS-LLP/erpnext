@@ -92,7 +92,7 @@ frappe.ui.form.on('Inpatient Record', {
 				}
 			};
 		});
-		if (frm.doc.docstatus == 0 ) {
+		if (!frm.doc.__islocal && frm.doc.docstatus == 0) {
 			frm.add_custom_button(__("Payment"), function() {
 				frm.events.make_payment_entry(frm);
 			});
@@ -780,6 +780,7 @@ frappe.ui.form.on('Inpatient Record Procedure',{
 	procedure: function(frm, cdt, cdn){
 		frappe.model.set_value(cdt, cdn, "source", frm.doc.source);
 		frappe.model.set_value(cdt, cdn, "referring_practitioner", frm.doc.referring_practitioner);
+		set_total_standard_selling_rate(frm)
 	},
 	standard_selling_rate:function(frm){
 		set_total_standard_selling_rate(frm)

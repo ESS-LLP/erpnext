@@ -83,7 +83,7 @@ class InpatientRecord(Document):
 					group_wise_item_total[item_group] = {"amount": data['amount']+item.amount}
 		return sales_invoice_list, group_wise_item_dict, group_wise_item_total
 
-	def create_payment_entry(self):
+	def create_payment_entry(self, paid_amount=None):
 		payment_entry = frappe.new_doc('Payment Entry')
 		payment_entry.voucher_type = 'Payment Entry'
 		payment_entry.company = self.company
@@ -92,7 +92,7 @@ class InpatientRecord(Document):
 		payment_entry.party_type="Customer"
 		payment_entry.party = frappe.get_value("Patient", self.patient, "customer")
 		payment_entry.patient=self.patient
-		payment_entry.paid_amount=self.total_standard_selling_rate
+		payment_entry.paid_amount=paid_amount if paid_amount else self.total_standard_selling_rate
 		payment_entry.setup_party_account_field()
 		payment_entry.set_missing_values()
 		return payment_entry.as_dict()
