@@ -13,7 +13,7 @@ frappe.ui.form.on('Insurance Company', {
 			unhide_field(['address_html', 'contact_html', 'address_contacts']);
 			frappe.contacts.render_address_and_contact(frm);
 		}
-		frm.set_query("pre_claim_submission_account", function() {
+		frm.set_query("pre_claim_receivable_account", function() {
 			return {
 				filters: {
 					'account_type': 'Receivable',
@@ -22,7 +22,7 @@ frappe.ui.form.on('Insurance Company', {
 				}
 			};
 		});
-		frm.set_query("submission_claim_account", function() {
+		frm.set_query("submission_claim_receivable_account", function() {
 			return {
 				filters: {
 					'account_type': 'Receivable',
@@ -31,7 +31,7 @@ frappe.ui.form.on('Insurance Company', {
 				}
 			};
 		});
-		frm.set_query("adjustment_accounts", function() {
+		frm.set_query("insurance_receivable_account", function() {
 			return {
 				filters: {
 					'account_type': 'Receivable',

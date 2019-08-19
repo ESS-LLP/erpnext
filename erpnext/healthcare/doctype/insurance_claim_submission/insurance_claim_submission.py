@@ -36,13 +36,13 @@ class InsuranceClaimSubmission(Document):
 		accounts = []
 		tax_amount = 0.0
 		accounts.append({
-				"account": insurance_company.pre_claim_submission_account,
+				"account": insurance_company.pre_claim_receivable_account,
 				"credit_in_account_currency": self.total_claim_amount,
 				"party_type": "Customer",
 				"party": insurance_company.customer,
 			})
 		accounts.append({
-				"account": insurance_company.submission_claim__account,
+				"account": insurance_company.submission_claim_receivable_account,
 				"debit_in_account_currency": self.total_claim_amount,
 				"party_type": "Customer",
 				"party": insurance_company.customer,
