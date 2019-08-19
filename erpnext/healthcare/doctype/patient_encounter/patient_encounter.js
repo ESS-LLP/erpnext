@@ -268,6 +268,7 @@ var schedule_inpatient = function(frm) {
 			{fieldtype: "Link", label: "Medical Department", fieldname: "medical_department", options: "Medical Department", reqd: 1},
 			{fieldtype: "Link", label: "Healthcare Practitioner (Primary)", fieldname: "primary_practitioner", options: "Healthcare Practitioner", reqd: 1},
 			{fieldtype: "Link", label: "Healthcare Practitioner (Secondary)", fieldname: "secondary_practitioner", options: "Healthcare Practitioner"},
+			{fieldtype: "Currency", label: "Allowed Total Credit Coverage", fieldname: "allowed_total_credit_coverage"},
 			{fieldtype: "Small Text", label: "Diagnosis", fieldname: "diagnosis"},
 			{fieldtype: 'Column Break'},
 			{fieldtype: "Date", label: "Admission Ordered For", fieldname: "admission_ordered_for", default: "Today"},
@@ -291,7 +292,8 @@ var schedule_inpatient = function(frm) {
 				service_unit_type: dialog.get_value('service_unit_type'),
 				expected_length_of_stay: dialog.get_value('expected_length_of_stay'),
 				admission_instruction: dialog.get_value('admission_instruction'),
-				chief_complaint: frm.doc.symptoms || ''
+				chief_complaint: frm.doc.symptoms || '',
+				allowed_total_credit_coverage: dialog.get_value('allowed_total_credit_coverage') || 0
 			}
 			frappe.call({
 				method: "erpnext.healthcare.doctype.inpatient_record.inpatient_record.schedule_inpatient",

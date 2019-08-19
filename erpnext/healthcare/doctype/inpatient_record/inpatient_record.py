@@ -97,6 +97,58 @@ class InpatientRecord(Document):
 		payment_entry.set_missing_values()
 		return payment_entry.as_dict()
 
+	def get_billing_info(self):
+		return get_ip_billing_info(self)
+
+@frappe.whitelist()
+def get_ip_billing_info(doc):
+	customer = frappe.db.get_value("Patient", doc.patient, 'customer')
+
+	ip_grand_total = frappe.get_all("Sales Invoice",
+		filters={
+			'docstatus': 1,
+			'customer': customer,
+			'inpatient_record': doc.name
+		},
+		fields=["patient", "sum(grand_total) as grand_total", "sum(base_grand_total) as base_grand_total"]
+	)
+
+	total_unpaid_form_gl = frappe._dict(frappe.db.sql("""
+		select company, sum(debit_in_account_currency) - sum(credit_in_account_currency)
+		from `tabGL Entry`
+		where party_type = %s and party=%s""", ("Customer", customer)))
+
+	ip_grand_total_unpaid = frappe.get_all("Sales Invoice",
+		filters={
+			'docstatus': 1,
+			'customer': customer,
+			'inpatient_record': doc.name,
+			'status': ['not in', 'Paid']
+		},
+		fields=["patient", "sum(grand_total) as grand_total", "sum(base_grand_total) as base_grand_total"]
+	)
+
+	company_default_currency = frappe.db.get_value("Company", doc.company, 'default_currency')
+	from erpnext.accounts.party import get_party_account_currency
+	party_account_currency = get_party_account_currency("Customer", customer, doc.company)
+
+	if party_account_currency==company_default_currency:
+		billing_this_year = flt(ip_grand_total[0]["base_grand_total"])
+		total_unpaid = flt(ip_grand_total_unpaid[0]["base_grand_total"])
+	else:
+		billing_this_year = flt(ip_grand_total[0]["grand_total"])
+		total_unpaid = flt(ip_grand_total_unpaid[0]["grand_total"])
+
+	total_unpaid_gl = flt(total_unpaid_form_gl[doc.company])
+
+	info = {}
+	info["total_billing"] = flt(billing_this_year) if billing_this_year else 0
+	info["currency"] = party_account_currency
+	info["total_unpaid"] = flt(total_unpaid) if total_unpaid else 0
+	info["total_unpaid_gl"] = flt(total_unpaid_gl) if total_unpaid_gl else 0
+
+	return info
+
 def get_item_group_as_group(item_code):
 	item_group = frappe.get_value("Item", item_code, "item_group")
 	is_group = frappe.get_value("Item Group", item_group, "is_group")
@@ -170,6 +222,7 @@ def set_ip_admission_record_details(inpatient_record, dialog):
 	inpatient_record.admission_service_unit_type = dialog['service_unit_type']
 	inpatient_record.expected_length_of_stay = dialog['expected_length_of_stay']
 	inpatient_record.admission_instruction = dialog['admission_instruction']
+	inpatient_record.allowed_total_credit_coverage = dialog['allowed_total_credit_coverage']
 	return inpatient_record
 
 @frappe.whitelist()

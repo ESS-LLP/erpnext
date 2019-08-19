@@ -61,6 +61,20 @@ frappe.ui.form.on('Inpatient Record', {
 			frm.set_df_property("referring_encounter", "read_only", 1);
 			frm.set_df_property("diagnosis	", "read_only", 1);
 			frm.set_df_property("chief_complaint", "read_only", 1);
+			frm.set_df_property("allowed_total_credit_coverage", "read_only", 1);
+			frm.set_df_property("source", "read_only", 1);
+			frm.set_df_property("primary_practitioner", "read_only", 1);
+			frm.set_df_property("secondary_practitioner", "read_only", 1);
+			frm.set_df_property("admission_service_unit_type", "read_only", 1);
+			frappe.call({
+				method: "get_billing_info",
+				doc: frm.doc,
+				callback: function(r) {
+					frm.dashboard.add_indicator(__('Total Billing: {0}', [format_currency(r.message.total_billing)]), 'blue');
+					frm.dashboard.add_indicator(__('Total Unpaid: {0}', [format_currency(r.message.total_unpaid)]),
+					r.message.total_unpaid>frm.doc.allowed_total_credit_coverage ? 'orange' : 'green');
+				}
+			})
 		}
 		frm.set_query("referring_encounter", function(){
 			return {
