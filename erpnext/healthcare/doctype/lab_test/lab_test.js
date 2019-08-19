@@ -467,11 +467,11 @@ var get_input_data = function(frm){
 	if(frm.doc.normal_test_items && !frm.doc.__islocal){
 		frm.doc.normal_test_items.forEach(function(val, i){
 			var result = "";
-			if(val.type == "Data"){
-				result = $(frm.fields_dict["lab_test_html"].wrapper).find('.'+val.name)[0].innerText;
+			if(val.type == "Select"){
+				result = $(frm.fields_dict["lab_test_html"].wrapper).find('.'+val.name).find(':selected').text();
 			}
 			else{
-				result = $(frm.fields_dict["lab_test_html"].wrapper).find('.'+val.name).find(':selected').text();
+				result = $(frm.fields_dict["lab_test_html"].wrapper).find('.'+val.name)[0].innerText;
 			}
 			frappe.model.set_value(val.doctype, val.name, 'result_value', result)
 		});
