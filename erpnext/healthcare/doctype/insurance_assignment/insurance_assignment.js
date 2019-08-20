@@ -5,6 +5,28 @@ frappe.ui.form.on('Insurance Assignment', {
 	refresh: function(frm) {
 
 	},
+	insurance_company: function(frm){
+		if(frm.doc.insurance_company){
+			frappe.call({
+				"method": "frappe.client.get_value",
+				args: {
+					doctype: "Insurance Contract",
+					filters: {
+						'insurance_company': frm.doc.insurance_company,
+						'is_active':1,
+						'docstatus':1
+					},
+					fieldname: ['discount']
+				},
+				callback: function (data) {
+					if(data.message){
+						frm.set_value("discount", data.message.discount);
+						frm.set_df_property("discount", "read_only", 1);
+					}
+				}
+			});
+		}
+	},
 	patient: function(frm){
 		if(frm.doc.patient){
 			frappe.call({
@@ -20,6 +42,21 @@ frappe.ui.form.on('Insurance Assignment', {
 					if(data.message.dob){
 						$(frm.fields_dict['age_html'].wrapper).html("AGE : " + get_age(data.message.dob));
 					}
+					frm.refresh_fields()
+				}
+			});
+		}
+	},
+	plan_name: function(frm){
+		if(frm.doc.plan_name){
+			frappe.call({
+				"method": "frappe.client.get",
+				args: {
+					doctype: "Insurance plan",
+					name: frm.doc.plan_name
+				},
+				callback: function (data) {
+					frm.set_value("coverage", data.message.coverage);
 					frm.refresh_fields()
 				}
 			});
