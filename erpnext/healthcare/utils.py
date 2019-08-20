@@ -50,13 +50,13 @@ def get_healthcare_services_to_invoice(patient):
 							app_radiology_service_item = frappe.db.get_value("Radiology Procedure", patient_appointment_obj.radiology_procedure, "item")
 							app_radiology_rate = False
 							if include_in_insurance:
-									app_radiology_rate, discount_percentage = get_insurance_deatils(patient_appointment_obj.insurance, app_radiology_service_item)
-									if include_in_insurance and app_radiology_rate:
-										item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
-										'service': app_radiology_service_item, 'cost_center': cost_center, 'rate': app_radiology_rate, 'discount_percentage': discount_percentage})
-									else:
-										item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
-										'service': patient_appointment_obj.radiology_procedure, 'cost_center': cost_center})
+								app_radiology_rate, discount_percentage = get_insurance_deatils(patient_appointment_obj.insurance, app_radiology_service_item)
+							if include_in_insurance and app_radiology_rate:
+								item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
+								'service': app_radiology_service_item, 'cost_center': cost_center, 'rate': app_radiology_rate, 'discount_percentage': discount_percentage})
+							else:
+								item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
+								'service': patient_appointment_obj.radiology_procedure, 'cost_center': cost_center})
 					else:
 						practitioner_exist_in_list = False
 						skip_invoice = False
