@@ -433,7 +433,7 @@ var lab_test_html_tables = function(frm) {
 		}
 		else {
 			if(val.options.length > 0){
-				var res = val.options.split(",");
+				var res = val.options.split("\n");
 				if(res.length > 0){
 					lab_test_table_html += `<td style="width: 20%"><select id="mySelect" class="dropdown_select ${val.name}" onchange="make_dirty()">`;
 					lab_test_table_html += `<option value=""></option>`;
