@@ -1048,6 +1048,12 @@ var get_checked_values= function($results) {
 			else{
 				checked_values['cost_center'] = false;
 			}
+			if($(this).attr('data-delivery_note') != 'undefined'){
+				checked_values['delivery_note'] = $(this).attr('data-delivery_note');
+			}
+			else{
+				checked_values['delivery_note'] = false;
+			}
 			return checked_values;
 		}
 	}).get();
@@ -1125,7 +1131,8 @@ var list_row_data_items = function(head, $row, result, invoice_healthcare_servic
 				data-income-account = "${result.income_account}"
 				data-qty = ${result.qty}
 				data-description = "${result.description}"
-				data-cost-center = "${result.cost_center}">
+				data-cost-center = "${result.cost_center}"
+				data-delivery_note = "${result.delivery_note}">
 				</div>`).append($row);
 	}
 	else{
