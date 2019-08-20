@@ -134,6 +134,13 @@ frappe.ui.form.on('Clinical Procedure', {
 				get_inpatient_procedure_prescribed(frm);
 			}, __("Get form"));
 		}
+		frm.set_query("insurance", function(){
+			return{
+				filters:{
+					"patient": frm.doc.patient
+				}
+			};
+		});
 		if(frm.doc.consume_stock){
 			frm.set_indicator_formatter('item_code',
 				function(doc) { return (doc.qty<=doc.actual_qty) ? "green" : "orange" ; });
@@ -293,7 +300,7 @@ frappe.ui.form.on('Clinical Procedure', {
 					if(data.message.referring_practitioner){
 						frm.set_value( "referring_practitioner", data.message.referring_practitioner);
 					}
-
+					frm.set_value("insurance", data.message.insurance);
 				}
 			});
 		}

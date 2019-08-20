@@ -197,6 +197,13 @@ frappe.ui.form.on("Lab Test", "patient", function(frm) {
 				frappe.model.set_value(frm.doctype,frm.docname, "report_preference", data.message.report_preference);
 			}
 		});
+		frm.set_query("insurance", function(){
+			return{
+				filters:{
+					"patient": frm.doc.patient
+				}
+			};
+		});
 	}
 });
 
@@ -266,9 +273,9 @@ var show_lab_tests = function(frm, result){
 		<div class="col-xs-3"> %(date)s </div>\
 		<div class="col-xs-1">\
 		<a data-name="%(name)s" data-lab-test="%(lab_test)s"\
-		data-encounter="%(encounter)s" data-practitioner="%(practitioner)s"\
-		data-invoiced="%(invoiced)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s" href="#"><button class="btn btn-default btn-xs">Get Lab Test\
-		</button></a></div></div>', {name:y[0], lab_test: y[1], encounter:y[2], invoiced:y[3], practitioner:y[4], date:y[5], source:y[6], referring_practitioner:y[7]})).appendTo(html_field);
+		data-encounter="%(encounter)s" data-practitioner="%(practitioner)s" \
+		data-invoiced="%(invoiced)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s data-insurance="%(insurance)s"" href="#"><button class="btn btn-default btn-xs">Get Lab Test\
+		</button></a></div></div>', {name:y[0], lab_test: y[1], encounter:y[2], invoiced:y[3], practitioner:y[4], date:y[5], source:y[6], referring_practitioner:y[7],insurance:y[8]})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.template = $(this).attr("data-lab-test");
 			frm.doc.prescription = $(this).attr("data-name");
@@ -276,6 +283,7 @@ var show_lab_tests = function(frm, result){
 			frm.doc.source =  $(this).attr("data-source");
 			frm.set_df_property("source", "read_only", 1);
 			frm.doc.referring_practitioner= $(this).attr("data-referring-practitioner")
+			frm.doc.insurance= $(this).attr("data-insurance")
 			if(frm.doc.referring_practitioner){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
 				frm.set_df_property("referring_practitioner", "read_only", 1);

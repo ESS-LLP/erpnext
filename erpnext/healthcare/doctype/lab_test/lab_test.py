@@ -363,7 +363,7 @@ def delete_lab_test_from_medical_record(self):
 
 @frappe.whitelist()
 def get_lab_test_prescribed(patient):
-	return frappe.db.sql("""select cp.name, cp.lab_test_code, cp.parent, cp.invoiced, ct.practitioner, ct.encounter_date, ct.source, ct.referring_practitioner from `tabPatient Encounter` ct,
+	return frappe.db.sql("""select cp.name, cp.lab_test_code, cp.parent, cp.invoiced, ct.practitioner, ct.encounter_date, ct.source, ct.referring_practitioner, ct.insurance from `tabPatient Encounter` ct,
 	`tabLab Prescription` cp where ct.patient=%s and cp.parent=ct.name and cp.lab_test_created=0""", (patient))
 
 def invoice_lab_test(lab_test):

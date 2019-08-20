@@ -1035,6 +1035,12 @@ var get_checked_values= function($results) {
 			else{
 				checked_values['description'] = false;
 			}
+			if($(this).attr('data-discount-percentage') != 'undefined'){
+				checked_values['discount_percentage'] = $(this).attr('data-discount-percentage');
+			}
+			else{
+				checked_values['discount_percentage'] = false;
+			}
 			if($(this).attr('data-cost-center') != 'undefined'
 				&& $(this).attr('data-cost-center') != 'null' && $(this).attr('data-cost-center') != 'false'){
 				checked_values['cost_center'] = $(this).attr('data-cost-center');

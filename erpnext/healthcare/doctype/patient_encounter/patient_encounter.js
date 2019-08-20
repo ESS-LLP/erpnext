@@ -499,6 +499,7 @@ frappe.ui.form.on("Patient Encounter", "appointment", function(frm){
 				frm.set_df_property("source", "read_only", 1);
 				frm.set_df_property("referring_practitioner", "hidden", 0);
 				frm.set_df_property("referring_practitioner", "read_only", 1);
+				frappe.model.set_value(frm.doctype, frm.docname, "insurance", data.message.insurance);
 			}
 		});
 	}
@@ -510,6 +511,7 @@ frappe.ui.form.on("Patient Encounter", "appointment", function(frm){
 		frappe.model.set_value(frm.doctype,frm.docname, "service_unit", "");
 		frappe.model.set_value(frm.doctype,frm.docname, "source", "");
 		frappe.model.set_value(frm.doctype,frm.docname, "referring_practitioner", "");
+		frappe.model.set_value(frm.doctype, frm.docname, "insurance", "");
 	}
 });
 
@@ -566,6 +568,13 @@ frappe.ui.form.on("Patient Encounter", "patient", function(frm) {
 				frappe.model.set_value(frm.doctype,frm.docname, "patient_age", age);
 				frappe.model.set_value(frm.doctype,frm.docname, "patient_sex", data.message.sex);
 			}
+		});
+		frm.set_query("insurance", function(){
+			return{
+				filters:{
+					"patient": frm.doc.patient
+				}
+			};
 		});
 	}
 });

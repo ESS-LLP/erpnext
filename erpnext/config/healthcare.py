@@ -209,5 +209,51 @@ def get_data():
 					"label": _("Radiology Procedure")
 				}
 			]
+		},
+		{
+			"label": _("Healthcare Insurance"),
+			"icon": "icon-list",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Insurance Assignment",
+					"label": _("Insurance Assignment"),
+				},
+				{
+					"type": "doctype",
+					"name": "Insurance Claim",
+					"label": _("Insurance Claim"),
+				},
+				{
+					"type": "doctype",
+					"name": "Insurance Claim Submission",
+					"label": _("Insurance Claim Submission"),
+				},
+				{
+					"type": "doctype",
+					"name": "Insurance Type",
+					"label": _("Insurance Type"),
+				},
+				{
+					"type": "doctype",
+					"name": "Insurance Company",
+					"label": _("Insurance Company"),
+				},
+				{
+					"type": "doctype",
+					"name": "Insurance plan",
+					"label": _("Insurance plan"),
+				},
+				{
+					"type": "doctype",
+					"name": "Contract Type",
+					"label": _("Contract Type"),
+				},
+				{
+					"type": "doctype",
+					"name": "Insurance Contract",
+					"label": _("Insurance Contract"),
+				}
+			]
 		}
 	]

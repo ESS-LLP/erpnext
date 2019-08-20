@@ -61,6 +61,13 @@ frappe.ui.form.on('Patient Appointment', {
 				}
 			};
 		});
+		frm.set_query("insurance", function(){
+			return{
+				filters:{
+					"patient": frm.doc.patient
+				}
+			};
+		});
 		if(frm.doc.patient){
 			frm.add_custom_button(__('Patient History'), function() {
 				frappe.route_options = {"patient": frm.doc.patient};
