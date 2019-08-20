@@ -253,6 +253,22 @@ def get_healthcare_services_to_invoice(patient):
 								item_to_invoice.append({'reference_type': 'Radiology Examination', 'reference_name': procedure_obj.name,
 								'cost_center': cost_center if cost_center else '', 'service': procedure_service_item})
 
+			delivery_note_items = get_procedure_delivery_item(patient.name)
+			if delivery_note_items:
+				for delivery_note_item in delivery_note_items:
+					cost_center = False
+					reference_type = False
+					reference_name = False
+					dn_item = frappe.get_doc("Delivery Note Item", delivery_note_item[0])
+					if dn_item.reference_dt == "Clinical Procedure" and dn_item.reference_dn:
+						service_unit = frappe.get_value("Clinical Procedure", dn_item.reference_dn, 'service_unit')
+						if service_unit:
+							cost_center = frappe.db.get_value("Healthcare Service Unit", service_unit, "cost_center")
+					item_to_invoice.append({'reference_type': "Delivery Note", 'reference_name': delivery_note_item[1] if delivery_note_item[1] else '',
+						'service': dn_item.item_code, 'rate': dn_item.rate, 'qty': dn_item.qty,
+						'cost_center': cost_center if cost_center else '',
+						'delivery_note': delivery_note_item[1] if delivery_note_item[1] else ''})
+
 			inpatient_services = frappe.db.sql("""select io.name, io.parent from `tabInpatient Record` ip,
 			`tabInpatient Occupancy` io where ip.patient=%s and io.parent=ip.name and
 			io.left=1 and io.invoiced=0""", (patient.name))
