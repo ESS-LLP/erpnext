@@ -197,7 +197,7 @@ def get_healthcare_services_to_invoice(patient):
 
 			return item_to_invoice
 		else:
-			frappe.throw(_("The Patient {0} do not have customer refrence to invoice").format(patient.name))
+			frappe.throw(_("The Patient {0} do not have customer reference to invoice").format(patient.name))
 
 def service_item_and_practitioner_charge(doc):
 	is_ip = doc_is_ip(doc)
