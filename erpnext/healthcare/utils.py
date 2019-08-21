@@ -183,8 +183,8 @@ def get_healthcare_services_to_invoice(patient):
 					if procedure_obj.service_unit:
 						cost_center = frappe.db.get_value("Healthcare Service Unit", procedure_obj.service_unit, "cost_center")
 					if not procedure_obj.appointment and procedure_obj.procedure_template and (frappe.db.get_value("Clinical Procedure Template", procedure_obj.procedure_template, "is_billable") == 1):
+						reduce_from_procedure_rate = 0
 						if procedure_obj.consume_stock:
-							reduce_from_procedure_rate = 0
 							delivery_note_items = get_procedure_delivery_item(patient.name, procedure_obj.name)
 							if delivery_note_items:
 								for delivery_note_item in delivery_note_items:
@@ -827,7 +827,8 @@ def get_insurance_deatils(insurance, service_item):
 def manage_insurance_invoice_on_submit(reference_dt, reference_dn, jv_amount, app_service_item):
 	insurance = frappe.db.get_value(reference_dt, reference_dn, 'insurance')
 	if insurance:
-		amount = get_insurance_deatils(insurance, app_service_item)[0]
+		rate, discount = get_insurance_deatils(insurance, app_service_item)
+		amount = rate-rate*0.01*discount
 		if amount:
 			if insurance in jv_amount:
 				jv_amount[insurance] += amount
