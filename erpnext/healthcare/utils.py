@@ -807,22 +807,22 @@ def exist_invoice_item_for_healthcare_doc(doctype, docname):
 			"reference_dn": docname
 		}
 	)
+
 def get_insurance_deatils(insurance, service_item):
+	app_procedure_rate = False
+	discount = False
 	healthcare_insurance = frappe.get_doc("Insurance Assignment", insurance)
-	price_list = frappe.db.get_value("Insurance Contract", {'insurance_company': healthcare_insurance.insurance_company, 'is_active': 1} , "price_list")
-	print(healthcare_insurance.discount)
-	item_price = frappe.db.exists("Item Price",
+	if healthcare_insurance:
+		price_list = frappe.db.get_value("Insurance Contract", {'insurance_company': healthcare_insurance.insurance_company, 'is_active': 1} , "price_list")
+		item_price = frappe.db.exists("Item Price",
 		{
 			'item_code': service_item,
 			'price_list': price_list
-		}
-	)
-	if item_price:
-		app_procedure_rate= frappe.db.get_value("Item Price", item_price, 'price_list_rate')
-		if app_procedure_rate and healthcare_insurance.discount and healthcare_insurance.discount >0:
-			app_procedure_rate=app_procedure_rate - (app_procedure_rate*0.01*healthcare_insurance.discount)
-			return app_procedure_rate,healthcare_insurance.discount
-	return False, False
+		})
+		if item_price:
+			app_procedure_rate= frappe.db.get_value("Item Price", item_price, 'price_list_rate')
+			discount = healthcare_insurance.discount
+	return app_procedure_rate, discount
 
 def manage_insurance_invoice_on_submit(reference_dt, reference_dn, jv_amount, app_service_item):
 	insurance = frappe.db.get_value(reference_dt, reference_dn, 'insurance')
