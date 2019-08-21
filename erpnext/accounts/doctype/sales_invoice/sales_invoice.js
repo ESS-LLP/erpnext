@@ -1035,8 +1035,8 @@ var get_checked_values= function($results) {
 			else{
 				checked_values['description'] = false;
 			}
-			if($(this).attr('data-discount-percentage') != 'undefined'){
-				checked_values['discount_percentage'] = $(this).attr('data-discount-percentage');
+			if($(this).attr('data-discount_percentage') != 'undefined'){
+				checked_values['discount_percentage'] = $(this).attr('data-discount_percentage');
 			}
 			else{
 				checked_values['discount_percentage'] = false;
@@ -1132,7 +1132,8 @@ var list_row_data_items = function(head, $row, result, invoice_healthcare_servic
 				data-qty = ${result.qty}
 				data-description = "${result.description}"
 				data-cost-center = "${result.cost_center}"
-				data-delivery_note = "${result.delivery_note}">
+				data-delivery_note = "${result.delivery_note}"
+				data-discount_percentage = ${result.discount_percentage}>
 				</div>`).append($row);
 	}
 	else{
