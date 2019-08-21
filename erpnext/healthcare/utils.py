@@ -207,7 +207,7 @@ def get_healthcare_services_to_invoice(patient):
 							item_to_invoice.append({'reference_type': 'Clinical Procedure', 'reference_name': procedure_obj.name, 'cost_center': cost_center if cost_center else '',
 								'service': procedure_service_item, 'rate': float(procedure_obj.standard_selling_rate)-reduce_from_procedure_rate})
 
-			procedure_rxs = frappe.db.sql("""select pp.name from `tabPatient Encounter` et,
+			procedure_rxs = frappe.db.sql("""select pp.name, et.name from `tabPatient Encounter` et,
 			`tabProcedure Prescription` pp where et.patient=%s and pp.parent=et.name and
 			pp.procedure_created=0 and pp.invoiced=0 and pp.appointment_booked=0""", (patient.name))
 			if procedure_rxs:
