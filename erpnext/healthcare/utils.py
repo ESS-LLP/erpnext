@@ -810,7 +810,7 @@ def exist_invoice_item_for_healthcare_doc(doctype, docname):
 
 def get_insurance_deatils(insurance, service_item):
 	app_procedure_rate = False
-	discount = False
+	discount = 0
 	healthcare_insurance = frappe.get_doc("Insurance Assignment", insurance)
 	if healthcare_insurance:
 		price_list = frappe.db.get_value("Insurance Contract", {'insurance_company': healthcare_insurance.insurance_company, 'is_active': 1} , "price_list")
