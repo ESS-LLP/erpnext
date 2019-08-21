@@ -175,7 +175,7 @@ def get_healthcare_services_to_invoice(patient):
 							item_to_invoice.append({'reference_type': 'Lab Prescription', 'reference_name': rx_obj.name,
 							'service': frappe.db.get_value("Lab Test Template", rx_obj.lab_test_code, "item"), 'cost_center':cost_center})
 
-			procedures = frappe.get_list("Clinical Procedure", {'patient': patient.name, 'invoiced': False, 'status': 'Completed'})
+			procedures = frappe.get_list("Clinical Procedure", {'patient': patient.name, 'invoiced': False, 'status': 'Completed', 'docstatus': 1})
 			if procedures:
 				for procedure in procedures:
 					cost_center = False
@@ -231,7 +231,7 @@ def get_healthcare_services_to_invoice(patient):
 							item_to_invoice.append({'reference_type': 'Procedure Prescription', 'reference_name': rx_obj.name,
 							'service': frappe.db.get_value("Clinical Procedure Template", rx_obj.procedure, "item"), 'cost_center': cost_center})
 
-			r_procedures = frappe.get_list("Radiology Examination", {'patient': patient.name, 'invoiced': False})
+			r_procedures = frappe.get_list("Radiology Examination", {'patient': patient.name, 'invoiced': False, 'docstatus': 1})
 			if r_procedures:
 				for procedure in r_procedures:
 					include_in_insurance = False
