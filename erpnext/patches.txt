@@ -614,3 +614,4 @@ erpnext.patches.v12_0.set_ip_record_field_in_si
 erpnext.patches.v12_0.healthcare_patient_in_delivery_note
 erpnext.patches.v12_0.healthcare_patient_in_payment_entry
 erpnext.patches.v12_0.submit_clinical_procedure
+erpnext.patches.v12_0.reload_clinical_procedure_for_fieldtype
