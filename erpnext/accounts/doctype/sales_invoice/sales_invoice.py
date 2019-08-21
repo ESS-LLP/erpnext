@@ -1167,14 +1167,13 @@ class SalesInvoice(SellingController):
 		from erpnext.stock.get_item_details import get_item_details
 		for checked_item in checked_values:
 			item_line = self.append("items", {})
-			price_list, price_list_currency = frappe.db.get_values("Price List", {"selling": 1}, ['name', 'currency'])[0]
 			args = {
 				'doctype': "Sales Invoice",
 				'item_code': checked_item['item_code'],
 				'company': self.company,
 				'customer': frappe.db.get_value("Patient", self.patient, "customer"),
-				'selling_price_list': price_list,
-				'price_list_currency': price_list_currency,
+				'selling_price_list': self.selling_price_list,
+				'price_list_currency': self.currency,
 				'plc_conversion_rate': 1.0,
 				'conversion_rate': 1.0
 			}
