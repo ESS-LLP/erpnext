@@ -329,18 +329,6 @@ frappe.ui.form.on('Clinical Procedure', {
 				callback: function (data) {
 					frm.set_value("medical_department", data.message.medical_department);
 					frm.set_value("consume_stock", data.message.consume_stock);
-					if(!frm.doc.warehouse){
-						frappe.call({
-							method: "frappe.client.get_value",
-							args: {
-								doctype: "Stock Settings",
-								fieldname: "default_warehouse"
-							},
-							callback: function (data) {
-								frm.set_value("warehouse", data.message.default_warehouse);
-							}
-						});
-					}
 				}
 			});
 		}else{
