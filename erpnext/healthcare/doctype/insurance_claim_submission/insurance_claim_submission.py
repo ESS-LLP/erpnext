@@ -50,6 +50,7 @@ class InsuranceClaimSubmission(Document):
 		journal_entry.set("accounts", accounts)
 		journal_entry.save(ignore_permissions = True)
 		journal_entry.submit()
+		frappe.db.set_value("Insurance Claim Submission", self.name, "claim_submission_jv", journal_entry.name)
 
 	def create_payment_entry(self):
 		insurance_company = frappe.get_doc('Insurance Company', self.insurance_company)

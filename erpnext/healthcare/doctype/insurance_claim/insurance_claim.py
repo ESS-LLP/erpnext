@@ -16,7 +16,6 @@ class InsuranceClaim(Document):
 			self.create_journal_entry_finished_submission()
 		elif self.claim_status == "Claim Rejected":
 			self.create_journal_entry_rejected_submission()
-		frappe.db.set_value("Insurance Claim", self.name, "claim_status", "Claim Approved")
 	def create_journal_entry_insurance_claim(self):
 			# create jv
 			sales_invoice = frappe.get_doc('Sales Invoice', self.sales_invoice)
@@ -45,7 +44,7 @@ class InsuranceClaim(Document):
 			journal_entry.set("accounts", accounts)
 			journal_entry.save(ignore_permissions = True)
 			journal_entry.submit()
-			frappe.db.set_value("Insurance Claim", self.name, "cliam_created__jv", journal_entry.name)
+			frappe.db.set_value("Insurance Claim", self.name, "claim_created_jv", journal_entry.name)
 
 	def create_journal_entry_finished_submission(self):
 			# create jv
