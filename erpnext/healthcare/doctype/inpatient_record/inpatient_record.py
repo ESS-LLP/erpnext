@@ -113,11 +113,6 @@ def get_ip_billing_info(doc):
 		fields=["patient", "sum(grand_total) as grand_total", "sum(base_grand_total) as base_grand_total"]
 	)
 
-	total_unpaid_form_gl = frappe._dict(frappe.db.sql("""
-		select company, sum(debit_in_account_currency) - sum(credit_in_account_currency)
-		from `tabGL Entry`
-		where party_type = %s and party=%s""", ("Customer", customer)))
-
 	ip_grand_total_unpaid = frappe.get_all("Sales Invoice",
 		filters={
 			'docstatus': 1,
@@ -139,14 +134,10 @@ def get_ip_billing_info(doc):
 		billing_this_year = flt(ip_grand_total[0]["grand_total"])
 		total_unpaid = flt(ip_grand_total_unpaid[0]["grand_total"])
 
-	total_unpaid_gl = flt(total_unpaid_form_gl[doc.company])
-
 	info = {}
 	info["total_billing"] = flt(billing_this_year) if billing_this_year else 0
 	info["currency"] = party_account_currency
 	info["total_unpaid"] = flt(total_unpaid) if total_unpaid else 0
-	info["total_unpaid_gl"] = flt(total_unpaid_gl) if total_unpaid_gl else 0
-
 	return info
 
 def get_item_group_as_group(item_code):
