@@ -8,6 +8,10 @@ from frappe.model.document import Document
 from frappe import _
 
 class LabTestTemplate(Document):
+	def validate(self):
+		if self.is_billable and (not self.lab_test_rate or self.lab_test_rate <= 0.0):
+			frappe.throw(_("Standard Selling Rate should be greater than zero."))
+
 	def on_update(self):
 		#Item and Price List update --> if (change_in_item)
 		if(self.change_in_item and self.is_billable == 1 and self.item):
