@@ -120,6 +120,7 @@ frappe.ui.form.on('Radiology Examination', {
 		if(frm.doc.source=="Direct"){
 			frm.set_value("referring_practitioner", "");
 			frm.set_df_property("referring_practitioner", "hidden", 1);
+			frm.set_df_property("referring_practitioner", "reqd", 0);
 		}else if(frm.doc.source=="Referral"){
 			if(frm.doc.referring_practitioner==""){
 				if(frm.doc.practitioner){

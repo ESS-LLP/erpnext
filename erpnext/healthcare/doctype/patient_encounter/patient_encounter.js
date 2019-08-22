@@ -61,27 +61,41 @@ frappe.ui.form.on('Patient Encounter', {
 					name: frm.doc.inpatient_record
 				},
 				callback: function(r) {
-					frm.set_value("source",r.message.source);
-					frm.set_value("referring_practitioner", r.message.referring_practitioner);
-					if(r.message.insurance){
-						frm.set_value("insurance",r.message.insurance)
-						frm.set_df_property("insurance", "read_only", 1);
+					if(r.message){
+						if(r.message.source){
+							frm.set_value("source",r.message.source);
+							frm.set_df_property("source", "read_only", 1);
+						}
+						else {
+							frm.set_value("source", "");
+							frm.set_df_property("source", "read_only", 0);
+						}
+						if(r.message.referring_practitioner){
+							frm.set_value("referring_practitioner", r.message.referring_practitioner);
+							frm.set_df_property("referring_practitioner", "read_only", 1);
+						}
+						else{
+							frm.set_value("referring_practitioner", "");
+							frm.set_df_property("referring_practitioner", "read_only", 0);
+						}
+						if(r.message.insurance){
+							frm.set_value("insurance", r.message.insurance);
+							frm.set_df_property("insurance", "read_only", 1);
+						}
+						else{
+							frm.set_value("insurance", "");
+							frm.set_df_property("insurance", "read_only", 0);
+						}
 					}
 				}
 			});
-			frm.set_df_property("source", "hidden", 0);
-			frm.set_df_property("source", "read_only", 1);
-			frm.set_df_property("referring_practitioner", "hidden", 0);
-			frm.set_df_property("referring_practitioner", "read_only", 1);
-			refresh_field("insurance");
-			refresh_field("source");
-			refresh_field("referring_practitioner");
 		}
 	},
 	source: function(frm){
 		if(frm.doc.source=="Direct"){
 			frm.set_value("referring_practitioner", "");
 			frm.set_df_property("referring_practitioner", "hidden", 1);
+			frm.set_df_property("referring_practitioner", "reqd", 0);
 		}else if(frm.doc.source=="Referral"){
 			if(!frm.doc.referring_practitioner){
 				if(frm.doc.practitioner){
