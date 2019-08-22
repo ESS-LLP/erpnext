@@ -10,31 +10,31 @@ frappe.ui.form.on('Radiology Examination', {
 					name:frm.doc.appointment
 				},
 				callback: function(data){
-					var patient_details_html = "";
-					patient_details_html += "Patient ID : " + data.message.name + "<br/>"
-					patient_details_html += "Name : " + data.message.patient_name + "<br/>"
-					patient_details_html += "Appointment Type : " + data.message.appointment_type + "<br/>"
-					patient_details_html += "Practitioner : " + data.message.practitioner + "<br/>"
-					patient_details_html += "Department : " + data.message.department + "<br/>"
-					patient_details_html += "Source: " + data.message.source + "<br/>"
-					frm.fields_dict.patient_details_html.html(patient_details_html);
-					if(frm.doc.appointment ){
+					if(data.message && data.message.name){
+						var appointment = data.message;
+						var patient_details_html = "";
+						patient_details_html += "Patient : " + appointment.patient + "<br/>"
+						patient_details_html += "Patient Name : " + appointment.patient_name + "<br/>"
+						patient_details_html += "Appointment Type : " + appointment.appointment_type + "<br/>"
+						patient_details_html += "Practitioner : " + appointment.practitioner + "<br/>"
+						patient_details_html += "Department : " + appointment.department
+						frm.fields_dict.appointment_details_html.html(patient_details_html);
+						frm.set_value("patient", appointment.patient);
+						frm.set_value("patient_name", appointment.patient_name);
 						frm.set_value( "source", data.message.source);
-						if(data.message.referring_practitioner){
-							frm.set_value( "referring_practitioner", data.message.referring_practitioner);
-						}
-						frm.set_df_property("source", "read_only", 1);
-						if(data.message.referring_practitioner !=""){
-							frm.set_df_property("referring_practitioner", "hidden", 0);
-							frm.set_df_property("referring_practitioner", "read_only", 1);
-						}
-						frm.set_df_property("patient", "read_only", 1);
+						frm.set_value( "referring_practitioner", appointment.referring_practitioner);
+						frm.set_df_property("patient", "hidden", 1);
+						frm.set_df_property("patient_name", "hidden", 1);
 					}
-					else
-					{
-						frm.set_df_property("patient", "read_only", 0);
-						frm.set_value( "source", "");
-						frm.set_value( "referring_practitioner", "");
+					else{
+						frm.set_df_property("patient", "hidden", 0);
+						frm.set_df_property("patient_name", "hidden", 0);
+						frm.set_df_property("source", "read_only", 0);
+						frm.set_value("patient", "");
+						frm.set_value("patient_name", "");
+						frm.set_value("source", "");
+						frm.set_value("referring_practitioner", "");
+						frm.fields_dict.appointment_details_html.html("");
 					}
 					if(data.message.insurance){
 						frm.set_value("insurance", data.message.insurance)
@@ -44,7 +44,7 @@ frappe.ui.form.on('Radiology Examination', {
 			});
 	},
 	patient: function(frm){
-		if(!frm.doc.appointment){
+		if(frm.doc.patient){
 			frappe.call({
 				"method": "frappe.client.get",
 				args:{
@@ -52,16 +52,29 @@ frappe.ui.form.on('Radiology Examination', {
 					name:frm.doc.patient
 				},
 				callback: function(data){
-					var patient_details_html = "";
-					patient_details_html += "Patient ID : " + data.message.name + "<br/>"
-					patient_details_html += "Name : " + data.message.patient_name + "<br/>"
-					patient_details_html += "Date Of Birth : " + data.message.dob + "<br/>"
-					patient_details_html += "Gender : " + data.message.sex + "<br/>"
-					patient_details_html += "Mobile : " + data.message.mobile + "<br/>"
-					patient_details_html += "Email ID: " + data.message.email + "<br/>"
-					frm.fields_dict.patient_details_html.html(patient_details_html);
+					if(data.message){
+						var patient = data.message;
+						var patient_details_html = "";
+						patient_details_html += patient.inpatient_record ?("Inpatient Record : " + patient.inpatient_record + "<br/>"):'';
+						patient_details_html += patient.dob ?("Date Of Birth : " + patient.dob + "<br/>"):'';
+						patient_details_html += patient.sex ?("Gender : " + patient.sex + "<br/>"):'';
+						patient_details_html += patient.mobile ?("Mobile : " + patient.mobile + "<br/>"):'';
+						patient_details_html += patient.email ?("Email ID: " + patient.email + "<br/>"):'';
+						frm.fields_dict.patient_details_html.html(patient_details_html);
+						if(patient.inpatient_record){
+							frm.set_value("inpatient_record", patient.inpatient_record);
+							frm.set_df_property("inpatient_record", "hidden", 1);
+						}
+					}
 				}
 			});
+		}
+		else{
+			frm.fields_dict.patient_details_html.html("");
+			frm.set_value("patient_name", "");
+			frm.set_value("source", "");
+			frm.set_value("referring_practitioner", "");
+			frm.set_df_property("source", "read_only", 0);
 		}
 	},
 	inpatient_record:function(frm) {
@@ -73,20 +86,34 @@ frappe.ui.form.on('Radiology Examination', {
 					name: frm.doc.inpatient_record
 				},
 				callback: function(r) {
-					frm.set_value("source",r.message.source);
-					frm.set_value("referring_practitioner", r.message.referring_practitioner);
-					if(r.message.insurance){
-						frm.set_value("insurance", r.message.insurance)
-						frm.set_df_property("insurance", "read_only", 1);
+					if(r.message){
+						if(r.message.source){
+							frm.set_value("source",r.message.source);
+							frm.set_df_property("source", "read_only", 1);
+						}
+						else {
+							frm.set_value("source", "");
+							frm.set_df_property("source", "read_only", 0);
+						}
+						if(r.message.referring_practitioner){
+							frm.set_value("referring_practitioner", r.message.referring_practitioner);
+							frm.set_df_property("referring_practitioner", "read_only", 1);
+						}
+						else{
+							frm.set_value("referring_practitioner", "");
+							frm.set_df_property("referring_practitioner", "read_only", 0);
+						}
+						if(r.message.insurance){
+							frm.set_value("insurance", r.message.insurance)
+							frm.set_df_property("insurance", "read_only", 1);
+						}
+						else{
+							frm.set_value("insurance", "")
+							frm.set_df_property("insurance", "read_only", 0);
+						}
 					}
 				}
 			});
-			frm.set_df_property("source", "hidden", 0);
-			frm.set_df_property("source", "read_only", 1);
-			frm.set_df_property("referring_practitioner", "hidden", 0);
-			frm.set_df_property("referring_practitioner", "read_only", 1);
-			refresh_field("source");
-			refresh_field("referring_practitioner");
 		}
 	},
 	source: function(frm){
