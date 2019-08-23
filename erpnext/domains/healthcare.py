@@ -42,6 +42,10 @@ data = {
 			{
 				'fieldname': 'ref_practitioner', 'label': 'Referring Practitioner', 'fieldtype': 'Link', 'options': 'Healthcare Practitioner',
 				'insert_after': 'customer'
+			},
+			{
+				'fieldname': 'total_insurance_claim_amount', 'label': 'Total Insurance Claim Amount', 'fieldtype': 'Currency',
+				'insert_after': 'total_advance', 'read_only':True
 			}
 		],
 		'Sales Invoice Item': [
@@ -52,6 +56,14 @@ data = {
 			{
 				'fieldname': 'reference_dn', 'label': 'Reference Name', 'fieldtype': 'Dynamic Link', 'options': 'reference_dt',
 				'insert_after': 'reference_dt'
+			},
+			{
+				'fieldname': 'insurance_claim_coverage', 'label': 'Insurance Claim Coverage', 'fieldtype': 'Percent',
+				'insert_after': 'amount', 'read_only':True
+			},
+			{
+				'fieldname': 'insurance_claim_amount', 'label': 'Insurance Claim Amount', 'fieldtype': 'Currency',
+				'insert_after': 'insurance_claim_coverage', 'read_only':True
 			}
 		],
 		'Delivery Note': [

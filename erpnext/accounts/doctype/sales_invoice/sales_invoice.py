@@ -1189,6 +1189,14 @@ class SalesInvoice(SellingController):
 				if item_line.discount_amount and item_line.discount_amount > 0:
 					item_line.rate = float(item_line.rate) - float(item_line.discount_amount)
 			item_line.amount = float(item_line.rate) * float(item_line.qty)
+			if item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
+				item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
+
+		total_claim_amount = 0
+		for item in self.items:
+			if item.insurance_claim_amount and float(item.insurance_claim_amount)>0:
+				total_claim_amount += float(item.insurance_claim_amount)
+		self.total_insurance_claim_amount = total_claim_amount
 
 		self.set_missing_values(for_validate = True)
 

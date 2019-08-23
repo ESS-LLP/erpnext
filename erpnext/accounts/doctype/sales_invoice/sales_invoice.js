@@ -1041,6 +1041,12 @@ var get_checked_values= function($results) {
 			else{
 				checked_values['discount_percentage'] = false;
 			}
+			if($(this).attr('data-insurance_claim_coverage') != 'undefined'){
+				checked_values['insurance_claim_coverage'] = $(this).attr('data-insurance_claim_coverage');
+			}
+			else{
+				checked_values['discount_percentage'] = false;
+			}
 			if($(this).attr('data-cost-center') != 'undefined'
 				&& $(this).attr('data-cost-center') != 'null' && $(this).attr('data-cost-center') != 'false'){
 				checked_values['cost_center'] = $(this).attr('data-cost-center');
@@ -1133,7 +1139,8 @@ var list_row_data_items = function(head, $row, result, invoice_healthcare_servic
 				data-description = "${result.description}"
 				data-cost-center = "${result.cost_center}"
 				data-delivery_note = "${result.delivery_note}"
-				data-discount_percentage = ${result.discount_percentage}>
+				data-discount_percentage = ${result.discount_percentage}
+				data-insurance_claim_coverage = ${result.insurance_claim_coverage}>
 				</div>`).append($row);
 	}
 	else{
