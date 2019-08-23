@@ -40,5 +40,14 @@ frappe.ui.form.on('Insurance Company', {
 				}
 			};
 		});
+		frm.set_query("insurance_rejected_expense_account", function() {
+			return {
+				filters: {
+					'root_type': 'Expense',
+					'company': frm.doc.company,
+					"is_group": 0
+				}
+			};
+		});
 	}
 });
