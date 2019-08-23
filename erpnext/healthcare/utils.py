@@ -370,7 +370,7 @@ def manage_invoice_submit_cancel(doc, method):
 				if frappe.get_meta(item.reference_dt).has_field("invoiced"):
 					set_invoiced(item, method, doc.name)
 				if frappe.get_meta(item.reference_dt).has_field("insurance"):
-					manage_insurance_invoice_on_submit(item.reference_dt, item.reference_dn, jv_amount,	item.item_code)
+					manage_insurance_invoice_on_submit(item.reference_dt, item.reference_dn, jv_amount,	item.item_code, item.rate)
 		if jv_amount and method == "on_submit":
 			for key in jv_amount:
 				create_insurance_claim(frappe.get_doc("Insurance Assignment", key), jv_amount[key], doc)
@@ -824,10 +824,10 @@ def get_insurance_deatils(insurance, service_item):
 			discount = healthcare_insurance.discount
 	return app_procedure_rate, discount
 
-def manage_insurance_invoice_on_submit(reference_dt, reference_dn, jv_amount, app_service_item):
+def manage_insurance_invoice_on_submit(reference_dt, reference_dn, jv_amount, app_service_item, rate):
 	insurance = frappe.db.get_value(reference_dt, reference_dn, 'insurance')
 	if insurance:
-		rate, discount = get_insurance_deatils(insurance, app_service_item)
+		discount = get_insurance_deatils(insurance, app_service_item)[1]
 		amount = rate-rate*0.01*discount
 		if amount:
 			if insurance in jv_amount:
