@@ -848,7 +848,10 @@ def get_sales_invoice_for_healthcare_doc(doctype, docname):
 	return False
 
 def sales_item_details_for_healthcare_doc(item_code, doc, wh=None):
-	price_list, price_list_currency = frappe.db.get_values("Price List", {"selling": 1}, ['name', 'currency'])[0]
+	price_list = frappe.db.get_value("Selling Settings", None, "selling_price_list")
+	if not price_list:
+		price_list = frappe.db.get_values("Price List", {"selling": 1}, ['name'])[0]
+	price_list_currency = frappe.db.get_values("Price List", {"selling": 1, "name": price_list}, ['name', 'currency'])[0]
 	args = {
 		'doctype': "Sales Invoice",
 		'item_code': item_code,
