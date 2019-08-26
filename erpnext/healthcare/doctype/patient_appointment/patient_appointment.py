@@ -12,7 +12,7 @@ import datetime
 from frappe.core.doctype.sms_settings.sms_settings import send_sms
 from erpnext.hr.doctype.employee.employee import is_holiday
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account,get_income_account
-from erpnext.healthcare.utils import validity_exists, service_item_and_practitioner_charge, sales_item_details_for_healthcare_doc
+from erpnext.healthcare.utils import validity_exists, service_item_and_practitioner_charge, sales_item_details_for_healthcare_doc, get_insurance_details
 
 class PatientAppointment(Document):
 	def on_update(self):
@@ -122,25 +122,37 @@ def set_invoice_details_for_appointment(appointment_doc, is_pos):
 	elif appointment_doc.radiology_procedure:
 		item_code = frappe.db.get_value("Radiology Procedure", appointment_doc.radiology_procedure, "item")
 
+	practitioner_charge = 0
 	if item_code:
 		item_line.item_code = item_code
 		item_details = sales_item_details_for_healthcare_doc(item_line.item_code, appointment_doc)
 		item_line.item_name = item_details.item_name
 		item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
 		item_line.rate = item_details.price_list_rate
-		item_line.amount = item_details.price_list_rate
 	else:
 		service_item, practitioner_charge = service_item_and_practitioner_charge(appointment_doc)
 		item_line.item_code = service_item
 		item_line.description = "Consulting Charges:  " + appointment_doc.practitioner
 		item_line.income_account = get_income_account(appointment_doc.practitioner, appointment_doc.company)
 		item_line.rate = practitioner_charge
-		item_line.amount = practitioner_charge
+
+	if appointment_doc.insurance and item_line.item_code:
+		insurance_details = get_insurance_details(appointment_doc.insurance, item_line.item_code)
+		if insurance_details and insurance_details.rate:
+			if item_code:
+				item_line.rate = insurance_details.rate - (insurance_details.rate*0.01*insurance_details.discount)
+			else:
+				item_line.rate = practitioner_charge - (practitioner_charge*0.01*insurance_details.discount)
+			item_line.insurance_claim_coverage = insurance_details.coverage
 
 	item_line.cost_center = cost_center if cost_center else ''
 	item_line.qty = 1
+	item_line.amount = item_line.rate*item_line.qty
 	item_line.reference_dt = "Patient Appointment"
 	item_line.reference_dn = appointment_doc.name
+	if appointment_doc.insurance and item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
+		item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
+		sales_invoice.total_insurance_claim_amount = item_line.insurance_claim_amount
 
 	if appointment_doc.mode_of_payment or appointment_doc.paid_amount:
 		payments_line = sales_invoice.append("payments")

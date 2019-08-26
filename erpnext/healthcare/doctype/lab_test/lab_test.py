@@ -378,32 +378,26 @@ def invoice_lab_test(lab_test):
 
 	item_line = sales_invoice.append("items")
 	item_line.item_code = frappe.db.get_value("Lab Test Template", lab_test.template, "item")
+	from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
 	item_details = sales_item_details_for_healthcare_doc(item_line.item_code, lab_test)
 	item_line.item_name = item_details.item_name
 	item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
 	item_line.rate = item_details.price_list_rate
-	item_line.amount = item_details.price_list_rate
+	if lab_test.insurance and item_line.item_code:
+		from erpnext.healthcare.utils import get_insurance_details
+		insurance_details = get_insurance_details(lab_test.insurance, item_line.item_code)
+		if insurance_details and insurance_details.rate:
+			item_line.rate = insurance_details.rate - (insurance_details.rate*0.01*insurance_details.discount)
+			item_line.insurance_claim_coverage = insurance_details.coverage
 	item_line.qty = 1
+	item_line.amount = item_line.rate*item_line.qty
 	item_line.reference_dt = "Lab Test"
 	item_line.reference_dn = lab_test.name
+	if lab_test.insurance and item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
+		item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
+		sales_invoice.total_insurance_claim_amount = item_line.insurance_claim_amount
 
 	sales_invoice.set_missing_values(for_validate = True)
 
 	sales_invoice.save(ignore_permissions=True)
 	return sales_invoice if sales_invoice else False
-
-def sales_item_details_for_healthcare_doc(item_code, doc):
-	price_list, price_list_currency = frappe.db.get_values("Price List", {"selling": 1}, ['name', 'currency'])[0]
-	args = {
-		'doctype': "Sales Invoice",
-		'item_code': item_code,
-		'company': doc.company,
-		'customer': frappe.db.get_value("Patient", doc.patient, "customer"),
-		'selling_price_list': price_list,
-		'price_list_currency': price_list_currency,
-		'plc_conversion_rate': 1.0,
-		'conversion_rate': 1.0
-	}
-	from erpnext.stock.get_item_details import get_item_details
-	item_details = get_item_details(args)
-	return item_details if item_details else False

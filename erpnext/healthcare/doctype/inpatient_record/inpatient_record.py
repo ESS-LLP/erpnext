@@ -10,7 +10,7 @@ import math
 from frappe.utils import today, now_datetime, getdate, time_diff_in_hours, get_datetime, add_to_date, rounded, flt
 from frappe.model.document import Document
 from frappe.desk.reportview import get_match_cond
-from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
+from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc, get_insurance_details
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account, get_account
 
 class InpatientRecord(Document):
@@ -432,11 +432,19 @@ def update_ip_occupancy_invoice(sales_invoice, inpatient_occupancy, service_unit
 	item_details = sales_item_details_for_healthcare_doc(service_unit_type.item, ip)
 	item_line.item_name = item_details.item_name
 	item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
-	item_line.rate = item_details.price_list_rate
 	item_line.reference_dt = "Inpatient Occupancy"
 	item_line.reference_dn = inpatient_occupancy.name
-	item_line.amount = item_line.rate * qty
+	item_line.rate = item_details.price_list_rate
+	if ip.insurance and item_line.item_code:
+		insurance_details = get_insurance_details(ip.insurance, item_line.item_code)
+		if insurance_details and insurance_details.rate:
+			item_line.rate = insurance_details.rate - (insurance_details.rate*0.01*insurance_details.discount)
+			item_line.insurance_claim_coverage = insurance_details.coverage
 	item_line.qty = qty
+	item_line.amount = item_line.rate * item_line.qty
+	if ip.insurance and item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
+		item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
+		sales_invoice.total_insurance_claim_amount = item_line.insurance_claim_amount
 	sales_invoice.set_missing_values(for_validate = True)
 
 	sales_invoice.save(ignore_permissions=True)

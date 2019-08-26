@@ -11,7 +11,7 @@ from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import g
 from erpnext.healthcare.doctype.lab_test.lab_test import create_sample_doc, create_lab_test_doc
 from erpnext.stock.stock_ledger import get_previous_sle
 import datetime
-from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc, get_procedure_delivery_item, item_reduce_procedure_rate, manage_healthcare_doc_cancel
+from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc, get_procedure_delivery_item, item_reduce_procedure_rate, manage_healthcare_doc_cancel, get_insurance_details
 
 class ClinicalProcedure(Document):
 	def validate(self):
@@ -351,6 +351,11 @@ def invoice_clinical_procedure(procedure):
 	item_line.item_name = item_details.item_name
 	item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
 	item_line.rate = float(procedure.standard_selling_rate) - reduce_from_procedure_rate
+	if procedure.insurance and item_line.item_code:
+		insurance_details = get_insurance_details(procedure.insurance, item_line.item_code)
+		if insurance_details and insurance_details.rate:
+			item_line.rate = (insurance_details.rate-reduce_from_procedure_rate) - (insurance_details.rate*0.01*insurance_details.discount)
+			item_line.insurance_claim_coverage = insurance_details.coverage
 	item_line.qty = 1
 	item_line.amount = item_line.rate*item_line.qty
 	item_line.cost_center = cost_center if cost_center else ''
@@ -360,6 +365,9 @@ def invoice_clinical_procedure(procedure):
 	else:
 		item_line.reference_dt = "Clinical Procedure"
 		item_line.reference_dn = procedure.name
+	if procedure.insurance and item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
+		item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
+		sales_invoice.total_insurance_claim_amount = item_line.insurance_claim_amount
 
 	sales_invoice.set_missing_values(for_validate = True)
 
