@@ -58,7 +58,7 @@ class ClinicalProcedure(Document):
 		self.save()
 
 	def invoice(self):
-		if not self.invoiced and self.status == "Completed":
+		if not self.invoiced and self.status == "Completed" and not self.appointment:
 			return invoice_clinical_procedure(self)
 		return False
 
