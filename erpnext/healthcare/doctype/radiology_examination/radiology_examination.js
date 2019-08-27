@@ -72,7 +72,7 @@ frappe.ui.form.on('Radiology Examination', {
 		else{
 			frm.fields_dict.patient_details_html.html("");
 			frm.set_value("patient_name", "");
-			frm.set_value("source", "");
+			frm.set_value("source", "Direct");
 			frm.set_value("referring_practitioner", "");
 			frm.set_df_property("source", "read_only", 0);
 		}
@@ -122,7 +122,7 @@ frappe.ui.form.on('Radiology Examination', {
 			frm.set_df_property("referring_practitioner", "hidden", 1);
 			frm.set_df_property("referring_practitioner", "reqd", 0);
 		}else if(frm.doc.source=="Referral"){
-			if(frm.doc.referring_practitioner==""){
+			if(!frm.doc.referring_practitioner){
 				if(frm.doc.practitioner){
 					frm.set_value("referring_practitioner", frm.doc.practitioner);
 					frm.set_df_property("referring_practitioner", "hidden", 0);
