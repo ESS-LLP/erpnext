@@ -798,12 +798,31 @@ def exist_invoice_item_for_healthcare_doc(doctype, docname):
 		}
 	)
 
+def valid_insurance(insurance, posting_date):
+	healthcare_insurance = frappe.get_doc("Insurance Assignment", insurance)
+	if frappe.db.exists("Insurance Contract",
+		{
+			'insurance_company': healthcare_insurance.insurance_company,
+			'start_date':("<=", getdate(posting_date)),
+			'end_date':(">=", getdate(posting_date)),
+			'is_active': 1
+		}):
+		if frappe.db.exists("Insurance Assignment",
+			{
+				'name': insurance,
+				'end_date':(">=", getdate(posting_date)),
+				'is_active': 1
+			}):
+			return True
+	return False
+
+
 def get_insurance_details(insurance, service_item):
 	rate = False
 	discount = 0
 	coverage = 0
 	healthcare_insurance = frappe.get_doc("Insurance Assignment", insurance)
-	if healthcare_insurance:
+	if healthcare_insurance and valid_insurance(healthcare_insurance.name,nowdate()):
 		price_list = frappe.db.get_value("Insurance Contract", {'insurance_company': healthcare_insurance.insurance_company, 'is_active': 1} , "price_list")
 		item_price = frappe.db.exists("Item Price",
 		{
