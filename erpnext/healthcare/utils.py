@@ -823,7 +823,7 @@ def get_insurance_details(insurance, service_item):
 	coverage = 0
 	healthcare_insurance = frappe.get_doc("Insurance Assignment", insurance)
 	if healthcare_insurance and valid_insurance(healthcare_insurance.name,nowdate()):
-		price_list = frappe.db.get_value("Insurance Contract", {'insurance_company': healthcare_insurance.insurance_company, 'is_active': 1} , "price_list")
+		price_list = frappe.db.get_value("Insurance Contract", healthcare_insurance.insurance_contract , "price_list")
 		item_price = frappe.db.exists("Item Price",
 		{
 			'item_code': service_item,
