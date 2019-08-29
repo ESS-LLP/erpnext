@@ -361,6 +361,10 @@ def manage_invoice_submit_cancel(doc, method):
 					set_invoiced(item, method, doc.name)
 				if frappe.get_meta(item.reference_dt).has_field("insurance"):
 					manage_insurance_invoice_on_submit(item.reference_dt, item.reference_dn, jv_amount,	item.item_code, item.amount)
+				elif item.reference_dt in  ['Lab Prescription', 'Procedure Prescription']:
+					reference_obj = frappe.get_doc(item.reference_dt, item.reference_dn)
+					if frappe.get_meta(reference_obj.parenttype).has_field("insurance"):
+						manage_insurance_invoice_on_submit(reference_obj.parenttype, reference_obj.parent, jv_amount,	item.item_code, item.amount)
 		if jv_amount and method == "on_submit":
 			for key in jv_amount:
 				create_insurance_claim(frappe.get_doc("Insurance Assignment", key), jv_amount[key], doc)
@@ -822,16 +826,25 @@ def get_insurance_details(insurance, service_item):
 	discount = 0
 	coverage = 0
 	healthcare_insurance = frappe.get_doc("Insurance Assignment", insurance)
+	service_item_group = frappe.get_value("Item", service_item, "item_group")
 	if healthcare_insurance and valid_insurance(healthcare_insurance.name,nowdate()):
-		price_list = frappe.db.get_value("Insurance Contract", healthcare_insurance.insurance_contract , "price_list")
+		insurance_contract = frappe.get_doc("Insurance Contract",
+			{
+				"insurance_company": healthcare_insurance.insurance_company,
+				"is_active": 1
+			}
+		)
 		item_price = frappe.db.exists("Item Price",
 		{
 			'item_code': service_item,
-			'price_list': price_list
+			'price_list': insurance_contract.price_list
 		})
 		if item_price:
+			discount = insurance_contract.discount
+			for item in insurance_contract.insurance_contract_discount:
+				if service_item_group== item.item_group:
+					discount=item.discount
 			rate= frappe.db.get_value("Item Price", item_price, 'price_list_rate')
-			discount = healthcare_insurance.discount
 			coverage = healthcare_insurance.coverage
 	return frappe._dict({'rate': rate, 'discount': discount, 'coverage': coverage})
 
@@ -856,7 +869,7 @@ def create_insurance_claim(insurance, amount, doc):
 	insurance_claim.created_by=frappe.session.user
 	insurance_claim.created_on=nowdate()
 	insurance_claim.sales_invoice=doc.name
-	insurance_claim.claim_status="Draft"
+	insurance_claim.claim_status="Claim Created"
 	insurance_claim.save(ignore_permissions = True)
 	insurance_claim.submit()
 @frappe.whitelist()
