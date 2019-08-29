@@ -136,6 +136,12 @@ class SalesInvoice(SellingController):
 		if self.redeem_loyalty_points and self.loyalty_program and self.loyalty_points:
 			validate_loyalty_points(self, self.loyalty_points)
 
+		# Healthcare Service Invoice.
+		domain_settings = frappe.get_doc('Domain Settings')
+		active_domains = [d.domain for d in domain_settings.active_domains]
+
+		if "Healthcare" in active_domains:
+			self.calculate_healthcare_insurance_claim()
 
 	def before_save(self):
 		set_account_for_mode_of_payment(self)
@@ -1192,13 +1198,16 @@ class SalesInvoice(SellingController):
 			if item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
 				item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
 
+		self.calculate_healthcare_insurance_claim()
+
+		self.set_missing_values(for_validate = True)
+
+	def calculate_healthcare_insurance_claim(self):
 		total_claim_amount = 0
 		for item in self.items:
 			if item.insurance_claim_amount and float(item.insurance_claim_amount)>0:
 				total_claim_amount += float(item.insurance_claim_amount)
 		self.total_insurance_claim_amount = total_claim_amount
-
-		self.set_missing_values(for_validate = True)
 
 def validate_inter_company_party(doctype, party, company, inter_company_invoice_reference):
 	if not party:
