@@ -218,6 +218,9 @@ var create_delivery_note = function(frm){
 			dialog.hide();
 		}
 	});
+	dialog.set_values({
+		's_wh': frm.doc.current_service_unit_warehouse
+	});
 	dialog.fields_dict["item"].get_query = function(){
 		return {
 			filters: {

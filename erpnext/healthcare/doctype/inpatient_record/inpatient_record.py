@@ -500,7 +500,7 @@ def create_delivery_note(ip_record, item, qty, s_wh):
 	child.qty = flt(qty)
 	child.warehouse = s_wh
 	cost_center = frappe.get_cached_value('Company',  doc.company,  'cost_center')
-	child.cost_center = cost_center
+	child.cost_center = doc.current_service_unit_cost_center if doc.current_service_unit_cost_center else cost_center
 	#if not expense_account:
 	#	expense_account = frappe.db.get_value("Item", item_line.item_code, "expense_account")
 	child.expense_account = expense_account
