@@ -4,35 +4,6 @@
 frappe.ui.form.on('Insurance Assignment', {
 	refresh: function(frm) {
 	},
-	insurance_company: function(frm){
-		if(frm.doc.insurance_company){
-			frappe.call({
-				"method": "frappe.client.get_value",
-				args: {
-					doctype: "Insurance Contract",
-					filters: {
-						'insurance_company': frm.doc.insurance_company,
-						'is_active':1,
-						'end_date':[">=", frappe.datetime.nowdate()],
-						'docstatus':1
-					},
-					fieldname: ['discount', 'name']
-				},
-				callback: function (data) {
-					if(data.message){
-						frm.set_value("discount", data.message.discount);
-						frm.set_value("insurance_contract", data.message.name);
-						frm.set_df_property("discount", "read_only", 1);
-					}
-					else{
-						frappe.msgprint(__("There is no valid contract with this Insurance Company {0}",[frm.doc.insurance_company]));
-						frm.set_value("insurance_company", "");
-						frm.set_value("insurance_company_name", "");
-					}
-				}
-			});
-		}
-	},
 	patient: function(frm){
 		if(frm.doc.patient){
 			frappe.call({
