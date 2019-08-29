@@ -18,6 +18,10 @@ def get_data():
 			{
 				'label': _('Billing'),
 				'items': ['Sales Invoice']
+			},
+			{
+				'label': _('Insurance'),
+				'items': ['Insurance Assignment']
 			}
 		]
 	}
