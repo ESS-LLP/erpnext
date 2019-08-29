@@ -101,9 +101,33 @@ frappe.ui.form.on("Delivery Note", {
 			}
 			else{
 					frm.set_value("customer", '');
+					frm.set_value("inpatient_record", '');
+					frm.set_value("patient_name", '');
 			}
 		}
 	},
+	inpatient_record: function(frm) {
+		if (frappe.boot.active_domains.includes("Healthcare")){
+			if(frm.doc.inpatient_record){
+				frappe.call({
+					method: "frappe.client.get",
+					args:{
+						doctype: "Inpatient Record",
+						name: frm.doc.inpatient_record
+					},
+					callback:function(r) {
+						if(r && r.message){
+							if(r.message.patient != frm.doc.patient){
+								frm.set_value("patient", r.message.patient);
+							}
+							frm.set_value('set_warehouse', r.message.current_service_unit_warehouse)
+							frm.refresh_fields();
+						}
+					}
+				});
+			}
+		}
+	}
 });
 
 frappe.ui.form.on("Delivery Note Item", {
