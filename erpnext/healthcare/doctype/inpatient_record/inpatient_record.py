@@ -23,6 +23,7 @@ class InpatientRecord(Document):
 		if self.status == "Discharged":
 			frappe.db.set_value("Patient", self.patient, "inpatient_status", None)
 			frappe.db.set_value("Patient", self.patient, "inpatient_record", None)
+		self.current_service_unit = self.get_details().current_service_unit
 
 	def validate_already_scheduled_or_admitted(self):
 		query = """
@@ -99,6 +100,14 @@ class InpatientRecord(Document):
 
 	def get_billing_info(self):
 		return get_ip_billing_info(self)
+
+	def get_details(self):
+		current_service_unit = ""
+		if self.inpatient_occupancies:
+			for occupany in self.inpatient_occupancies:
+				if occupany.left != 1:
+					current_service_unit = occupany.service_unit
+		return frappe._dict({'current_service_unit': current_service_unit})
 
 @frappe.whitelist()
 def get_ip_billing_info(doc):
@@ -298,7 +307,7 @@ def get_pending_doc(doc, doc_name_list, pending_invoices):
 
 def get_inpatient_docs_not_invoiced(doc, inpatient_record):
 	return frappe.db.get_list(doc, filters = {"patient": inpatient_record.patient,
-					"inpatient_record": inpatient_record.name, "invoiced": 0})
+					"inpatient_record": inpatient_record.name, "invoiced": 0, "docstatus": 1})
 
 def admit_patient(inpatient_record, service_unit, check_in, expected_discharge=None):
 	inpatient_record.admitted_datetime = check_in
