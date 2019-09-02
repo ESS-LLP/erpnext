@@ -289,7 +289,7 @@ def validate_invoiced_inpatient(inpatient_record):
 			pending_invoices = get_pending_doc(doc, doc_name_list, pending_invoices)
 
 	if pending_invoices:
-		frappe.throw(_("Can not mark Inpatient Record Discharged, there are Unbilled Invoices {0}").format(", "
+		frappe.throw(_("Can not mark Inpatient Record Discharged, there are Unbilled Services {0}").format(", "
 			.join(pending_invoices)))
 
 def get_pending_doc(doc, doc_name_list, pending_invoices):
