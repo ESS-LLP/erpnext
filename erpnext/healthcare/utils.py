@@ -91,7 +91,9 @@ def get_healthcare_services_to_invoice(patient):
 								income_account = get_income_account(patient_appointment_obj.practitioner, patient_appointment_obj.company)
 							if include_in_insurance:
 								insurance_details = get_insurance_details(patient_appointment_obj.insurance, service_item)
-							if include_in_insurance and  insurance_details.discount:
+							if include_in_insurance and insurance_details.discount:
+								if insurance_details.rate:
+									practitioner_charge = insurance_details.rate
 								item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
 									'service': service_item, 'cost_center': cost_center, 'rate': practitioner_charge, 'income_account': income_account,
 									'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage})
@@ -119,7 +121,9 @@ def get_healthcare_services_to_invoice(patient):
 							income_account = get_income_account(encounter_obj.practitioner, encounter_obj.company)
 						if include_in_insurance :
 							insurance_details = get_insurance_details(encounter_obj.insurance, service_item)
-						if insurance_details.discount:
+						if include_in_insurance and insurance_details.discount:
+							if insurance_details.rate:
+								practitioner_charge = insurance_details.rate
 							item_to_invoice.append({'reference_type': 'Patient Encounter', 'reference_name': encounter_obj.name,
 							'service': service_item, 'rate': practitioner_charge, 'cost_center':cost_center, 'discount_percentage': insurance_details.discount,
 							'income_account': income_account, 'insurance_claim_coverage': insurance_details.coverage})
