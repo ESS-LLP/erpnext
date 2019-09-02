@@ -53,10 +53,13 @@ class PatientAppointment(Document):
 				comments = frappe.db.get_value("Procedure Prescription", self.procedure_prescription, "comments")
 				if comments:
 					frappe.db.set_value("Patient Appointment", self.name, "notes", comments)
+		from erpnext.healthcare.utils import get_practitioner_charge
+		is_ip = True if self.inpatient_record else False
+		practitioner_charge = get_practitioner_charge(self.practitioner, is_ip)
 		# Check fee validity exists
 		appointment = self
 		validity_exist = validity_exists(appointment.practitioner, appointment.patient)
-		if validity_exist:
+		if validity_exist and practitioner_charge:
 			fee_validity = frappe.get_doc("Fee Validity", validity_exist[0][0])
 
 			# Check if the validity is valid
@@ -67,6 +70,8 @@ class PatientAppointment(Document):
 				if fee_validity.ref_invoice:
 					frappe.db.set_value("Patient Appointment", appointment.name, "invoiced", True)
 				frappe.msgprint(_("{0} has fee validity till {1}").format(appointment.patient, fee_validity.valid_till))
+		elif not practitioner_charge:
+			frappe.db.set_value("Patient Appointment", appointment.name, "invoiced", True)
 		confirm_sms(self)
 
 		if frappe.db.get_value("Healthcare Settings", None, "manage_appointment_invoice_automatically") == '1' and \
