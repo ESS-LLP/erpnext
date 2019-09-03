@@ -38,10 +38,13 @@ def get_healthcare_services_to_invoice(patient):
 							app_service_item = frappe.db.get_value("Clinical Procedure Template", patient_appointment_obj.procedure_template, "item")
 							if include_in_insurance:
 								insurance_details = get_insurance_details(patient_appointment_obj.insurance, app_service_item)
-							if include_in_insurance and insurance_details.rate:
-								item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
-									'service': app_service_item, 'cost_center': cost_center, 'rate': insurance_details.rate,
-									'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage})
+							if include_in_insurance and insurance_details:
+								invoice_item = {'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
+									'service': app_service_item, 'cost_center': cost_center,
+									'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+								if insurance_details.rate:
+									invoice_item['rate'] = insurance_details.rate,
+								item_to_invoice.append(invoice_item)
 							else:
 								item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
 									'service': app_service_item, 'cost_center': cost_center})
@@ -50,9 +53,13 @@ def get_healthcare_services_to_invoice(patient):
 							app_radiology_service_item = frappe.db.get_value("Radiology Procedure", patient_appointment_obj.radiology_procedure, "item")
 							if include_in_insurance:
 								insurance_details = get_insurance_details(patient_appointment_obj.insurance, app_radiology_service_item)
-							if include_in_insurance and insurance_details.rate:
-								item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
-								'service': app_radiology_service_item, 'cost_center': cost_center, 'rate': insurance_details.rate, 'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage})
+							if include_in_insurance and insurance_details:
+								invoice_item={'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
+									'service': app_radiology_service_item, 'cost_center': cost_center,
+									'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+								if insurance_details.rate:
+									invoice_item['rate'] = insurance_details.rate,
+								item_to_invoice.append(invoice_item)
 							else:
 								item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
 								'service': patient_appointment_obj.radiology_procedure, 'cost_center': cost_center})
@@ -91,7 +98,7 @@ def get_healthcare_services_to_invoice(patient):
 								income_account = get_income_account(patient_appointment_obj.practitioner, patient_appointment_obj.company)
 							if include_in_insurance:
 								insurance_details = get_insurance_details(patient_appointment_obj.insurance, service_item)
-							if include_in_insurance and insurance_details.discount:
+							if include_in_insurance and insurance_details:
 								if insurance_details.rate:
 									practitioner_charge = insurance_details.rate
 								item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
@@ -121,7 +128,7 @@ def get_healthcare_services_to_invoice(patient):
 							income_account = get_income_account(encounter_obj.practitioner, encounter_obj.company)
 						if include_in_insurance :
 							insurance_details = get_insurance_details(encounter_obj.insurance, service_item)
-						if include_in_insurance and insurance_details.discount:
+						if include_in_insurance and insurance_details:
 							if insurance_details.rate:
 								practitioner_charge = insurance_details.rate
 							item_to_invoice.append({'reference_type': 'Patient Encounter', 'reference_name': encounter_obj.name,
@@ -138,14 +145,17 @@ def get_healthcare_services_to_invoice(patient):
 					lab_test_obj = frappe.get_doc("Lab Test", lab_test['name'])
 					if lab_test_obj.service_unit:
 						cost_center = frappe.db.get_value("Healthcare Service Unit", lab_test_obj.service_unit, "cost_center")
-					if lab_test_obj.insurance:
-						insurance_details = get_insurance_details(lab_test_obj.insurance, frappe.db.get_value("Lab Test Template", lab_test_obj.template, "item"))
-					if lab_test_obj.insurance and insurance_details.rate:
-						if frappe.db.get_value("Lab Test Template", lab_test_obj.template, "is_billable") == 1:
-							item_to_invoice.append({'reference_type': 'Lab Test', 'reference_name': lab_test_obj.name,
-							'service': frappe.db.get_value("Lab Test Template", lab_test_obj.template, "item"), 'cost_center':cost_center,	'discount_percentage': insurance_details.discount,'rate':insurance_details.rate, 'insurance_claim_coverage': insurance_details.coverage})
-					else:
-						if frappe.db.get_value("Lab Test Template", lab_test_obj.template, "is_billable") == 1:
+					if frappe.db.get_value("Lab Test Template", lab_test_obj.template, "is_billable") == 1:
+						if lab_test_obj.insurance:
+							insurance_details = get_insurance_details(lab_test_obj.insurance, frappe.db.get_value("Lab Test Template", lab_test_obj.template, "item"))
+						if lab_test_obj.insurance and insurance_details:
+							invoice_item={'reference_type': 'Lab Test', 'reference_name': lab_test_obj.name,
+							'service': frappe.db.get_value("Lab Test Template", lab_test_obj.template, "item"), 'cost_center':cost_center,
+							'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+							if insurance_details.rate:
+								invoice_item['rate'] = insurance_details.rate,
+							item_to_invoice.append(invoice_item)
+						else:
 							item_to_invoice.append({'reference_type': 'Lab Test', 'reference_name': lab_test_obj.name,
 							'service': frappe.db.get_value("Lab Test Template", lab_test_obj.template, "item"), 'cost_center':cost_center})
 
@@ -166,9 +176,13 @@ def get_healthcare_services_to_invoice(patient):
 					if rx_obj.lab_test_code and (frappe.db.get_value("Lab Test Template", rx_obj.lab_test_code, "is_billable") == 1):
 						if include_in_insurance:
 							insurance_details = get_insurance_details(encx_obj.insurance, frappe.db.get_value("Lab Test Template", rx_obj.lab_test_code, "item"))
-						if include_in_insurance and insurance_details.rate:
-							item_to_invoice.append({'reference_type': 'Lab Prescription', 'reference_name': rx_obj.name,
-							'service': frappe.db.get_value("Lab Test Template", rx_obj.lab_test_code, "item"), 'cost_center':cost_center, 'discount_percentage': insurance_details.discount,	'rate':insurance_details.rate, 'insurance_claim_coverage': insurance_details.coverage})
+						if include_in_insurance and insurance_details:
+							invoice_item={'reference_type': 'Lab Prescription', 'reference_name': rx_obj.name,
+							'service': frappe.db.get_value("Lab Test Template", rx_obj.lab_test_code, "item"), 'cost_center':cost_center,
+							'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+							if insurance_details.rate:
+								invoice_item['rate'] = insurance_details.rate,
+							item_to_invoice.append(invoice_item)
 						else:
 							item_to_invoice.append({'reference_type': 'Lab Prescription', 'reference_name': rx_obj.name,
 							'service': frappe.db.get_value("Lab Test Template", rx_obj.lab_test_code, "item"), 'cost_center':cost_center})
@@ -195,10 +209,15 @@ def get_healthcare_services_to_invoice(patient):
 						procedure_service_item = frappe.db.get_value("Clinical Procedure Template", procedure_obj.procedure_template, "item")
 						if procedure_obj.insurance :
 							insurance_details = get_insurance_details(procedure_obj.insurance, procedure_service_item)
-						if insurance_details.rate:
-							item_to_invoice.append({'reference_type': 'Clinical Procedure', 'reference_name': procedure_obj.name,
-							'service': procedure_service_item, 'cost_center':cost_center, 'rate': insurance_details.rate-reduce_from_procedure_rate,
-							'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage})
+						if insurance_details:
+							invoice_item={'reference_type': 'Clinical Procedure', 'reference_name': procedure_obj.name,
+							'service': procedure_service_item, 'cost_center':cost_center,
+							'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+							if insurance_details.rate:
+								invoice_item['rate'] = insurance_details.rate-reduce_from_procedure_rate
+							else:
+								invoice_item['rate'] = float(procedure_obj.standard_selling_rate)-reduce_from_procedure_rate
+							item_to_invoice.append(invoice_item)
 						else:
 							item_to_invoice.append({'reference_type': 'Clinical Procedure', 'reference_name': procedure_obj.name, 'cost_center': cost_center if cost_center else '',
 								'service': procedure_service_item, 'rate': float(procedure_obj.standard_selling_rate)-reduce_from_procedure_rate})
@@ -221,8 +240,12 @@ def get_healthcare_services_to_invoice(patient):
 					if frappe.db.get_value("Clinical Procedure Template", rx_obj.procedure, "is_billable") == 1:
 						if include_in_insurance:
 							insurance_details = get_insurance_details(encx_obj.insurance, frappe.db.get_value("Clinical Procedure Template", rx_obj.procedure, "item"))
-							item_to_invoice.append({'reference_type': 'Procedure Prescription', 'reference_name': rx_obj.name,
-							'service': frappe.db.get_value("Clinical Procedure Template", rx_obj.procedure, "item"), 'cost_center': cost_center, 'rate': insurance_details.rate, 'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage})
+							invoice_item={'reference_type': 'Procedure Prescription', 'reference_name': rx_obj.name,
+							 'service': frappe.db.get_value("Clinical Procedure Template", rx_obj.procedure, "item"), 'cost_center': cost_center,
+							 'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+							if insurance_details.rate:
+								invoice_item['rate'] = insurance_details.rate,
+							item_to_invoice.append(invoice_item)
 						else:
 							item_to_invoice.append({'reference_type': 'Procedure Prescription', 'reference_name': rx_obj.name,
 							'service': frappe.db.get_value("Clinical Procedure Template", rx_obj.procedure, "item"), 'cost_center': cost_center})
@@ -241,9 +264,14 @@ def get_healthcare_services_to_invoice(patient):
 							if procedure_obj.insurance:
 								include_in_insurance = True
 								insurance_details = get_insurance_details(procedure_obj.insurance, procedure_service_item)
-							if include_in_insurance and insurance_details.rate:
-								item_to_invoice.append({'reference_type': 'Radiology Examination', 'reference_name': procedure_obj.name,
-								'cost_center': cost_center if cost_center else '', 'service': procedure_service_item, 'rate': insurance_details.rate, 'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage})
+							if include_in_insurance and insurance_details:
+								invoice_item={'reference_type': 'Radiology Examination', 'reference_name': procedure_obj.name,
+								'cost_center': cost_center if cost_center else '', 'service': procedure_service_item, 
+								'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+								if insurance_details.rate:
+									invoice_item['rate'] = insurance_details.rate,
+								item_to_invoice.append(invoice_item)
+
 							else:
 								item_to_invoice.append({'reference_type': 'Radiology Examination', 'reference_name': procedure_obj.name,
 								'cost_center': cost_center if cost_center else '', 'service': procedure_service_item})
@@ -297,9 +325,13 @@ def get_healthcare_services_to_invoice(patient):
 								cost_center = frappe.db.get_value("Healthcare Service Unit", inpatient_occupancy.service_unit, "cost_center")
 							if inpatient_record.insurance :
 								insurance_details = get_insurance_details(inpatient_record.insurance, service_unit_type.item)
-							if inpatient_record.insurance and insurance_details.rate:
-								item_to_invoice.append({'reference_type': 'Inpatient Occupancy', 'reference_name': inpatient_occupancy.name,
-								'service': service_unit_type.item, 'cost_center': cost_center, 'qty': qty, 'rate': insurance_details.rate, 'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage})
+							if inpatient_record.insurance and insurance_details:
+								invoice_item={'reference_type': 'Inpatient Occupancy', 'reference_name': inpatient_occupancy.name,
+								'service': service_unit_type.item, 'cost_center': cost_center, 'qty': qty,
+								'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+								if insurance_details.rate:
+									invoice_item['rate'] = insurance_details.rate,
+								item_to_invoice.append(invoice_item)
 							else:
 								item_to_invoice.append({'reference_type': 'Inpatient Occupancy', 'reference_name': inpatient_occupancy.name,
 								'service': service_unit_type.item, 'cost_center': cost_center, 'qty': qty})
