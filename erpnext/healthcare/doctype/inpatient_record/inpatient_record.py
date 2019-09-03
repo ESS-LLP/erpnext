@@ -206,6 +206,7 @@ def set_ip_admission_patient_details(inpatient_record, dialog):
 def set_ip_admission_record_details(inpatient_record, dialog):
 	inpatient_record.status = "Admission Scheduled"
 	inpatient_record.scheduled_date = today()
+	inpatient_record.insurance = dialog['insurance']
 	inpatient_record.ordering_practitioner = dialog['ref_practitioner']
 	inpatient_record.referring_encounter = dialog['encounter_id']
 	encounter = frappe.get_doc("Patient Encounter", dialog['encounter_id'])
