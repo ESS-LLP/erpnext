@@ -147,7 +147,10 @@ def set_invoice_details_for_appointment(appointment_doc, is_pos):
 			item_line.discount_percentage = insurance_details.discount
 			if insurance_details.rate and insurance_details.rate > 0:
 				item_line.rate = insurance_details.rate
-			item_line.rate = item_line.rate - (item_line.rate*0.01*item_line.discount_percentage)
+			if item_line.discount_percentage and float(item_line.discount_percentage) > 0:
+				item_line.discount_amount = float(item_line.rate) * float(item_line.discount_percentage) * 0.01
+				if item_line.discount_amount and item_line.discount_amount > 0:
+					item_line.rate = float(item_line.rate) - float(item_line.discount_amount)
 			item_line.insurance_claim_coverage = insurance_details.coverage
 
 	item_line.cost_center = cost_center if cost_center else ''

@@ -390,7 +390,10 @@ def invoice_lab_test(lab_test):
 			item_line.discount_percentage = insurance_details.discount
 			if insurance_details.rate and insurance_details.rate > 0:
 				item_line.rate = insurance_details.rate
-			item_line.rate = item_line.rate - (item_line.rate*0.01*item_line.discount_percentage)
+			if item_line.discount_percentage and float(item_line.discount_percentage) > 0:
+				item_line.discount_amount = float(item_line.rate) * float(item_line.discount_percentage) * 0.01
+				if item_line.discount_amount and item_line.discount_amount > 0:
+					item_line.rate = float(item_line.rate) - float(item_line.discount_amount)
 			item_line.insurance_claim_coverage = insurance_details.coverage
 	item_line.qty = 1
 	item_line.amount = item_line.rate*item_line.qty
