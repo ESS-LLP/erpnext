@@ -266,7 +266,7 @@ def get_healthcare_services_to_invoice(patient):
 								insurance_details = get_insurance_details(procedure_obj.insurance, procedure_service_item)
 							if include_in_insurance and insurance_details:
 								invoice_item={'reference_type': 'Radiology Examination', 'reference_name': procedure_obj.name,
-								'cost_center': cost_center if cost_center else '', 'service': procedure_service_item, 
+								'cost_center': cost_center if cost_center else '', 'service': procedure_service_item,
 								'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
 								if insurance_details.rate:
 									invoice_item['rate'] = insurance_details.rate,
@@ -966,5 +966,44 @@ def item_reduce_procedure_rate(dn_item, procedure_items):
 @frappe.whitelist()
 def manage_healthcare_doc_cancel(doc):
 	if frappe.get_meta(doc.doctype).has_field("invoiced"):
-		if doc.invoiced:
+		if doc.invoiced and get_sales_invoice_for_healthcare_doc(doc.doctype, doc.name):
 			frappe.throw(_("Can not cancel invoiced {0}").format(doc.doctype))
+		check_if_healthcare_doc_is_linked(doc, "Cancel")
+		delete_medical_record(doc.doctype, doc.name)
+
+def check_if_healthcare_doc_is_linked(doc, method):
+	from frappe.model.rename_doc import get_link_fields
+	link_fields = get_link_fields(doc.doctype)
+	link_fields = [[lf['parent'], lf['fieldname'], lf['issingle']] for lf in link_fields]
+	item_linked = {}
+	for link_dt, link_field, issingle in link_fields:
+		if not issingle:
+			for item in frappe.db.get_values(link_dt, {link_field:doc.name},
+				["name", "parent", "parenttype", "docstatus"], as_dict=True):
+				linked_doctype = item.parenttype if item.parent else link_dt
+				if not item:
+					continue
+				if method == "Cancel":
+					if linked_doctype in item_linked:
+						item_linked[linked_doctype].append(item.name)
+					else:
+						item_linked[linked_doctype] = [item.name]
+	if item_linked:
+		msg = ""
+		for doctype in item_linked:
+			msg += doctype+"("
+			for docname in item_linked[doctype]:
+				msg += '<a href="#Form/{0}/{1}">{1}</a>, '.format(doctype, docname)
+			msg  = msg[:-2]
+			msg += "), "
+		msg  = msg[:-2]
+		frappe.throw(_('Cannot delete or cancel because {0} {1} is linked with {2}')
+			.format(doc.doctype, doc.name, msg), frappe.LinkExistsError)
+
+def delete_medical_record(reference_doc, reference_name):
+	query = """
+		delete from
+			`tabPatient Medical Record`
+		where
+			reference_doc = %s and reference_name = %s"""
+	frappe.db.sql(query, (reference_doc, reference_name))
