@@ -423,10 +423,9 @@ var schedule_discharge = function(frm) {
 		primary_action : function(){
 			var args = {
 				patient: frm.doc.patient,
-				encounter_id: frm.doc.name,
+				discharge_encounter: frm.doc.name,
 				discharge_practitioner: frm.doc.practitioner,
-				medical_department: frm.doc.visit_department,
-				discharge_ordered: dialog.get_value('discharge_ordered'),
+				discharge_ordered_for: dialog.get_value('discharge_ordered'),
 				followup_date: dialog.get_value('followup_date'),
 				discharge_instruction: dialog.get_value('discharge_instruction'),
 				discharge_note: dialog.get_value('discharge_note'),

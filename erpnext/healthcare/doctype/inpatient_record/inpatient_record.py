@@ -239,18 +239,8 @@ def schedule_discharge(args):
 	frappe.db.set_value("Patient", dialog['patient'], "inpatient_status", "Discharge Scheduled")
 
 def set_ip_discharge_details(inpatient_record, dialog):
-	inpatient_record.discharge_practitioner = dialog['discharge_practitioner']
-	inpatient_record.discharge_encounter = dialog['encounter_id']
-	inpatient_record.discharge_ordered_for = dialog['discharge_ordered']
-	inpatient_record.followup_date = dialog['followup_date']
-	inpatient_record.discharge_instruction = dialog['discharge_instruction']
-	inpatient_record.discharge_note = dialog['discharge_note']
-	inpatient_record.include_chief_complaint = dialog['include_chief_complaint']
-	inpatient_record.include_diagnosis = dialog['include_diagnosis']
-	inpatient_record.include_medication = dialog['include_medication']
-	inpatient_record.include_investigations = dialog['include_investigations']
-	inpatient_record.include_procedures = dialog['include_procedures']
-	inpatient_record.include_occupancy_details = dialog['include_occupancy_details']
+	for key in dialog:
+		inpatient_record.set(key, dialog[key])
 	inpatient_record.status = "Discharge Scheduled"
 
 def check_out_inpatient(inpatient_record):
