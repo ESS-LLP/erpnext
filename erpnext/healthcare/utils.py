@@ -397,7 +397,7 @@ def manage_invoice_submit_cancel(doc, method):
 					set_invoiced(item, method, doc.name)
 				if frappe.get_meta(item.reference_dt).has_field("insurance"):
 					manage_insurance_invoice_on_submit(item.reference_dt, item.reference_dn, jv_amount,	item.item_code, item.amount)
-				elif item.reference_dt in  ['Lab Prescription', 'Procedure Prescription']:
+				elif item.reference_dt in  ['Lab Prescription', 'Procedure Prescription', 'Inpatient Occupancy']:
 					reference_obj = frappe.get_doc(item.reference_dt, item.reference_dn)
 					if frappe.get_meta(reference_obj.parenttype).has_field("insurance"):
 						manage_insurance_invoice_on_submit(reference_obj.parenttype, reference_obj.parent, jv_amount,	item.item_code, item.amount)
