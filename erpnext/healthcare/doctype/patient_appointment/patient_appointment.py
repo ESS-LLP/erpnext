@@ -445,18 +445,31 @@ def get_availability_data(date, practitioner):
 
 @frappe.whitelist()
 def update_status(appointment_id, status):
-	if status == "Cancelled" and frappe.db.get_value("Patient Appointment", appointment_id, "invoiced") == 1:
-		frappe.throw(_("Can not cancel invoiced Patient Appointment"))
-	frappe.db.set_value("Patient Appointment", appointment_id, "status", status)
-	appointment_booked = True
 	if status == "Cancelled":
-		appointment_booked = False
-		frappe.msgprint(_("Appointment cancelled"))
+		appointment_cancel(appointment_id)
+	frappe.db.set_value("Patient Appointment", appointment_id, "status", status)
 
-	procedure_prescription = frappe.db.get_value("Patient Appointment", appointment_id, "procedure_prescription")
-	if procedure_prescription:
-		frappe.db.set_value("Procedure Prescription", procedure_prescription, "appointment_booked", appointment_booked)
+def appointment_cancel(appointment_id):
+	appointment = frappe.get_doc("Patient Appointment", appointment_id)
+	from erpnext.healthcare.utils import manage_healthcare_doc_cancel
+	manage_healthcare_doc_cancel(appointment)
+	from erpnext.healthcare.utils import get_practitioner_charge
+	is_ip = True if appointment.inpatient_record else False
+	practitioner_charge = get_practitioner_charge(appointment.practitioner, is_ip)
+	# If invoiced --> fee_validity update with -1 visit
+	if appointment.invoiced and not exists_sales_invoice(appointment) and practitioner_charge and practitioner_charge > 0:
+		update_fee_validity(appointment)
+	if appointment.procedure_prescription:
+		frappe.db.set_value("Procedure Prescription", appointment.procedure_prescription, "appointment_booked", False)
+	frappe.msgprint(_("Appointment cancelled"))
 
+def update_fee_validity(appointment):
+	validity = validity_exists(appointment.practitioner, appointment.patient)
+	if validity:
+		fee_validity = frappe.get_doc("Fee Validity", validity[0][0])
+		if appointment_valid_in_fee_validity(appointment, fee_validity.valid_till, True, fee_validity.ref_invoice):
+			visited = fee_validity.visited - 1
+			frappe.db.set_value("Fee Validity", fee_validity.name, "visited", visited)
 
 @frappe.whitelist()
 def set_open_appointments():
