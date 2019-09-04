@@ -38,6 +38,8 @@ class PatientEncounter(Document):
 	# Call before delete
 	def on_trash(self):
 		self.validate_orders()
+		from erpnext.healthcare.utils import check_if_healthcare_doc_is_linked
+		check_if_healthcare_doc_is_linked(self, "Cancel")
 
 	def validate_orders(self):
 		if self.lab_test_prescription:
