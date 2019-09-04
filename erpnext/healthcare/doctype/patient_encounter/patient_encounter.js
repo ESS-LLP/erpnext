@@ -303,7 +303,7 @@ var schedule_inpatient = function(frm) {
 				patient: frm.doc.patient,
 				encounter_id: frm.doc.name,
 				ref_practitioner: frm.doc.practitioner,
-				insurance: frm.doc.insurance,
+				insurance: frm.doc.insurance||'',
 				medical_department: dialog.get_value('medical_department'),
 				primary_practitioner: dialog.get_value('primary_practitioner'),
 				secondary_practitioner: dialog.get_value('secondary_practitioner'),
