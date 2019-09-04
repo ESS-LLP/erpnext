@@ -143,11 +143,11 @@ def set_invoice_details_for_appointment(appointment_doc, is_pos):
 
 	if appointment_doc.insurance and item_line.item_code:
 		insurance_details = get_insurance_details(appointment_doc.insurance, item_line.item_code)
-		if insurance_details and insurance_details.rate:
-			if item_code:
-				item_line.rate = insurance_details.rate - (insurance_details.rate*0.01*insurance_details.discount)
-			else:
-				item_line.rate = practitioner_charge - (practitioner_charge*0.01*insurance_details.discount)
+		if insurance_details:
+			item_line.discount_percentage = insurance_details.discount
+			if insurance_details.rate and insurance_details.rate > 0:
+				item_line.rate = insurance_details.rate
+			item_line.rate = item_line.rate - (item_line.rate*0.01*item_line.discount_percentage)
 			item_line.insurance_claim_coverage = insurance_details.coverage
 
 	item_line.cost_center = cost_center if cost_center else ''

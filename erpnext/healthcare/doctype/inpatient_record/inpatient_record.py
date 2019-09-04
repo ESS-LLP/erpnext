@@ -447,8 +447,11 @@ def update_ip_occupancy_invoice(sales_invoice, inpatient_occupancy, service_unit
 	item_line.rate = item_details.price_list_rate
 	if ip.insurance and item_line.item_code:
 		insurance_details = get_insurance_details(ip.insurance, item_line.item_code)
-		if insurance_details and insurance_details.rate:
-			item_line.rate = insurance_details.rate - (insurance_details.rate*0.01*insurance_details.discount)
+		if insurance_details:
+			item_line.discount_percentage = insurance_details.discount
+			if insurance_details.rate and insurance_details.rate > 0:
+				item_line.rate = insurance_details.rate
+			item_line.rate = item_line.rate - (item_line.rate*0.01*item_line.discount_percentage)
 			item_line.insurance_claim_coverage = insurance_details.coverage
 	item_line.qty = qty
 	item_line.amount = item_line.rate * item_line.qty

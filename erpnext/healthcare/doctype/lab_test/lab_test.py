@@ -386,8 +386,11 @@ def invoice_lab_test(lab_test):
 	if lab_test.insurance and item_line.item_code:
 		from erpnext.healthcare.utils import get_insurance_details
 		insurance_details = get_insurance_details(lab_test.insurance, item_line.item_code)
-		if insurance_details and insurance_details.rate:
-			item_line.rate = insurance_details.rate - (insurance_details.rate*0.01*insurance_details.discount)
+		if insurance_details:
+			item_line.discount_percentage = insurance_details.discount
+			if insurance_details.rate and insurance_details.rate > 0:
+				item_line.rate = insurance_details.rate
+			item_line.rate = item_line.rate - (item_line.rate*0.01*item_line.discount_percentage)
 			item_line.insurance_claim_coverage = insurance_details.coverage
 	item_line.qty = 1
 	item_line.amount = item_line.rate*item_line.qty
