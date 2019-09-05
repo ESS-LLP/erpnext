@@ -122,10 +122,10 @@ var set_total_Claim_Amount = function(frm){
 			total_amount=total_amount+item.claim_amount
 		}
 		if(item.approved_amount){
-			total_approved_amount=total_approved_amount+item.claim_amount
+			total_approved_amount=total_approved_amount+item.approved_amount
 		}
 		if(item.rejected_amount){
-			total_rejected_amount=total_rejected_amount+item.claim_amount
+			total_rejected_amount=total_rejected_amount+item.rejected_amount
 		}
 	}
 	frappe.model.set_value(frm.doc.doctype, frm.doc.name, "total_claim_amount", total_amount)
