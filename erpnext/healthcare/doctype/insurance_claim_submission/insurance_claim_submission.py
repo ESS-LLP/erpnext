@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe, json
+from frappe import _, msgprint, throw
 from frappe.utils import time_diff_in_hours, rounded, getdate, add_days,nowdate
 from frappe.model.document import Document
 
@@ -11,6 +12,29 @@ class InsuranceClaimSubmission(Document):
 	def on_submit(self):
 		self.update_claim_details()
 		self.create_submission_jv()
+		self.reload()
+	def on_cancel(self):
+		if self.insurance_claim_submission_item:
+			for item in self.insurance_claim_submission_item:
+				insurance_claim= frappe.get_doc("Insurance Claim",item.insurance_claim)
+				if insurance_claim:
+					claim_submitted_jv = insurance_claim.claim_submitted_jv
+					insurance_claim.submitted_by = ""
+					insurance_claim.submitted_on = ""
+					insurance_claim.claim_status = "Claim Created"
+					insurance_claim.approved_amount = 0
+					insurance_claim.claim_submitted_jv = ""
+					insurance_claim.save(ignore_permissions=True)
+					if claim_submitted_jv:
+						jv_obj = frappe.get_doc("Journal Entry", claim_submitted_jv)
+						jv_obj.cancel()
+		jv = frappe.db.exists("Journal Entry",
+			{
+				'name': self.claim_submission_jv
+			})
+		if jv:
+			jv_obj = frappe.get_doc("Journal Entry", jv)
+			jv_obj.cancel()
 	def update_claim_details(self):
 		if self.insurance_claim_submission_item:
 			for item in self.insurance_claim_submission_item:
@@ -19,6 +43,8 @@ class InsuranceClaimSubmission(Document):
 					frappe.db.set_value("Insurance Claim", insurance_claim.name, "submitted_by", frappe.session.user)
 					frappe.db.set_value("Insurance Claim", insurance_claim.name, "submitted_on", nowdate())
 					frappe.db.set_value("Insurance Claim", insurance_claim.name, "claim_status", "Claim Submitted")
+				frappe.db.set_value("Insurance Claim Submission Item", item.name, "claim_status", "Claim Submitted")
+
 	def complete(self):
 		if self.insurance_claim_submission_item:
 			update_final_claim_details(self.insurance_claim_submission_item)

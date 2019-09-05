@@ -222,6 +222,13 @@ class SalesInvoice(SellingController):
 
 	def before_cancel(self):
 		self.update_time_sheet(None)
+		# Healthcare Service Invoice.
+		domain_settings = frappe.get_doc('Domain Settings')
+		active_domains = [d.domain for d in domain_settings.active_domains]
+		from erpnext.healthcare.utils import manage_insurance_claim_on_si_cancel
+
+		if "Healthcare" in active_domains:
+			manage_insurance_claim_on_si_cancel(self)
 
 
 	def on_cancel(self):

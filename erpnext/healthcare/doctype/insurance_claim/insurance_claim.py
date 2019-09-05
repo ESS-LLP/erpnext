@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _, msgprint, throw
 from frappe.utils import time_diff_in_hours, rounded, getdate, add_days,nowdate
 from frappe.model.document import Document
 
@@ -11,6 +12,16 @@ class InsuranceClaim(Document):
 	def on_submit(self):
 		self.create_journal_entry_insurance_claim()
 		frappe.db.set_value("Insurance Claim", self.name, "claim_status", "Claim Created")
+	def on_before_cancel(self):
+		if self.claim_status!="Claim Created":
+			frappe.throw(_("Submitted Clain can not cancel"))
+		jv = frappe.db.exists("Journal Entry",
+			{
+				'name': self.claim_created_jv
+			})
+		if jv:
+			jv_obj = frappe.get_doc("Journal Entry", jv)
+			jv_obj.cancel()
 	def on_update_after_submit(self):
 		if self.claim_status == "Claim Approved":
 			self.create_journal_entry_finished_submission()

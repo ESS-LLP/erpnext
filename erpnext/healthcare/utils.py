@@ -893,6 +893,16 @@ def manage_insurance_invoice_on_submit(reference_dt, reference_dn, jv_amount, ap
 			jv_amount[insurance] = amount
 	return jv_amount
 
+def manage_insurance_claim_on_si_cancel(doc):
+	claim = frappe.db.exists("Insurance Claim",
+			{
+				'sales_invoice': doc.name
+			})
+	if claim:
+		claim_obj = frappe.get_doc("Insurance Claim", claim)
+		if claim_obj.claim_status=="Claim Created":
+			claim_obj.cancel()
+			frappe.db.set_value("Insurance Claim", claim_obj.name, "claim_status", "Cancelled")
 def create_insurance_claim(insurance, amount, doc):
 	# create claim
 	insurance_claim=frappe.new_doc('Insurance Claim')
