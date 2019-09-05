@@ -129,6 +129,8 @@ frappe.ui.form.on('Inpatient Record', {
 		if(!frm.doc.__islocal && (frm.doc.status == "Discharged" || frm.doc.status == "Discharge Scheduled")){
 			frm.disable_save();
 			frm.set_df_property("btn_transfer", "hidden", 1);
+			frm.set_df_property("inpatient_record_procedure", 'read_only', 1);
+			frm.set_df_property("insurance", 'read_only', 1);
 		}
 		if(!frm.doc.__islocal && frm.doc.drug_prescription){
 			show_table_html(frm, frm.doc.drug_prescription, "drug_prescription", frm.fields_dict.drug_prescription_html)
