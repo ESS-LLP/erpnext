@@ -21,23 +21,17 @@ frappe.ui.form.on('Insurance Claim Submission', {
 					var rejectedcliam=cur_frm.fields_dict["insurance_claim_submission_item"].grid.get_selected_children()
 					for (var i in rejectedcliam) {
 						var item = rejectedcliam[i];
-						frappe.model.set_value(item.doctype, item.name, "claim_status", "Claim Rejected");
 						frappe.model.set_value(item.doctype, item.name, "rejected_amount", item.claim_amount);
-						frappe.model.set_value(item.doctype, item.name, "approved_amount", 0);
 					}
 					set_total_Claim_Amount(frm);
-					frm.save();
 				});
 				cur_frm.fields_dict["insurance_claim_submission_item"].grid.add_custom_button(__('Claim Approved'), () => {
 					var approvedclaim=cur_frm.fields_dict["insurance_claim_submission_item"].grid.get_selected_children()
 					for (var i in approvedclaim) {
 						var item = approvedclaim[i];
-						frappe.model.set_value(item.doctype, item.name, "claim_status", "Claim Approved");
 						frappe.model.set_value(item.doctype, item.name, "approved_amount", item.claim_amount);
-						frappe.model.set_value(item.doctype, item.name, "rejected_amount", 0);
 					}
 					set_total_Claim_Amount(frm);
-					frm.save();
 				});
 			}
 		}
@@ -78,8 +72,41 @@ frappe.ui.form.on('Insurance Claim Submission', {
 frappe.ui.form.on('Insurance Claim Submission Item', {
 	insurance_claim_submission_item_remove: function(frm) {
 		set_total_Claim_Amount(frm);
+	},
+	approved_amount:function(frm, cdt, cdn) {
+		var d = locals[cdt][cdn];
+		if(d.claim_amount){
+			var rejected_amount=d.claim_amount-d.approved_amount;
+			frappe.model.set_value(cdt, cdn,"rejected_amount",rejected_amount);
+			set_claim_status(cdt,cdn,rejected_amount);
+			set_total_Claim_Amount(frm);
+		}
+	},
+	rejected_amount:function(frm, cdt, cdn) {
+		var d = locals[cdt][cdn];
+		if(d.claim_amount){
+			var approved_amount=d.claim_amount-d.rejected_amount;
+			frappe.model.set_value(cdt, cdn,"approved_amount",approved_amount);
+			set_claim_status(cdt,cdn,d.rejected_amount);
+			set_total_Claim_Amount(frm);
+		}
 	}
 });
+
+var set_claim_status = function(cdt,cdn, rejected_amount){
+	var item = frappe.get_doc(cdt, cdn);
+	if(rejected_amount !=0){
+		if(rejected_amount==item.claim_amount){
+			frappe.model.set_value(cdt, cdn,"claim_status","Claim Rejected")
+		}
+		else{
+			 frappe.model.set_value(cdt, cdn,"claim_status","Partial")
+		}
+	}
+	else{
+		frappe.model.set_value(cdt, cdn,"claim_status","Claim Approved")
+	}
+}
 
 var get_insurance_claim = function(frm){
 	frm.doc.insurance_claim_submission_item = [];
