@@ -41,7 +41,10 @@ frappe.ui.form.on('Insurance Claim Submission', {
 			df.read_only = 1;
 		}
 	},
-	patient: function(frm){
+	from_date: function(frm){
+		get_insurance_claim(frm);
+	},
+	to_date: function(frm){
 		get_insurance_claim(frm);
 	},
 	insurance_company: function(frm){
@@ -113,8 +116,11 @@ var get_insurance_claim = function(frm){
 	set_total_Claim_Amount(frm);
 	if(frm.doc.insurance_company){
 		var args = {'insurance_company': frm.doc.insurance_company}
-		if(frm.doc.patient){
-			args['patient'] = frm.doc.patient
+		if(frm.doc.from_date){
+			args['from_date'] = frm.doc.from_date
+		}
+		if(frm.doc.to_date){
+			args['to_date'] = frm.doc.to_date
 		}
 		frappe.call({
 			"method": "erpnext.healthcare.doctype.insurance_claim_submission.insurance_claim_submission.get_claim_submission_item",
@@ -132,9 +138,6 @@ var get_insurance_claim = function(frm){
 			}
 
 		});
-	}
-	else{
-		frm.set_value("patient", '');
 	}
 	frm.refresh_fields();
 }

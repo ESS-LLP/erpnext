@@ -92,7 +92,7 @@ class InsuranceClaimSubmission(Document):
 		payment_entry.set_missing_values()
 		return payment_entry.as_dict()
 @frappe.whitelist()
-def get_claim_submission_item(insurance_company, patient=False):
+def get_claim_submission_item(insurance_company, from_date=False, to_date=False):
 	query = """
 		select
 			 dn.name as insurance_claim, dn.sales_invoice, dn.patient, dn.insurance_company, dn.claim_amount, dn.claim_status
@@ -101,11 +101,13 @@ def get_claim_submission_item(insurance_company, patient=False):
 		where
 			dn.insurance_company='{0}' and dn.docstatus=1  and dn.claim_status="Claim Created"
 	"""
-	if patient:
-		query += """ and dn.patient=%(patient)s"""
+	if from_date:
+		query += """ and dn.created_on >=%(from_date)s"""
+	if to_date:
+		query += """ and dn.created_on <%(to_date)s"""
 	
 	return frappe.db.sql(query.format(insurance_company),{
-			'patient': patient
+			'from_date': from_date, 'to_date':to_date
 		}, as_dict=True)
 
 @frappe.whitelist()
