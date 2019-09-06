@@ -13,9 +13,11 @@ th, td
     padding-left: 10px;
     padding-right: 10px;
     text-overflow: ellipsis;
-    white-space: nowrap;
+		word-wrap: break-word;
     overflow: hidden;
     height: 39px;
+		max-width: 100px
+
 }
 th
 {
