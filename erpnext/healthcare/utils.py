@@ -1015,5 +1015,5 @@ def delete_medical_record(reference_doc, reference_name):
 		delete from
 			`tabPatient Medical Record`
 		where
-			reference_doc = %s and reference_name = %s"""
+			reference_doctype = %s and reference_name = %s"""
 	frappe.db.sql(query, (reference_doc, reference_name))
