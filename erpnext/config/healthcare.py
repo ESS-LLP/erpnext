@@ -211,7 +211,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Healthcare Insurance"),
+			"label": _("Patient Insurance"),
 			"icon": "icon-list",
 			"items": [
 				{
