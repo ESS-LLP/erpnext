@@ -197,6 +197,7 @@ var create_delivery_note = function(frm){
 		width: 100,
 		fields: [
 			{fieldtype: "Link", label: "Healthcare Service Unit", fieldname: "service_unit", options: "Healthcare Service Unit"},
+			{fieldtype: "Link", label: "Warehouse", fieldname: "warehouse", options: "Warehouse", reqd: 1},
 			{fieldtype: "Link", label: "Item", fieldname: "item", options: "Item"},
 			{fieldtype: "Float", label: "Quantity", fieldname: "qty", default:1},
 			{fieldtype: "Button", label: "Add to Items", fieldname: "add_to_delivery_note"},
@@ -227,7 +228,8 @@ var create_delivery_note = function(frm){
 		}
 	});
 	dialog.set_values({
-		'service_unit': frm.doc.current_service_unit
+		'service_unit': frm.doc.current_service_unit,
+		'warehouse': frm.doc.current_service_unit_warehouse
 	});
 	dialog.fields_dict["item"].get_query = function(){
 		return {
@@ -244,10 +246,37 @@ var create_delivery_note = function(frm){
 			}
 		};
 	};
+	dialog.fields_dict["warehouse"].get_query = function(){
+		return {
+			filters: {
+				"is_group": ["!=", 1]
+			}
+		};
+	};
+	dialog.fields_dict["service_unit"].df.onchange = () => {
+		frappe.call({
+			method: 'frappe.client.get_value',
+			args:{
+				doctype: 'Healthcare Service Unit',
+				fieldname: 'warehouse',
+				filters:{
+					'name': dialog.get_value('service_unit')
+				}
+			},
+			callback: function(r) {
+				if(r.message && r.message.warehouse){
+					dialog.set_values({
+						'warehouse': r.message.warehouse
+					});
+				}
+			}
+		});
+	}
 	dialog.fields_dict["add_to_delivery_note"].df.click = () => {
 		items = update_items(items, {'service_unit': dialog.get_value('service_unit'),
 		'item': dialog.get_value('item'),
-		'qty': dialog.get_value('qty')});
+		'qty': dialog.get_value('qty'),
+		'warehouse': dialog.get_value('warehouse')});
 		var $wrapper = dialog.fields_dict.item_details.$wrapper;
 		$wrapper
 			.html(consumssion_details_html(items));
@@ -259,12 +288,13 @@ var create_delivery_note = function(frm){
 };
 
 var update_items = function(items, new_item){
-	if(new_item && new_item['item'] && new_item['qty'] && new_item['service_unit']){
+	if(new_item && new_item['item'] && new_item['qty'] && new_item['service_unit'] && new_item['warehouse']){
 		let item_exist_in_the_list = false;
 		$.each(items, function(index, item){
 			if(item['item'] == new_item['item']){
 				item['qty'] = new_item['qty'];
 				item['service_unit'] = new_item['service_unit'];
+				item['warehouse'] = new_item['warehouse'];
 				item_exist_in_the_list = true;
 			}
 		});
@@ -278,13 +308,14 @@ var update_items = function(items, new_item){
 var consumssion_details_html = function(items) {
 	var table_html = `<div class='col-md-12 col-sm-12 text-muted'><table class="table table-condensed bordered">
 	<tr>
-		<th>Item</th><th>Quantity</th><th>Healthcare Service Unit</th>
+		<th>Item</th><th>Quantity</th><th>Warehouse</th><th>Healthcare Service Unit</th>
 	</tr>`;
 
 	$.each(items, function(index, item){
 		table_html += `<tr>
 			<td>${item['item']}</td>
 			<td>${item['qty']}</td>
+			<td>${item['warehouse']}</td>
 			<td>${item['service_unit']}</td>
 		</tr>`;
 	});

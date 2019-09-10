@@ -488,9 +488,9 @@ def create_delivery_note(ip_record, items):
 	items = json.loads(items)
 	for item_line in items:
 		item_line = frappe._dict(item_line)
-		s_wh, cost_center = frappe.db.get_values("Healthcare Service Unit", item_line.service_unit, ['warehouse', 'cost_center'])[0]
-		delivery_note.set_warehouse = s_wh
-		set_delivery_note_item(item_line.item, item_line.qty, s_wh, cost_center, doc, delivery_note)
+		cost_center = frappe.db.get_value("Healthcare Service Unit", item_line.service_unit, 'cost_center')
+		delivery_note.set_warehouse = item_line.warehouse
+		set_delivery_note_item(item_line.item, item_line.qty, item_line.warehouse, cost_center, doc, delivery_note)
 	delivery_note.insert(ignore_permissions = True)
 	delivery_note.submit()
 
