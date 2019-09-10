@@ -191,37 +191,43 @@ var discharge_patient = function(frm) {
 };
 
 var create_delivery_note = function(frm){
+	var items = []
 	var dialog = new frappe.ui.Dialog({
 		title: 'Record Consumption',
 		width: 100,
 		fields: [
-			{fieldtype: "Link", label: "Source Warehouse", fieldname: "s_wh", options: "Warehouse", reqd: 1},
-			{fieldtype: "Link", label: "Item", fieldname: "item", options: "Item", reqd: 1},
-			{fieldtype: "Float", label: "Quantity", fieldname: "qty", reqd: 1}
+			{fieldtype: "Link", label: "Healthcare Service Unit", fieldname: "service_unit", options: "Healthcare Service Unit"},
+			{fieldtype: "Link", label: "Item", fieldname: "item", options: "Item"},
+			{fieldtype: "Float", label: "Quantity", fieldname: "qty", default:1},
+			{fieldtype: "Button", label: "Add to Items", fieldname: "add_to_delivery_note"},
+			{fieldtype: "HTML", label: "Item Details", fieldname: "item_details"}
 		],
 		primary_action_label: __("Consume"),
 		primary_action : function(){
-			frappe.call({
-				method: 'erpnext.healthcare.doctype.inpatient_record.inpatient_record.create_delivery_note',
-				args:{
-					'ip_record': frm.doc.name,
-					's_wh': dialog.get_value('s_wh'),
-					'item': dialog.get_value('item'),
-					'qty': dialog.get_value('qty')
-				},
-				callback: function(data) {
-					if(!data.exc){
-						frm.reload_doc();
-					}
-				},
-				freeze: true,
-				freeze_message: "Creating Delivery Note"
-			});
-			dialog.hide();
+			if(items && items.length > 0){
+				frappe.call({
+					method: 'erpnext.healthcare.doctype.inpatient_record.inpatient_record.create_delivery_note',
+					args:{
+						'ip_record': frm.doc.name,
+						'items': items
+					},
+					callback: function(data) {
+						if(!data.exc){
+							frm.reload_doc();
+						}
+					},
+					freeze: true,
+					freeze_message: "Creating Delivery Note"
+				});
+				dialog.hide();
+			}
+			else {
+				frappe.msgprint(__("Please select atleast one item to Consume"));
+			}
 		}
 	});
 	dialog.set_values({
-		's_wh': frm.doc.current_service_unit_warehouse
+		'service_unit': frm.doc.current_service_unit
 	});
 	dialog.fields_dict["item"].get_query = function(){
 		return {
@@ -231,14 +237,60 @@ var create_delivery_note = function(frm){
 			}
 		};
 	};
-	dialog.fields_dict["s_wh"].get_query = function(){
+	dialog.fields_dict["service_unit"].get_query = function(){
 		return {
 			filters: {
 				"is_group": ["!=", 1]
 			}
 		};
 	};
+	dialog.fields_dict["add_to_delivery_note"].df.click = () => {
+		items = update_items(items, {'service_unit': dialog.get_value('service_unit'),
+		'item': dialog.get_value('item'),
+		'qty': dialog.get_value('qty')});
+		var $wrapper = dialog.fields_dict.item_details.$wrapper;
+		$wrapper
+			.html(consumssion_details_html(items));
+		dialog.set_values({
+			'item': ''
+		});
+	}
 	dialog.show();
+};
+
+var update_items = function(items, new_item){
+	if(new_item && new_item['item'] && new_item['qty'] && new_item['service_unit']){
+		let item_exist_in_the_list = false;
+		$.each(items, function(index, item){
+			if(item['item'] == new_item['item']){
+				item['qty'] = new_item['qty'];
+				item['service_unit'] = new_item['service_unit'];
+				item_exist_in_the_list = true;
+			}
+		});
+		if(!item_exist_in_the_list){
+			items.push(new_item);
+		}
+	}
+	return items;
+};
+
+var consumssion_details_html = function(items) {
+	var table_html = `<div class='col-md-12 col-sm-12 text-muted'><table class="table table-condensed bordered">
+	<tr>
+		<th>Item</th><th>Quantity</th><th>Healthcare Service Unit</th>
+	</tr>`;
+
+	$.each(items, function(index, item){
+		table_html += `<tr>
+			<td>${item['item']}</td>
+			<td>${item['qty']}</td>
+			<td>${item['service_unit']}</td>
+		</tr>`;
+	});
+
+	table_html += `</table> <br/> <hr/> </div>`;
+	return table_html;
 };
 
 var admit_patient_dialog = function(frm){
@@ -448,7 +500,6 @@ var show_table_html = function(frm, child_table, child_table_name, html_field) {
 		var table_head = null;
 		var table_row = null;
 		var table_fields = frm.get_field(child_table_name).grid.docfields;
-		var abcd = frm.get_field(child_table_name).grid
 
 		table_head = '<tr>'
 		$.each(table_fields, function(i, table_field) {

@@ -477,7 +477,7 @@ def book_all_appointments(appointments_table, inpatient_record):
 		frappe.msgprint(_("Appointment booked"), alert=True)
 
 @frappe.whitelist()
-def create_delivery_note(ip_record, item, qty, s_wh):
+def create_delivery_note(ip_record, items):
 	delivery_note = frappe.new_doc("Delivery Note")
 	doc = frappe.get_doc("Inpatient Record", ip_record)
 	delivery_note.company = doc.company
@@ -485,9 +485,16 @@ def create_delivery_note(ip_record, item, qty, s_wh):
 	delivery_note.patient_name = frappe.db.get_value("Patient", doc.patient, "patient_name")
 	delivery_note.customer = frappe.db.get_value("Patient", doc.patient, "customer")
 	delivery_note.inpatient_record = ip_record
-	delivery_note.set_warehouse = s_wh
-	expense_account = get_account(None, "expense_account", "Healthcare Settings", doc.company)
+	items = json.loads(items)
+	for item_line in items:
+		item_line = frappe._dict(item_line)
+		s_wh, cost_center = frappe.db.get_values("Healthcare Service Unit", item_line.service_unit, ['warehouse', 'cost_center'])[0]
+		delivery_note.set_warehouse = s_wh
+		set_delivery_note_item(item_line.item, item_line.qty, s_wh, cost_center, doc, delivery_note)
+	delivery_note.insert(ignore_permissions = True)
+	delivery_note.submit()
 
+def set_delivery_note_item(item, qty, s_wh, cost_center, doc, delivery_note):
 	child = delivery_note.append('items')
 	item_details = sales_item_details_for_healthcare_doc(item, doc)
 	child.item_code = item
@@ -496,8 +503,10 @@ def create_delivery_note(ip_record, item, qty, s_wh):
 	child.stock_uom = item_details.stock_uom
 	child.qty = flt(qty)
 	child.warehouse = s_wh
-	cost_center = frappe.get_cached_value('Company',  doc.company,  'cost_center')
-	child.cost_center = doc.current_service_unit_cost_center if doc.current_service_unit_cost_center else cost_center
+	if not cost_center:
+		cost_center = frappe.get_cached_value('Company',  doc.company,  'cost_center')
+	child.cost_center = cost_center if cost_center else ''
+	expense_account = get_account(None, "expense_account", "Healthcare Settings", doc.company)
 	#if not expense_account:
 	#	expense_account = frappe.db.get_value("Item", item_line.item_code, "expense_account")
 	child.expense_account = expense_account
@@ -505,6 +514,3 @@ def create_delivery_note(ip_record, item, qty, s_wh):
 	child.rate = item_details.price_list_rate
 	child.price_list_rate = item_details.price_list_rate
 	child.amount = item_details.price_list_rate * child.qty
-
-	delivery_note.insert(ignore_permissions = True)
-	delivery_note.submit()
