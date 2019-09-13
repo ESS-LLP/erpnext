@@ -890,3 +890,10 @@ var set_total_standard_selling_rate = function(frm){
 	}
 	frm.set_value("total_standard_selling_rate", total_amount)
 };
+
+frappe.ui.form.on('Inpatient Record Procedure',{
+	inpatient_record_procedure_add: function(frm, cdt, cdn){
+		frappe.model.set_value(cdt, cdn, "practitioner", frm.doc.primary_practitioner);
+		frappe.model.set_value(cdt, cdn, "secondary_practitioner", frm.doc.secondary_practitioner);
+	}
+});
