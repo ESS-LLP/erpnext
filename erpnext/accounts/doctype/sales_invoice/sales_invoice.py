@@ -279,6 +279,13 @@ class SalesInvoice(SellingController):
 
 		if "Healthcare" in active_domains:
 			manage_invoice_submit_cancel(self, "on_cancel")
+	def after_insert(self):
+	    # Healthcare Service Invoice.
+		domain_settings = frappe.get_doc('Domain Settings')
+		active_domains = [d.domain for d in domain_settings.active_domains]
+		if "Healthcare" in active_domains:
+			if self.total_insurance_claim_amount:
+				self.patient_payable_amount=self.outstanding_amount-self.total_insurance_claim_amount
 
 	def update_status_updater_args(self):
 		if cint(self.update_stock):

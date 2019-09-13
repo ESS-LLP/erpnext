@@ -46,6 +46,11 @@ data = {
 			{
 				'fieldname': 'total_insurance_claim_amount', 'label': 'Total Insurance Claim Amount', 'fieldtype': 'Currency',
 				'insert_after': 'total_advance', 'read_only':True
+			},
+			{
+				'fieldname': 'patient_payable_amount', 'label': 'Patient Payable Amount', 'fieldtype': 'Currency',
+				'insert_after': 'total_insurance_claim_amount', 'read_only':True,
+				'depends_on':'eval:doc.docstatus < 1 && doc.total_insurance_claim_amount && doc.total_insurance_claim_amount > 0'
 			}
 		],
 		'Sales Invoice Item': [
