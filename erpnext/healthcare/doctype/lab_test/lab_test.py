@@ -176,7 +176,7 @@ def create_normals(template, lab_test):
 	normal.type = template.type
 	if normal.type=="Select":
 		normal.options = template.options
-	if lab_test.patient_sex=="Female":
+	if lab_test.patient_sex=="Female" and template.lab_test_normal_range_female:
 		normal.normal_range=template.lab_test_normal_range_female
 	else:
 		normal.normal_range = template.lab_test_normal_range
