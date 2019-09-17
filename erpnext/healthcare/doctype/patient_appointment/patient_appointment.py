@@ -53,6 +53,8 @@ class PatientAppointment(Document):
 				comments = frappe.db.get_value("Procedure Prescription", self.procedure_prescription, "comments")
 				if comments:
 					frappe.db.set_value("Patient Appointment", self.name, "notes", comments)
+		elif self.inpatient_record_procedure:
+			frappe.db.set_value("Inpatient Record Procedure", self.inpatient_record_procedure, "appointment_booked", True)
 		from erpnext.healthcare.utils import get_practitioner_charge
 		is_ip = True if self.inpatient_record else False
 		practitioner_charge = get_practitioner_charge(self.practitioner, is_ip)

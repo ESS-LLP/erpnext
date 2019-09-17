@@ -470,6 +470,8 @@ def book_all_appointments(appointments_table, inpatient_record):
 			new_appointment.set(key, appointment[key] if appointment[key] else '')
 		new_appointment.status = "Scheduled"
 		inpatient_record = frappe.get_doc("Inpatient Record", inpatient_record)
+		if inpatient_record.insurance:
+			new_appointment.insurance = inpatient_record.insurance
 		new_appointment.source = inpatient_record.source
 		if inpatient_record.referring_practitioner:
 			new_appointment.referring_practitioner = inpatient_record.referring_practitioner

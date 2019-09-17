@@ -575,15 +575,20 @@ var book_appointment = function(frm) {
 			{ fieldtype: 'Link', options: 'Healthcare Practitioner', reqd:1, fieldname: 'practitioner', label: 'Healthcare Practitioner'},
 			{ fieldtype: 'Column Break'},
 			{ fieldtype: 'Link', options: 'Clinical Procedure Template', fieldname: 'procedure_template', label: 'Procedure'},
-			{ fieldtype: 'Int',	fieldname: 'duration', label: 'Duration'},
+			{ fieldtype: 'Link', options: 'Appointment Type', reqd:1, fieldname: 'appointment_type', label: 'Appointment Type'},
 			{ fieldtype: 'Column Break'},
+			{ fieldtype: 'Int',	fieldname: 'duration', label: 'Duration'},
 			{ fieldtype: 'Date', reqd:1, fieldname: 'appointment_date', label: 'Date'},
+			{ fieldtype: 'Data', fieldname: 'procedure_id', hidden: 1, label: 'Procedure ID'},
 			{ fieldtype: 'Section Break'},
 			{ fieldtype: 'HTML', fieldname: 'available_slots'}
 		],
 		primary_action_label: __("Book"),
 		primary_action: function() {
 			var appointments_table = [];
+			if (d.get_value('duration') <= 0){
+				frappe.throw(__("Duration must be geater than zero"));
+			}
 			appointments_table.push({
 				"patient": frm.doc.patient,
 				"department": d.get_value('department'),
@@ -593,7 +598,8 @@ var book_appointment = function(frm) {
 				"duration":	d.get_value('duration'),
 				"procedure_template": d.get_value('procedure_template'),
 				"appointment_type": '',
-				"service_unit": ''
+				"service_unit": '',
+				"inpatient_record_procedure": d.get_value('procedure_id')
 			});
 			if(appointments_table){
 				frappe.call({
@@ -614,6 +620,21 @@ var book_appointment = function(frm) {
 				});
 			}
 		}
+		});
+		var procedure_template = '';
+		var inpatient_record_procedure = '';
+		$.each(frm.doc.inpatient_record_procedure, function(i, ip_procedure) {
+			if (ip_procedure.appointment_booked != 1){
+				procedure_template = ip_procedure.procedure;
+				inpatient_record_procedure = ip_procedure.name;
+				return false
+			}
+		});
+		d.set_values({
+			'procedure_template': procedure_template,
+			'procedure_id': inpatient_record_procedure,
+			'department': frm.doc.medical_department,
+			'practitioner': frm.doc.primary_practitioner
 		});
 		d.show();
 		var fd = d.fields_dict;
@@ -652,6 +673,15 @@ var book_appointment = function(frm) {
 			else if(!d.get_value("appointment_date")){
 				selected_appointment_date = '';
 			}
+		}
+		d.fields_dict["appointment_type"].df.onchange = () => {
+			frappe.db.get_value("Appointment Type", d.get_value('appointment_type'), 'default_duration', function(r) {
+				if(r && r.default_duration){
+					d.set_values({
+						'duration': r.default_duration
+					});
+				}
+			});
 		}
 		d.fields_dict["procedure_template"].df.onchange = () => {
 			show_slots(d, fd, frm);
