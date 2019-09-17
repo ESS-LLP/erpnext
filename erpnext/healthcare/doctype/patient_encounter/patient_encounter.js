@@ -519,6 +519,11 @@ frappe.ui.form.on("Patient Encounter", "appointment", function(frm){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
 				frm.set_df_property("referring_practitioner", "read_only", 1);
 				frappe.model.set_value(frm.doctype, frm.docname, "insurance", data.message.insurance);
+				frm.set_df_property("insurance", "read_only", 1);
+				if(data.message.insurance_approval_number){
+					frappe.model.set_value(frm.doctype, frm.docname, "insurance_approval_number", data.message.insurance_approval_number)
+					frm.set_df_property("insurance_approval_number", "read_only", 1);
+				}
 			}
 		});
 	}
@@ -591,7 +596,8 @@ frappe.ui.form.on("Patient Encounter", "patient", function(frm) {
 		frm.set_query("insurance", function(){
 			return{
 				filters:{
-					"patient": frm.doc.patient
+					"patient": frm.doc.patient,
+					"docstatus":1
 				}
 			};
 		});

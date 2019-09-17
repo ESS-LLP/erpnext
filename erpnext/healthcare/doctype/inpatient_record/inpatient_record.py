@@ -446,6 +446,7 @@ def update_ip_occupancy_invoice(sales_invoice, inpatient_occupancy, service_unit
 				if item_line.discount_amount and item_line.discount_amount > 0:
 					item_line.rate = float(item_line.rate) - float(item_line.discount_amount)
 			item_line.insurance_claim_coverage = insurance_details.coverage
+			item_line.insurance_approval_number=  ip.insurance_approval_number if ip.insurance_approval_number else ''
 	item_line.qty = qty
 	item_line.amount = item_line.rate * item_line.qty
 	if ip.insurance and item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:

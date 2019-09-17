@@ -31,6 +31,7 @@ def get_healthcare_services_to_invoice(patient):
 					patient_appointment_obj = frappe.get_doc("Patient Appointment", patient_appointment['name'])
 					if patient_appointment_obj.insurance:
 						include_in_insurance = True
+						insurance_approval_number=patient_appointment_obj.insurance_approval_number
 					if patient_appointment_obj.service_unit:
 						cost_center = frappe.db.get_value("Healthcare Service Unit", patient_appointment_obj.service_unit, "cost_center")
 					if patient_appointment_obj.procedure_template:
@@ -41,7 +42,7 @@ def get_healthcare_services_to_invoice(patient):
 							if include_in_insurance and insurance_details:
 								invoice_item = {'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
 									'service': app_service_item, 'cost_center': cost_center,
-									'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+									'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage, 'insurance_approval_number': patient_appointment_obj.insurance_approval_number if patient_appointment_obj.insurance_approval_number else ''}
 								if insurance_details.rate:
 									invoice_item['rate'] = insurance_details.rate,
 								item_to_invoice.append(invoice_item)
@@ -56,7 +57,7 @@ def get_healthcare_services_to_invoice(patient):
 							if include_in_insurance and insurance_details:
 								invoice_item={'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
 									'service': app_radiology_service_item, 'cost_center': cost_center,
-									'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+									'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage, 'insurance_approval_number': patient_appointment_obj.insurance_approval_number if patient_appointment_obj.insurance_approval_number else ''}
 								if insurance_details.rate:
 									invoice_item['rate'] = insurance_details.rate,
 								item_to_invoice.append(invoice_item)
@@ -103,7 +104,7 @@ def get_healthcare_services_to_invoice(patient):
 									practitioner_charge = insurance_details.rate
 								item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
 									'service': service_item, 'cost_center': cost_center, 'rate': practitioner_charge, 'income_account': income_account,
-									'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage})
+									'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage, 'insurance_approval_number': patient_appointment_obj.insurance_approval_number if patient_appointment_obj.insurance_approval_number else ''})
 							else:
 								item_to_invoice.append({'reference_type': 'Patient Appointment', 'reference_name': patient_appointment_obj.name,
 									'service': service_item, 'cost_center': cost_center, 'rate': practitioner_charge, 'income_account': income_account})
@@ -133,7 +134,7 @@ def get_healthcare_services_to_invoice(patient):
 								practitioner_charge = insurance_details.rate
 							item_to_invoice.append({'reference_type': 'Patient Encounter', 'reference_name': encounter_obj.name,
 							'service': service_item, 'rate': practitioner_charge, 'cost_center':cost_center, 'discount_percentage': insurance_details.discount,
-							'income_account': income_account, 'insurance_claim_coverage': insurance_details.coverage})
+							'income_account': income_account, 'insurance_claim_coverage': insurance_details.coverage, 'insurance_approval_number': encounter_obj.insurance_approval_number if encounter_obj.insurance_approval_number else ''})
 						else:
 							item_to_invoice.append({'reference_type': 'Patient Encounter', 'reference_name': encounter_obj.name,
 							'service': service_item, 'rate': practitioner_charge, 'cost_center':cost_center,
@@ -151,7 +152,7 @@ def get_healthcare_services_to_invoice(patient):
 						if lab_test_obj.insurance and insurance_details:
 							invoice_item={'reference_type': 'Lab Test', 'reference_name': lab_test_obj.name,
 							'service': frappe.db.get_value("Lab Test Template", lab_test_obj.template, "item"), 'cost_center':cost_center,
-							'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+							'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage, 'insurance_approval_number': lab_test_obj.insurance_approval_number if lab_test_obj.insurance_approval_number else ''}
 							if insurance_details.rate:
 								invoice_item['rate'] = insurance_details.rate,
 							item_to_invoice.append(invoice_item)
@@ -179,7 +180,7 @@ def get_healthcare_services_to_invoice(patient):
 						if include_in_insurance and insurance_details:
 							invoice_item={'reference_type': 'Lab Prescription', 'reference_name': rx_obj.name,
 							'service': frappe.db.get_value("Lab Test Template", rx_obj.lab_test_code, "item"), 'cost_center':cost_center,
-							'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+							'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage, 'insurance_approval_number': encx_obj.insurance_approval_number if encx_obj.insurance_approval_number else ''}
 							if insurance_details.rate:
 								invoice_item['rate'] = insurance_details.rate,
 							item_to_invoice.append(invoice_item)
@@ -212,7 +213,7 @@ def get_healthcare_services_to_invoice(patient):
 						if insurance_details:
 							invoice_item={'reference_type': 'Clinical Procedure', 'reference_name': procedure_obj.name,
 							'service': procedure_service_item, 'cost_center':cost_center,
-							'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+							'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage, 'insurance_approval_number': procedure_obj.insurance_approval_number if procedure_obj.insurance_approval_number else ''}
 							if insurance_details.rate:
 								invoice_item['rate'] = insurance_details.rate-reduce_from_procedure_rate
 							else:
@@ -242,7 +243,7 @@ def get_healthcare_services_to_invoice(patient):
 							insurance_details = get_insurance_details(encx_obj.insurance, frappe.db.get_value("Clinical Procedure Template", rx_obj.procedure, "item"))
 							invoice_item={'reference_type': 'Procedure Prescription', 'reference_name': rx_obj.name,
 							 'service': frappe.db.get_value("Clinical Procedure Template", rx_obj.procedure, "item"), 'cost_center': cost_center,
-							 'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+							 'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage, 'insurance_approval_number': encx_obj.insurance_approval_number if encx_obj.insurance_approval_number else ''}
 							if insurance_details.rate:
 								invoice_item['rate'] = insurance_details.rate,
 							item_to_invoice.append(invoice_item)
@@ -267,7 +268,7 @@ def get_healthcare_services_to_invoice(patient):
 							if include_in_insurance and insurance_details:
 								invoice_item={'reference_type': 'Radiology Examination', 'reference_name': procedure_obj.name,
 								'cost_center': cost_center if cost_center else '', 'service': procedure_service_item,
-								'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+								'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage, 'insurance_approval_number': procedure_obj.insurance_approval_number if procedure_obj.insurance_approval_number else ''}
 								if insurance_details.rate:
 									invoice_item['rate'] = insurance_details.rate,
 								item_to_invoice.append(invoice_item)
@@ -328,7 +329,7 @@ def get_healthcare_services_to_invoice(patient):
 							if inpatient_record.insurance and insurance_details:
 								invoice_item={'reference_type': 'Inpatient Occupancy', 'reference_name': inpatient_occupancy.name,
 								'service': service_unit_type.item, 'cost_center': cost_center, 'qty': qty,
-								'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage}
+								'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage, 'insurance_approval_number': inpatient_record.insurance_approval_number if inpatient_record.insurance_approval_number else ''}
 								if insurance_details.rate:
 									invoice_item['rate'] = insurance_details.rate,
 								item_to_invoice.append(invoice_item)

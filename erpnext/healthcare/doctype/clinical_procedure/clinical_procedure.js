@@ -52,6 +52,14 @@ frappe.ui.form.on('Clinical Procedure', {
 							frm.set_value("referring_practitioner", "");
 							frm.set_df_property("referring_practitioner", "read_only", 0);
 						}
+						if(r.message.insurance){
+							frm.set_value("insurance", data.message.insurance)
+							frm.set_df_property("insurance", "read_only", 1);
+						}
+						else{
+							frm.set_value("insurance", "");
+							frm.set_df_property("insurance", "read_only", 0);
+						}
 					}
 				}
 			});
@@ -147,7 +155,8 @@ frappe.ui.form.on('Clinical Procedure', {
 		frm.set_query("insurance", function(){
 			return{
 				filters:{
-					"patient": frm.doc.patient
+					"patient": frm.doc.patient,
+					"docstatus": 1
 				}
 			};
 		});
@@ -313,6 +322,10 @@ frappe.ui.form.on('Clinical Procedure', {
 					if(data.message.insurance){
 						frm.set_value("insurance", data.message.insurance)
 						frm.set_df_property("insurance", "read_only", 1);
+						if(data.message.insurance_approval_number){
+							frm.set_value("insurance_approval_number", data.message.insurance_approval_number)
+							frm.set_df_property("insurance_approval_number", "read_only", 1);
+						}
 					}
 				}
 			});

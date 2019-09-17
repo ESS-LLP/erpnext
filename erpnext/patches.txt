@@ -617,3 +617,4 @@ erpnext.patches.v12_0.submit_clinical_procedure
 erpnext.patches.v12_0.reload_clinical_procedure_for_fieldtype
 erpnext.patches.v12_0.healthcare_insurance_fields_for_sales_invoice
 erpnext.patches.v12_0.healthcare_insurance_fields_for_sales_invoice_1
+erpnext.patches.v12_0.healthcare_insurance_fields_for_sales_invoice_2

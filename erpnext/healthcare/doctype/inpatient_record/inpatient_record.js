@@ -95,7 +95,8 @@ frappe.ui.form.on('Inpatient Record', {
 		frm.set_query("insurance", function(){
 			return {
 				filters: {
-					"patient": frm.doc.patient
+					"patient": frm.doc.patient,
+					"docstatus": 1
 				}
 			};
 		});

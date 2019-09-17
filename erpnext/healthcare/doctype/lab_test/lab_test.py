@@ -395,6 +395,7 @@ def invoice_lab_test(lab_test):
 				if item_line.discount_amount and item_line.discount_amount > 0:
 					item_line.rate = float(item_line.rate) - float(item_line.discount_amount)
 			item_line.insurance_claim_coverage = insurance_details.coverage
+			item_line.insurance_approval_number=  lab_test.insurance_approval_number if lab_test.insurance_approval_number else ''
 	item_line.qty = 1
 	item_line.amount = item_line.rate*item_line.qty
 	item_line.reference_dt = "Lab Test"

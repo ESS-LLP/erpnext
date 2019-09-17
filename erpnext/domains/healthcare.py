@@ -69,6 +69,10 @@ data = {
 			{
 				'fieldname': 'insurance_claim_amount', 'label': 'Insurance Claim Amount', 'fieldtype': 'Currency',
 				'insert_after': 'insurance_claim_coverage', 'read_only':True
+			},
+			{
+				'fieldname': 'insurance_approval_number', 'label': 'Insurance Approval Number', 'fieldtype': 'Data',
+				'insert_after': 'insurance_claim_amount', 'read_only':True
 			}
 		],
 		'Delivery Note': [

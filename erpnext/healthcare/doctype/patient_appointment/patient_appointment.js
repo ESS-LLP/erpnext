@@ -68,7 +68,8 @@ frappe.ui.form.on('Patient Appointment', {
 		frm.set_query("insurance", function(){
 			return{
 				filters:{
-					"patient": frm.doc.patient
+					"patient": frm.doc.patient,
+					"docstatus":1
 				}
 			};
 		});

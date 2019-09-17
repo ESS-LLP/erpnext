@@ -286,6 +286,7 @@ class SalesInvoice(SellingController):
 		if "Healthcare" in active_domains:
 			if self.total_insurance_claim_amount:
 				self.patient_payable_amount=self.outstanding_amount-self.total_insurance_claim_amount
+				self.save(ignore_permissions=True)
 
 	def update_status_updater_args(self):
 		if cint(self.update_stock):

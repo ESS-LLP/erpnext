@@ -219,7 +219,8 @@ frappe.ui.form.on("Lab Test", "patient", function(frm) {
 		frm.set_query("insurance", function(){
 			return{
 				filters:{
-					"patient": frm.doc.patient
+					"patient": frm.doc.patient,
+					"docstatus": 1
 				}
 			};
 		});

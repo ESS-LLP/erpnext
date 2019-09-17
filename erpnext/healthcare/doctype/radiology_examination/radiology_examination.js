@@ -39,6 +39,10 @@ frappe.ui.form.on('Radiology Examination', {
 					if(data.message.insurance){
 						frm.set_value("insurance", data.message.insurance)
 						frm.set_df_property("insurance", "read_only", 1);
+						if(data.message.insurance_approval_number){
+							frm.set_value("insurance_approval_number", data.message.insurance_approval_number)
+							frm.set_df_property("insurance_approval_number", "read_only", 1);
+						}
 					}
 				}
 			});
@@ -178,7 +182,8 @@ frappe.ui.form.on('Radiology Examination', {
 		frm.set_query("insurance", function(){
 			return {
 				filters: {
-					"patient": frm.doc.patient
+					"patient": frm.doc.patient,
+					"docstatus":1
 				}
 			};
 		});

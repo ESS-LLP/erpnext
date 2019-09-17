@@ -154,6 +154,7 @@ def set_invoice_details_for_appointment(appointment_doc, is_pos):
 				if item_line.discount_amount and item_line.discount_amount > 0:
 					item_line.rate = float(item_line.rate) - float(item_line.discount_amount)
 			item_line.insurance_claim_coverage = insurance_details.coverage
+			item_line.insurance_approval_number=  appointment_doc.insurance_approval_number if appointment_doc.insurance_approval_number else ''
 
 	item_line.cost_center = cost_center if cost_center else ''
 	item_line.qty = 1
