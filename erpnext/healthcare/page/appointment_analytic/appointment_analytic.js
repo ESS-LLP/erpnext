@@ -5,7 +5,7 @@ frappe.pages['appointment-analytic'].on_page_load = function(wrapper) {
 		single_column: true
 	});
 	new erpnext.AppointmentAnalytics(wrapper);
-	frappe.breadcrumbs.add("Medical");
+	frappe.breadcrumbs.add("Healthcare");
 };
 
 erpnext.AppointmentAnalytics = frappe.views.TreeGridReport.extend({
@@ -42,7 +42,8 @@ erpnext.AppointmentAnalytics = frappe.views.TreeGridReport.extend({
 		this.tree_grid = this.tree_grids[this.tree_type];
 
 		var std_columns = [
-			{id: "name", name: this.tree_grid.label, field: "name", width: 300},
+			{id: "name", name: this.tree_grid.label, field: "name", width: 100},
+			{id: "practitioner_name", name: "Practitioner Name", field: "practitioner_name", width: 150},
 			{id: "total", name: "Total", field: "total", plot: false,
 				formatter: this.currency_formatter}
 		];
@@ -64,14 +65,6 @@ erpnext.AppointmentAnalytics = frappe.views.TreeGridReport.extend({
 				{label: __("Cancelled"), value: "Cancelled"}]},
 		{fieldtype:"Select", label: __("Type"), link:"Appointment Type", fieldname: "type",
 			default_value: __("Select Type...")},
-		{fieldtype:"Select", label: __("Healthcare Practitioner"), link:"Healthcare Practitioner", fieldname: "practitioner",
-			default_value: __("Select Healthcare Practitioner..."), filter: function(val, item, opts) {
-				return val == opts.default_value || item.name == val || item._show;
-			}, link_formatter: {filter_input: "practitioner"}},
-		{fieldtype:"Select", label: __("Department"), link:"Medical Department", fieldname: "department",
-			default_value: __("Select Department..."), filter: function(val, item, opts) {
-				return val == opts.default_value || item.department == val || item._show;
-			}, link_formatter: {filter_input: "department"}},
 		{fieldtype:"Date", label: __("From Date"), fieldname: "from_date"},
 		{fieldtype:"Date", label: __("To Date"), fieldname: "to_date"},
 		{fieldtype:"Select", label: __("Range"), fieldname: "range",
@@ -105,10 +98,8 @@ erpnext.AppointmentAnalytics = frappe.views.TreeGridReport.extend({
 			me.parent_map = {};
 			me.item_by_name = {};
 			me.data = [];
-
 			$.each(items, function(i, v) {
 				var d = copy_dict(v);
-
 				me.data.push(d);
 				me.item_by_name[d.name] = d;
 				if(d[me.tree_grid.parent_field]) {

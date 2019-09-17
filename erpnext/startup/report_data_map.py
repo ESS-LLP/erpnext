@@ -288,7 +288,7 @@ data_map = {
 		"order_by": "creation"
 	},
 
-	#Medical
+	# Helathcare
 	"Patient": {
 		"columns": ["name", "creation", "owner", "if(patient_name=name, '', patient_name) as patient_name"],
 		"conditions": ["docstatus < 2"],
@@ -306,7 +306,7 @@ data_map = {
 		}
 	},
 	"Healthcare Practitioner": {
-		"columns": ["name", "department"],
+		"columns": ["name", "department", "practitioner_name"],
 		"order_by": "name",
 		"links": {
 			"department": ["Department", "name"],
