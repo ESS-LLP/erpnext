@@ -512,6 +512,10 @@ def create_encounter(appointment):
 		encounter.referring_practitioner=appointment.referring_practitioner
 	if appointment.invoiced:
 		encounter.invoiced = True
+	if appointment.insurance:
+		encounter.insurance=appointment.insurance
+	if appointment.insurance_approval_number:
+		encounter.insurance_approval_number=appointment.insurance_approval_number
 	return encounter.as_dict()
 
 

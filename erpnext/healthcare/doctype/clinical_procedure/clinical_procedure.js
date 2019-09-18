@@ -237,6 +237,11 @@ frappe.ui.form.on('Clinical Procedure', {
 			frm.add_fetch("procedure_template", "medical_department", "medical_department");
 			frm.set_value("start_time", null);
 		}
+		if(frm.doc.appointment){
+			frm.set_df_property("source", "read_only", 1);
+			frm.set_df_property("insurance", "read_only", 1);
+			frm.set_df_property("insurance_approval_number", "read_only", 1);
+		}
 		if(frm.doc.source=="Direct"){
 			frm.set_value("referring_practitioner", "");
 			frm.set_df_property("referring_practitioner", "hidden", 1);
