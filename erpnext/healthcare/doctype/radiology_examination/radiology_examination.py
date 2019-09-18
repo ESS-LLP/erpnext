@@ -8,6 +8,9 @@ from frappe.model.document import Document
 from erpnext.healthcare.utils import manage_healthcare_doc_cancel
 
 class RadiologyExamination(Document):
+	def after_insert(self):
+		if self.radiology_procedure_prescription:
+			frappe.db.set_value("Radiology Procedure Prescription", self.radiology_procedure_prescription, "radiology_examination_created", True)
 	def on_cancel(self):
 		manage_healthcare_doc_cancel(self)
 
@@ -20,7 +23,7 @@ def get_radiology_procedure_prescribed(patient, encounter_practitioner=False):
 		from
 			`tabPatient Encounter` ct, `tabRadiology Procedure Prescription` cp
 		where
-			ct.patient='{0}' and cp.parent=ct.name and cp.radiology_examination_created=0
+			ct.patient='{0}' and cp.parent=ct.name and cp.radiology_examination_created=0 and cp.appointment_booked=0
 	"""
 	if encounter_practitioner:
 		query +=""" and ct.practitioner=%(encounter_practitioner)s"""

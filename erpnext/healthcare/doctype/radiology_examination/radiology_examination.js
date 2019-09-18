@@ -229,6 +229,7 @@ var show_radiology_procedure = function(frm, result){
 		referring_practitioner:y[6], insurance:y[8]? y[8]:''})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.radiology_procedure = $(this).attr("data-radiology-procedure");
+			frm.doc.radiology_procedure_prescription = $(this).attr("data-name");
 			frm.set_df_property("patient", "read_only", 1);
 			frm.doc.invoiced = 0;
 			if($(this).attr("data-invoiced") == 1){

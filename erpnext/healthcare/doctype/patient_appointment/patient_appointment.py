@@ -56,7 +56,7 @@ class PatientAppointment(Document):
 		elif self.inpatient_record_procedure:
 			frappe.db.set_value("Inpatient Record Procedure", self.inpatient_record_procedure, "appointment_booked", True)
 		elif self.radiology_procedure_prescription:
-			frappe.db.set_value("Radiology Procedure Prescription", self.radiology_procedure_prescription, "radiology_examination_created", True)
+			frappe.db.set_value("Radiology Procedure Prescription", self.radiology_procedure_prescription, "appointment_booked", True)
 		from erpnext.healthcare.utils import get_practitioner_charge
 		is_ip = True if self.inpatient_record else False
 		practitioner_charge = get_practitioner_charge(self.practitioner, is_ip)
