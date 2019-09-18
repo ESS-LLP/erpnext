@@ -923,6 +923,7 @@ var show_radiology_procedure = function(frm, result){
 		</button></a></div></div>', {name:y[0], radiology_procedure: y[1], encounter:y[2], invoiced:y[3],  date:y[4], source:y[5], referring_practitioner:y[6]})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.radiology_procedure = $(this).attr("data-radiology-procedure");
+			frm.doc.radiology_procedure_prescription = $(this).attr("data-name");
 			// frm.set_df_property("radiology_procedure", "read_only", 1);
 			frm.set_df_property("patient", "read_only", 1);
 			frm.doc.invoiced = 0;
@@ -934,6 +935,15 @@ var show_radiology_procedure = function(frm, result){
 			if(frm.doc.referring_practitioner){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
 			}
+			frappe.db.get_value("Radiology Procedure", frm.doc.radiology_procedure, "modality_type", function(r) {
+				if(r && r.modality_type){
+					frm.set_value("modality_type", r.modality_type);
+				}
+				else{
+					frm.set_value("modality_type", '');
+				}
+			});
+			refresh_field("radiology_procedure_prescription");
 			refresh_field("source");
 			refresh_field("referring_practitioner");
 			refresh_field("invoiced");
