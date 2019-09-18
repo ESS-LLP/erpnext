@@ -979,26 +979,22 @@ def manage_healthcare_doc_cancel(doc):
 	if frappe.get_meta(doc.doctype).has_field("invoiced"):
 		if doc.invoiced and get_sales_invoice_for_healthcare_doc(doc.doctype, doc.name):
 			frappe.throw(_("Can not cancel invoiced {0}").format(doc.doctype))
-		check_if_healthcare_doc_is_linked(doc, "Cancel")
-		delete_medical_record(doc.doctype, doc.name)
+	check_if_healthcare_doc_is_linked(doc, "Cancel")
+	delete_medical_record(doc.doctype, doc.name)
 
 def check_if_healthcare_doc_is_linked(doc, method):
-	from frappe.model.rename_doc import get_link_fields
-	link_fields = get_link_fields(doc.doctype)
-	link_fields = [[lf['parent'], lf['fieldname'], lf['issingle']] for lf in link_fields]
 	item_linked = {}
-	for link_dt, link_field, issingle in link_fields:
-		if not issingle:
-			for item in frappe.db.get_values(link_dt, {link_field:doc.name},
-				["name", "parent", "parenttype", "docstatus"], as_dict=True):
-				linked_doctype = item.parenttype if item.parent else link_dt
-				if not item:
-					continue
+	exclude_docs = ['Patient Medical Record']
+	from frappe.desk.form.linked_with import get_linked_doctypes, get_linked_docs
+	linked_docs = get_linked_docs(doc.doctype, doc.name, linkinfo=get_linked_doctypes(doc.doctype))
+	for linked_doc in linked_docs:
+		if linked_doc not in exclude_docs:
+			for linked_doc_obj in linked_docs[linked_doc]:
 				if method == "Cancel":
-					if linked_doctype in item_linked:
-						item_linked[linked_doctype].append(item.name)
+					if linked_doc in item_linked:
+						item_linked[linked_doc].append(linked_doc_obj.name)
 					else:
-						item_linked[linked_doctype] = [item.name]
+						item_linked[linked_doc] = [linked_doc_obj.name]
 	if item_linked:
 		msg = ""
 		for doctype in item_linked:
