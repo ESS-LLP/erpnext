@@ -23,7 +23,7 @@ class LabTest(Document):
 		return False
 
 	def on_cancel(self):
-		if self.invoiced:
+		if self.invoiced and not self.reference_dt == "Clinical Procedure" and not self.reference_dn:
 			frappe.throw(_("Can not cancel invoiced {0}").format(self.doctype))
 		delete_lab_test_from_medical_record(self)
 		frappe.db.set_value("Lab Test", self.name, "status", "Cancelled")
