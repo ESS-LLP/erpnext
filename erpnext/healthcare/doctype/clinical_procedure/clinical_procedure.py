@@ -21,6 +21,7 @@ class ClinicalProcedure(Document):
 			self.set_actual_qty()
 
 	def before_insert(self):
+		self.consume_stock = frappe.db.get_value("Clinical Procedure Template", self.procedure_template, 'consume_stock')
 		if self.consume_stock:
 			set_stock_items(self, self.procedure_template, "Clinical Procedure Template")
 			self.set_actual_qty();
@@ -110,9 +111,38 @@ class ClinicalProcedure(Document):
 	def on_trash(self):
 		if self.prescription:
 			frappe.db.set_value("Procedure Prescription", self.prescription, "procedure_created", 0)
+			ip_record_procdure = frappe.db.exists(
+				"Inpatient Record Procedure",
+				{"prescription": self.prescription}
+			)
+			if ip_record_procdure:
+				frappe.db.set_value("Inpatient Record Procedure", ip_record_procdure, "procedure_created", 0)
+		if self.inpatient_record_procedure:
+			frappe.db.set_value("Inpatient Record Procedure", self.inpatient_record_procedure, "procedure_created", 0)
+		if self.appointment:
+			frappe.db.set_value("Patient Appointment", self.appointment, "status", "Scheduled")
+		if self.sample:
+			frappe.db.set_value(self.doctype, self.name, 'sample', '')
+		delete_pre_post_documents(self)
 
 	def on_cancel(self):
 		manage_healthcare_doc_cancel(self)
+		if self.consume_stock:
+			delivery_note = exist_delivery_note_for_procedure(self.name)
+			for dn in delivery_note:
+				if 'name' in dn:
+					frappe.get_doc("Delivery Note", dn.name).cancel()
+
+def exist_delivery_note_for_procedure(procedure):
+	query = """
+		select
+			distinct dn.name
+		from
+			`tabDelivery Note` dn, `tabDelivery Note Item` di
+		where
+			di.reference_dn=%s and di.parent=dn.name and dn.status='To Bill'
+	"""
+	return frappe.db.sql(query, (procedure), as_dict=True)
 
 def set_procedure_pre_post_tasks(doc):
 	if doc.procedure_template:
@@ -153,6 +183,21 @@ def create_pre_post_document(doc):
 						lab_test.expected_result_time = to_timedelta(doc.start_time) - datetime.timedelta(seconds=investigation.expected_time*60)
 				lab_test.save(ignore_permissions = True)
 				# frappe.db.set_value("Clinical Procedure Lab Test", investigation.name, "lab_test_reference", lab_test.name)
+
+def delete_pre_post_documents(doc):
+	if doc.nursing_tasks:
+		for nursing_task in frappe.get_list('Healthcare Nursing Task', {'reference_doctype': doc.doctype, 'reference_docname': doc.name}):
+			try:
+				frappe.delete_doc("Healthcare Nursing Task", nursing_task.name)
+			except Exception:
+				pass
+
+	if doc.investigations:
+		for investigation in frappe.get_list('Lab Test', {'reference_dt': doc.doctype, 'reference_dn': doc.name}):
+			try:
+				frappe.delete_doc("Lab Test", investigation.name)
+			except Exception:
+				pass
 
 def create_nursing_task(doc, nursing_task):
 	hc_nursing_task = frappe.new_doc("Healthcare Nursing Task")
