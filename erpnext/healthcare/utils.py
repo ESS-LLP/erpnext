@@ -19,6 +19,7 @@ def get_healthcare_services_to_invoice(patient):
 	if patient:
 		if patient.customer:
 			item_to_invoice = []
+			insurance_details = False
 			patient_appointments = frappe.get_list("Patient Appointment",{'patient': patient.name, 'invoiced': False},
 			order_by="appointment_date")
 			if patient_appointments:
@@ -203,10 +204,6 @@ def get_healthcare_services_to_invoice(patient):
 								for delivery_note_item in delivery_note_items:
 									dn_item = frappe.get_doc("Delivery Note Item", delivery_note_item[0])
 									reduce_from_procedure_rate += item_reduce_procedure_rate(dn_item, procedure_obj.items)
-									item_to_invoice.append({'reference_type': dn_item.reference_dt, 'reference_name': dn_item.reference_dn,
-										'service': dn_item.item_code, 'rate': dn_item.rate, 'qty': dn_item.qty,
-										'cost_center': cost_center if cost_center else '', 'delivery_note': delivery_note_item[1] if delivery_note_item[1] else ''})
-
 						procedure_service_item = frappe.db.get_value("Clinical Procedure Template", procedure_obj.procedure_template, "item")
 						if procedure_obj.insurance :
 							insurance_details = get_insurance_details(procedure_obj.insurance, procedure_service_item)

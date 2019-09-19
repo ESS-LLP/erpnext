@@ -1185,36 +1185,11 @@ class SalesInvoice(SellingController):
 	# Healthcare
 	def set_healthcare_services(self, checked_values):
 		self.set("items", [])
-		from erpnext.stock.get_item_details import get_item_details
 		for checked_item in checked_values:
-			item_line = self.append("items", {})
-			args = {
-				'doctype': "Sales Invoice",
-				'item_code': checked_item['item_code'],
-				'company': self.company,
-				'customer': frappe.db.get_value("Patient", self.patient, "customer"),
-				'selling_price_list': self.selling_price_list,
-				'price_list_currency': self.currency,
-				'plc_conversion_rate': 1.0,
-				'conversion_rate': 1.0
-			}
-			item_details = get_item_details(args)
-			item_line.qty = 1
-			for key in checked_item:
-				if checked_item[key]:
-					item_line.set(key, checked_item[key])
-			if 'rate' not in checked_item or not checked_item['rate']:
-				item_line.rate = item_details.price_list_rate
-			if item_line.discount_percentage and float(item_line.discount_percentage) > 0:
-				item_line.discount_amount = float(item_line.rate) * float(item_line.discount_percentage) * 0.01
-				if item_line.discount_amount and item_line.discount_amount > 0:
-					item_line.rate = float(item_line.rate) - float(item_line.discount_amount)
-			item_line.amount = float(item_line.rate) * float(item_line.qty)
-			if item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
-				item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
-
+			self.set_healthcare_services_to_item(checked_item)
+			if "reference_dt" in checked_item and "reference_dn" in checked_item and checked_item['reference_dt'] == "Clinical Procedure":
+				self.set_clinical_procedure_delivery_note(checked_item)
 		self.calculate_healthcare_insurance_claim()
-
 		self.set_missing_values(for_validate = True)
 
 	def calculate_healthcare_insurance_claim(self):
@@ -1223,6 +1198,51 @@ class SalesInvoice(SellingController):
 			if item.insurance_claim_amount and float(item.insurance_claim_amount)>0:
 				total_claim_amount += float(item.insurance_claim_amount)
 		self.total_insurance_claim_amount = total_claim_amount
+
+	def set_healthcare_services_to_item(self, checked_item):
+		from erpnext.stock.get_item_details import get_item_details
+		item_line = self.append("items", {})
+		args = {
+			'doctype': "Sales Invoice",
+			'item_code': checked_item['item_code'],
+			'company': self.company,
+			'customer': frappe.db.get_value("Patient", self.patient, "customer"),
+			'selling_price_list': self.selling_price_list,
+			'price_list_currency': self.currency,
+			'plc_conversion_rate': 1.0,
+			'conversion_rate': 1.0
+		}
+		item_details = get_item_details(args)
+		item_line.qty = 1
+		for key in checked_item:
+			if checked_item[key]:
+				item_line.set(key, checked_item[key])
+		if 'rate' not in checked_item or not checked_item['rate']:
+			item_line.rate = item_details.price_list_rate
+		if item_line.discount_percentage and float(item_line.discount_percentage) > 0:
+			item_line.discount_amount = float(item_line.rate) * float(item_line.discount_percentage) * 0.01
+			if item_line.discount_amount and item_line.discount_amount > 0:
+				item_line.rate = float(item_line.rate) - float(item_line.discount_amount)
+		item_line.amount = float(item_line.rate) * float(item_line.qty)
+		if item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
+			item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
+
+	def set_clinical_procedure_delivery_note(self, checked_item):
+		procedure_obj = frappe.get_doc("Clinical Procedure", checked_item['reference_dn'])
+		if procedure_obj.consume_stock:
+			from erpnext.healthcare.utils import get_procedure_delivery_item
+			delivery_note_items = get_procedure_delivery_item(self.patient, procedure_obj.name)
+			cost_center = False
+			if "cost_center" in checked_item:
+				cost_center = checked_item['cost_center']
+			if delivery_note_items:
+				for delivery_note_item in delivery_note_items:
+					dn_item = frappe.get_doc("Delivery Note Item", delivery_note_item[0])
+					item_to_invoice = {'reference_dt': dn_item.reference_dt, 'reference_dn': dn_item.reference_dn,
+						'item_code': dn_item.item_code, 'rate': dn_item.rate, 'qty': dn_item.qty,
+						'cost_center': cost_center if cost_center else '',
+						'delivery_note': delivery_note_item[1] if delivery_note_item[1] else ''}
+					self.set_healthcare_services_to_item(item_to_invoice)
 
 def validate_inter_company_party(doctype, party, company, inter_company_invoice_reference):
 	if not party:
