@@ -458,7 +458,7 @@ var lab_test_html_tables = function(frm) {
 		lab_test_table_html += `<tr style="text-align: center;"><td height="20">`
 		lab_test_table_html += i
 		lab_test_table_html += `<td style="width: 18%">` + (val.lab_test_name ? val.lab_test_name : '')+ "</td>"
-		lab_test_table_html += `<td style="width: 18%">` + (val.event ? val.event : '') + "</td>"
+		lab_test_table_html += `<td style="width: 18%">` + (val.lab_test_event ? val.lab_test_event : '') + "</td>"
 		if (val.docstatus!=1) {
 			if (val.type != "Select"){
 				lab_test_table_html += `<td class="${val.name}" contenteditable = 'true' onclick="make_dirty()">` + (val.result_value ? val.result_value : '') + "</td>"
