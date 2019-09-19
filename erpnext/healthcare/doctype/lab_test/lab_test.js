@@ -464,7 +464,7 @@ var lab_test_html_tables = function(frm) {
 				lab_test_table_html += `<td class="${val.name}" contenteditable = 'true' onclick="make_dirty()">` + (val.result_value ? val.result_value : '') + "</td>"
 			}
 			else {
-				if(val.options.length > 0){
+				if(val.options && val.options.length > 0){
 					var res = val.options.split("\n");
 					if(res.length > 0){
 						lab_test_table_html += `<td style="width: 18%"><select id="mySelect" class="dropdown_select ${val.name}" onchange="make_dirty()">`;
@@ -475,11 +475,11 @@ var lab_test_html_tables = function(frm) {
 						lab_test_table_html += `</select></td>`
 					}
 					else{
-						lab_test_table_html += `<td style="width: 18%" class="${val.name}" contenteditable = 'true'>` + (val.result_value ? val.result_value : '') + "</td>"
+						lab_test_table_html += `<td style="width: 18%" class="${val.name}" contenteditable = 'true' onclick="make_dirty()">` + (val.result_value ? val.result_value : '') + "</td>"
 					}
 				}
 				else{
-					lab_test_table_html += `<td style="width: 18%" class="${val.name}" contenteditable = 'true'>` + (val.result_value ? val.result_value : '') + "</td>"
+					lab_test_table_html += `<td style="width: 18%" class="${val.name}" contenteditable = 'true' onclick="make_dirty()">` + (val.result_value ? val.result_value : '') + "</td>"
 				}
 			}
 		}
@@ -510,7 +510,7 @@ var get_input_data = function(frm){
 		frm.doc.normal_test_items.forEach(function(val, i){
 			var result = "";
 			var comment = "";
-			if(val.type == "Select"){
+			if(val.type == "Select" && val.options){
 				result = $(frm.fields_dict["lab_test_html"].wrapper).find('.'+val.name).find(':selected').text();
 			}
 			else{
