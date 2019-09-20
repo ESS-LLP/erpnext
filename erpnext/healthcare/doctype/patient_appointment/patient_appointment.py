@@ -82,7 +82,7 @@ class PatientAppointment(Document):
 			frappe.db.get_value("Patient Appointment", self.name, "invoiced") != 1:
 			sales_invoice = invoice_appointment(self, True)
 			sales_invoice.submit()
-			frappe.msgprint(_("Sales Invoice {0} created as paid".format(sales_invoice.name)), alert=True)
+			frappe.msgprint(_("Sales Invoice {0} created".format(sales_invoice.name)), alert=True)
 
 		elif self.inpatient_record and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
 			invoice_appointment(self, False)
@@ -170,7 +170,7 @@ def set_invoice_details_for_appointment(appointment_doc, is_pos):
 	if appointment_doc.mode_of_payment or appointment_doc.paid_amount:
 		payments_line = sales_invoice.append("payments")
 		payments_line.mode_of_payment = appointment_doc.mode_of_payment
-		payments_line.amount = appointment_doc.paid_amount
+		payments_line.amount = appointment_doc.paid_amount if appointment_doc.paid_amount else 0
 
 	sales_invoice.set_missing_values(for_validate = True)
 	return sales_invoice
