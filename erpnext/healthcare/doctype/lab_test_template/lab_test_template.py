@@ -11,6 +11,7 @@ class LabTestTemplate(Document):
 	def validate(self):
 		if self.is_billable and (not self.lab_test_rate or self.lab_test_rate <= 0.0):
 			frappe.throw(_("Standard Selling Rate should be greater than zero."))
+		conversion_factor_validation(self)
 
 	def on_update(self):
 		#Item and Price List update --> if (change_in_item)
@@ -126,3 +127,15 @@ def disable_enable_test_template(status, name,  is_billable):
 	frappe.db.set_value("Lab Test Template",name,"disabled",status)
 	if(is_billable == 1):
 		frappe.db.set_value("Item",name,"disabled",status)
+
+def conversion_factor_validation(self):
+	if self.lab_test_template_type == "Single" and self.secondary_uom and not self.conversion_factor:
+		frappe.throw(_("Conversion Factor is mandatory"))
+	if self.lab_test_template_type == "Compound":
+		for item in self.normal_test_templates:
+			if item.secondary_uom and not item.conversion_factor:
+				frappe.throw(_("Conversion Factor is mandatory"))
+	if self.lab_test_template_type == "Grouped":
+		for group in self.lab_test_groups:
+			if group.template_or_new_line == "Add new line" and group.secondary_uom and not group.conversion_factor:
+				frappe.throw(_("Conversion Factor is mandatory"))

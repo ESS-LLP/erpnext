@@ -173,6 +173,9 @@ def create_normals(template, lab_test):
 	normal = lab_test.append("normal_test_items")
 	normal.lab_test_name = template.lab_test_name
 	normal.lab_test_uom = template.lab_test_uom
+	if template.secondary_uom:
+		normal.secondary_uom = template.secondary_uom
+		normal.conversion_factor = template.conversion_factor
 	normal.type = template.type
 	if normal.type=="Select":
 		normal.options = template.options
@@ -194,6 +197,9 @@ def create_compounds(template, lab_test, is_group):
 			normal.lab_test_name = normal_test_template.lab_test_event
 
 		normal.lab_test_uom = normal_test_template.lab_test_uom
+		if normal_test_template.secondary_uom:
+			normal.secondary_uom = normal_test_template.secondary_uom
+			normal.conversion_factor = normal_test_template.conversion_factor
 		if lab_test.patient_sex=="Female":
 			normal.normal_range = normal_test_template.normal_range_female
 		else:
@@ -289,6 +295,9 @@ def load_result_format(lab_test, template, prescription, invoice):
 				normal = lab_test.append("normal_test_items")
 				normal.lab_test_name = lab_test_group.group_event
 				normal.lab_test_uom = lab_test_group.group_test_uom
+				if lab_test_group.secondary_uom:
+					normal.secondary_uom = lab_test_group.secondary_uom
+					normal.conversion_factor = lab_test_group.conversion_factor
 				normal.normal_range = lab_test_group.group_test_normal_range
 				normal.require_result_value = 1
 				normal.allow_blank = lab_test_group.allow_blank
