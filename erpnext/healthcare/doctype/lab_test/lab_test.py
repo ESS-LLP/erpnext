@@ -181,6 +181,7 @@ def create_normals(template, lab_test):
 	else:
 		normal.normal_range = template.lab_test_normal_range
 	normal.require_result_value = 1
+	normal.allow_blank = template.allow_blank
 	normal.template = template.name
 
 def create_compounds(template, lab_test, is_group):
@@ -201,6 +202,7 @@ def create_compounds(template, lab_test, is_group):
 		if normal.type=="Select":
 			normal.options = normal_test_template.options
 		normal.require_result_value = 1
+		normal.allow_blank = normal_test_template.allow_blank
 		normal.template = template.name
 
 def create_specials(template, lab_test):
@@ -211,6 +213,7 @@ def create_specials(template, lab_test):
 		special = lab_test.append("special_test_items")
 		special.lab_test_particulars = special_test_template.particulars
 		special.require_result_value = 1
+		special.allow_blank = special_test_template.allow_blank
 		special.template = template.name
 
 def create_sample_doc(template, patient, invoice):
@@ -288,6 +291,7 @@ def load_result_format(lab_test, template, prescription, invoice):
 				normal.lab_test_uom = lab_test_group.group_test_uom
 				normal.normal_range = lab_test_group.group_test_normal_range
 				normal.require_result_value = 1
+				normal.allow_blank = lab_test_group.allow_blank
 				normal.template = template.name
 	if(template.lab_test_template_type != 'No Result'):
 		if(prescription):
