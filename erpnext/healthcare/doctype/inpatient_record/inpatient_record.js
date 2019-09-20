@@ -198,10 +198,15 @@ var create_delivery_note = function(frm){
 		width: 100,
 		fields: [
 			{fieldtype: "Link", label: "Healthcare Service Unit", fieldname: "service_unit", options: "Healthcare Service Unit"},
+			{fieldtype: "Column Break"},
 			{fieldtype: "Link", label: "Warehouse", fieldname: "warehouse", options: "Warehouse", reqd: 1},
+			{fieldtype: "Section Break"},
 			{fieldtype: "Link", label: "Item", fieldname: "item", options: "Item"},
 			{fieldtype: "Float", label: "Quantity", fieldname: "qty", default:1},
+			{fieldtype: "Column Break"},
+			{fieldtype: "Link", label: "UOM", fieldname: "uom", options:"UOM"},
 			{fieldtype: "Button", label: "Add to Items", fieldname: "add_to_delivery_note"},
+			{fieldtype: "Section Break"},
 			{fieldtype: "HTML", label: "Item Details", fieldname: "item_details"}
 		],
 		primary_action_label: __("Consume"),
@@ -273,16 +278,37 @@ var create_delivery_note = function(frm){
 			}
 		});
 	}
+	dialog.fields_dict["item"].df.onchange = () => {
+		if(dialog.get_value('item')){
+			frappe.call({
+				method: 'erpnext.healthcare.utils.sales_item_details_for_healthcare_doc',
+				args:{
+					item_code: dialog.get_value('item'),
+					doc: frm.doc,
+				},
+				callback: function(r) {
+					if(r.message){
+						dialog.set_values({
+							'uom': r.message.stock_uom
+						});
+					}
+				}
+			});
+		}
+	}
 	dialog.fields_dict["add_to_delivery_note"].df.click = () => {
 		items = update_items(items, {'service_unit': dialog.get_value('service_unit'),
 		'item': dialog.get_value('item'),
 		'qty': dialog.get_value('qty'),
-		'warehouse': dialog.get_value('warehouse')});
+		'warehouse': dialog.get_value('warehouse'),
+		'uom': dialog.get_value('uom')});
 		var $wrapper = dialog.fields_dict.item_details.$wrapper;
 		$wrapper
 			.html(consumssion_details_html(items));
 		dialog.set_values({
-			'item': ''
+			'item': '',
+			'uom': '',
+			'qty': 1
 		});
 	}
 	dialog.show();
@@ -294,6 +320,7 @@ var update_items = function(items, new_item){
 		$.each(items, function(index, item){
 			if(item['item'] == new_item['item']){
 				item['qty'] = new_item['qty'];
+				item['uom'] = new_item['uom'];
 				item['service_unit'] = new_item['service_unit'];
 				item['warehouse'] = new_item['warehouse'];
 				item_exist_in_the_list = true;
@@ -309,13 +336,14 @@ var update_items = function(items, new_item){
 var consumssion_details_html = function(items) {
 	var table_html = `<div class='col-md-12 col-sm-12 text-muted'><table class="table table-condensed bordered">
 	<tr>
-		<th>Item</th><th>Quantity</th><th>Warehouse</th><th>Healthcare Service Unit</th>
+		<th>Item</th><th>Quantity</th><th>UOM</th><th>Warehouse</th><th>Healthcare Service Unit</th>
 	</tr>`;
 
 	$.each(items, function(index, item){
 		table_html += `<tr>
 			<td>${item['item']}</td>
 			<td>${item['qty']}</td>
+			<td>${item['uom']}</td>
 			<td>${item['warehouse']}</td>
 			<td>${item['service_unit']}</td>
 		</tr>`;

@@ -493,16 +493,16 @@ def create_delivery_note(ip_record, items):
 		item_line = frappe._dict(item_line)
 		cost_center = frappe.db.get_value("Healthcare Service Unit", item_line.service_unit, 'cost_center')
 		delivery_note.set_warehouse = item_line.warehouse
-		set_delivery_note_item(item_line.item, item_line.qty, item_line.warehouse, cost_center, doc, delivery_note)
+		set_delivery_note_item(item_line.item, item_line.qty, item_line.warehouse, cost_center, doc, delivery_note, item_line.uom)
 	delivery_note.insert(ignore_permissions = True)
 	delivery_note.submit()
 
-def set_delivery_note_item(item, qty, s_wh, cost_center, doc, delivery_note):
+def set_delivery_note_item(item, qty, s_wh, cost_center, doc, delivery_note, uom=False):
 	child = delivery_note.append('items')
 	item_details = sales_item_details_for_healthcare_doc(item, doc)
 	child.item_code = item
 	child.item_name = item_details.item_name
-	child.uom = item_details.uom
+	child.uom = uom if uom else item_details.uom
 	child.stock_uom = item_details.stock_uom
 	child.qty = flt(qty)
 	child.warehouse = s_wh
