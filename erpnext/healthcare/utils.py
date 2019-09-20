@@ -923,7 +923,13 @@ def get_sales_invoice_for_healthcare_doc(doctype, docname):
 		return frappe.get_doc("Sales Invoice", frappe.db.get_value("Sales Invoice Item", sales_item_exist, "parent"))
 	return False
 
+@frappe.whitelist()
 def sales_item_details_for_healthcare_doc(item_code, doc, wh=None):
+	from six import string_types
+	if isinstance(doc, string_types):
+		doc =  json.loads(doc)
+		if isinstance(doc, dict):
+			doc = frappe._dict(doc)
 	price_list = frappe.db.get_value("Selling Settings", None, "selling_price_list")
 	if not price_list:
 		price_list = frappe.db.get_values("Price List", {"selling": 1}, ['name'])[0]
