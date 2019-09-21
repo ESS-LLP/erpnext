@@ -282,6 +282,11 @@ def create_delivery_note(doc):
 	delivery_note.inpatient_record = frappe.db.get_value("Patient", doc.patient, "inpatient_record")
 	delivery_note.set_warehouse = doc.warehouse
 	expense_account = get_account(None, "expense_account", "Healthcare Settings", doc.company)
+	cost_center = False
+	if doc.service_unit:
+		cost_center = frappe.db.get_value("Healthcare Service Unit", doc.service_unit, "cost_center")
+	if not cost_center:
+		cost_center = frappe.get_cached_value('Company',  doc.company,  'cost_center')
 	for item in doc.items:
 		child = delivery_note.append('items')
 		item_details = sales_item_details_for_healthcare_doc(item.item_code, doc)
@@ -291,8 +296,7 @@ def create_delivery_note(doc):
 		child.stock_uom = item.stock_uom
 		child.qty = flt(item.qty)
 		child.warehouse = doc.warehouse
-		cost_center = frappe.get_cached_value('Company',  doc.company,  'cost_center')
-		child.cost_center = cost_center
+		child.cost_center = cost_center if cost_center else ''
 		# if not expense_account:
 		# 	expense_account = frappe.db.get_value("Item", item_line.item_code, "expense_account")
 		child.expense_account = expense_account
