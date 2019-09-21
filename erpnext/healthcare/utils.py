@@ -287,7 +287,7 @@ def get_healthcare_services_to_invoice(patient):
 							cost_center = frappe.db.get_value("Healthcare Service Unit", service_unit, "cost_center")
 					item_to_invoice.append({'reference_type': "Delivery Note", 'reference_name': delivery_note_item[1] if delivery_note_item[1] else '',
 						'service': dn_item.item_code, 'rate': dn_item.rate, 'qty': dn_item.qty,
-						'cost_center': cost_center if cost_center else '',
+						'cost_center': cost_center if cost_center else dn_item.cost_center,
 						'delivery_note': delivery_note_item[1] if delivery_note_item[1] else ''})
 
 			inpatient_services = frappe.db.sql("""select io.name, io.parent from `tabInpatient Record` ip,
