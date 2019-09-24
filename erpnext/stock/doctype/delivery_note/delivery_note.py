@@ -126,6 +126,28 @@ class DeliveryNote(SellingController):
 
 		if not self.installation_status: self.installation_status = 'Not Installed'
 
+		# Healthcare
+		domain_settings = frappe.get_doc('Domain Settings')
+		active_domains = [d.domain for d in domain_settings.active_domains]
+
+		if "Healthcare" in active_domains:
+			self.validate_healthcare_warehouse_and_cost_center()
+
+	# Healthcare
+	def validate_healthcare_warehouse_and_cost_center(self):
+		if self.source_service_unit:
+			warehouse, cost_center = frappe.db.get_value("Healthcare Service Unit", self.source_service_unit, ['warehouse', 'cost_center'])
+			if self.set_warehouse and warehouse and warehouse != self.set_warehouse:
+				frappe.throw(_("Warehouse in Healthcare Service Unit is different"))
+			if self.set_cost_center and cost_center and cost_center != self.set_cost_center:
+				frappe.throw(_("Cost Center in Healthcare Service Unit is different"))
+			if self.items:
+				for item in self.items:
+					if warehouse and item.warehouse != warehouse:
+						frappe.throw(_("Warehouse in Healthcare Service Unit is different for the Item {0}".format(item.item_code)))
+					if cost_center and item.cost_center != cost_center:
+						frappe.throw(_("Cost Center in Healthcare Service Unit is different for the Item {0}".format(item.item_code)))
+
 	def validate_with_previous_doc(self):
 		super(DeliveryNote, self).validate_with_previous_doc({
 			"Sales Order": {
