@@ -50,6 +50,17 @@ class LabTest(Document):
 		create_test_from_template(lab_test)
 		self.reload()
 
+	def validate(self):
+		self.set_secondary_uom_result_value()
+
+	def set_secondary_uom_result_value(self):
+		for item in self.normal_test_items:
+			if item.secondary_uom and item.conversion_factor:
+				try:
+					item.secondary_uom_result = float(item.result_value) * float(item.conversion_factor)
+				except ValueError,e:
+					pass
+
 def create_test_from_template(lab_test):
 	template = frappe.get_doc("Lab Test Template", lab_test.template)
 	patient = frappe.get_doc("Patient", lab_test.patient)
