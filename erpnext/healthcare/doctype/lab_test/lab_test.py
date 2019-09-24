@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import getdate, cstr
+from frappe.utils import getdate, cstr, now_datetime
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account
 
 class LabTest(Document):
@@ -52,6 +52,12 @@ class LabTest(Document):
 
 	def validate(self):
 		self.set_secondary_uom_result_value()
+
+	def before_print(self):
+		if self.docstatus == 1 and not self.printed and (frappe.db.get_value("Healthcare Settings", None, "require_test_result_approval") != 1 \
+			or self.status == "Approved"):
+				frappe.db.set_value("Lab Test", self.name, "printed_on", now_datetime())
+				frappe.db.set_value("Lab Test", self.name, "printed", True)
 
 	def set_secondary_uom_result_value(self):
 		for item in self.normal_test_items:
