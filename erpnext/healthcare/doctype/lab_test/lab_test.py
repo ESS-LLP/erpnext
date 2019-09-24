@@ -58,7 +58,7 @@ class LabTest(Document):
 			if item.secondary_uom and item.conversion_factor:
 				try:
 					item.secondary_uom_result = float(item.result_value) * float(item.conversion_factor)
-				except ValueError,e:
+				except:
 					pass
 
 def create_test_from_template(lab_test):
