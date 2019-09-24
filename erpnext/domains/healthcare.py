@@ -87,7 +87,16 @@ data = {
 			{
 				'fieldname': 'inpatient_record', 'label': 'Inpatient Record', 'fieldtype': 'Link', 'fetch_from': 'patient.inpatient_record',
 				'insert_after': 'patient_name', 'read_only': True, 'fetch_if_empty': True, 'options': 'Inpatient Record'
+			},
+			{
+				'fieldname': 'source_service_unit', 'label': 'Source Healthcare Service Unit', 'fieldtype': 'Link',
+				'insert_after': 'sec_warehouse', 'options': 'Healthcare Service Unit'
+			},
+			{
+				'fieldname': 'set_cost_center', 'label': 'Cost Center', 'fieldtype': 'Link', 'fetch_from': 'source_service_unit.cost_center',
+				'insert_after': 'set_warehouse', 'fetch_if_empty': True, 'options': 'Cost Center', 'depends_on': 'source_service_unit'
 			}
+
 		],
 		'Delivery Note Item': [
 			{

@@ -127,6 +127,39 @@ frappe.ui.form.on("Delivery Note", {
 				});
 			}
 		}
+	},
+	source_service_unit: function(frm) {
+		if (frappe.boot.active_domains.includes("Healthcare")){
+			if(frm.doc.source_service_unit){
+				frappe.call({
+					method: "frappe.client.get_value",
+					args:{
+						doctype: "Healthcare Service Unit",
+						filters: {"name": frm.doc.source_service_unit},
+						fieldname: "warehouse"
+					},
+					callback:function(r) {
+						if(r && r.message){
+							frm.set_value("set_warehouse", r.message.warehouse);
+							frm.refresh_fields();
+						}
+					}
+				});
+			}
+			else{
+					frm.set_value("set_warehouse", '');
+					frm.set_value("set_cost_center", '');
+			}
+		}
+	},
+	set_cost_center: function(frm) {
+		if (frappe.boot.active_domains.includes("Healthcare")){
+			if(frm.doc.set_cost_center){
+				$.each(frm.doc.items || [], function(i, item) {
+					frappe.model.set_value("Delivery Note Item", item.name, "cost_center", frm.doc.set_cost_center);
+				});
+			}
+		}
 	}
 });
 
