@@ -287,6 +287,8 @@ def create_delivery_note(doc):
 		cost_center = frappe.db.get_value("Healthcare Service Unit", doc.service_unit, "cost_center")
 	if not cost_center:
 		cost_center = frappe.get_cached_value('Company',  doc.company,  'cost_center')
+	delivery_note.source_service_unit = doc.service_unit
+	delivery_note.set_cost_center = cost_center if cost_center else ''
 	for item in doc.items:
 		child = delivery_note.append('items')
 		item_details = sales_item_details_for_healthcare_doc(item.item_code, doc)
