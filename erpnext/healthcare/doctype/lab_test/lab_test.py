@@ -228,16 +228,19 @@ def create_compounds(template, lab_test, is_group):
 		normal.allow_blank = normal_test_template.allow_blank
 		normal.template = template.name
 
-def create_specials(template, lab_test):
+def create_specials(template, lab_test, is_group):
 	lab_test.special_toggle = "1"
 	if(template.sensitivity):
 		lab_test.sensitivity_toggle = "1"
+
 	for special_test_template in template.special_test_template:
 		special = lab_test.append("special_test_items")
 		special.lab_test_particulars = special_test_template.particulars
 		special.require_result_value = 1
 		special.allow_blank = special_test_template.allow_blank
 		special.template = template.name
+		if is_group:
+			special.lab_test_name = template.lab_test_name
 
 def create_sample_doc(template, patient, invoice):
 	if(template.sample):
@@ -285,7 +288,7 @@ def load_result_format(lab_test, template, prescription, invoice):
 	elif(template.lab_test_template_type == 'Compound'):
 		create_compounds(template, lab_test, False)
 	elif(template.lab_test_template_type == 'Descriptive'):
-		create_specials(template, lab_test)
+		create_specials(template, lab_test, False)
 	elif(template.lab_test_template_type == 'Grouped'):
 		#iterate for each template in the group and create one result for all.
 		for lab_test_group in template.lab_test_groups:
@@ -303,11 +306,7 @@ def load_result_format(lab_test, template, prescription, invoice):
 						normal_heading.template = template_in_group.name
 						create_compounds(template_in_group, lab_test, True)
 					elif(template_in_group.lab_test_template_type == 'Descriptive'):
-						special_heading = lab_test.append("special_test_items")
-						special_heading.lab_test_name = template_in_group.lab_test_name
-						special_heading.require_result_value = 0
-						special_heading.template = template_in_group.name
-						create_specials(template_in_group, lab_test)
+						create_specials(template_in_group, lab_test, True)
 			else:
 				normal = lab_test.append("normal_test_items")
 				normal.lab_test_name = lab_test_group.group_event
