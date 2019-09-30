@@ -9,9 +9,6 @@ frappe.ui.form.on("Lab Test Template",{
 			frm.set_value("lab_test_description", frm.doc.lab_test_name);
 	},
 	refresh :  function(frm){
-		if(!frm.doc.__islocal) {
-			frm.set_df_property("abbr", "read_only", 1);
-		}
 		// Restrict Special, Grouped type templates in Child TestGroups
 		frm.set_query("lab_test_template", "lab_test_groups", function() {
 			return {
@@ -20,43 +17,7 @@ frappe.ui.form.on("Lab Test Template",{
 				}
 			};
 		});
-	},
-	change_abbr : function(frm) {
-		var dialog = new frappe.ui.Dialog({
-			title: "Replace Abbr",
-			fields: [
-				{"fieldtype": "Data", "label": "New Abbreviation", "fieldname": "new_abbr",
-					"reqd": 1 },
-				{"fieldtype": "Button", "label": "Update", "fieldname": "update"},
-			]
-		});
-
-		dialog.fields_dict.update.$input.click(function() {
-			var args = dialog.get_values();
-			if(!args) return;
-			frappe.show_alert(__("Update in progress. It might take a while."));
-			return frappe.call({
-				method: "erpnext.healthcare.doctype.lab_test_template.lab_test_template.replace_abbr",
-				args: {
-					"name": frm.doc.name,
-					"old": frm.doc.abbr,
-					"new": args.new_abbr
-				},
-				callback: function(r) {
-					if(r.exc) {
-						frappe.msgprint(__("There were errors."));
-						return;
-					} else {
-						frm.set_value("abbr", args.new_abbr);
-					}
-					dialog.hide();
-					frm.refresh();
-				},
-				btn: this
-			})
-		});
-		dialog.show();
-	},
+	}
 });
 
 cur_frm.cscript.custom_refresh = function(doc) {

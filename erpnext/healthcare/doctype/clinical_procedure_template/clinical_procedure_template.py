@@ -128,12 +128,3 @@ def disable_enable_template(status, name, item_code):
 			frappe.db.set_value("Item", item_code, "disabled", status)
 
 	return
-@frappe.whitelist()
-def replace_abbr(name, old, new):
-	new = new.strip()
-	if not new:
-		frappe.throw(_("Abbr can not be blank or space"))
-
-	frappe.only_for("System Manager")
-
-	frappe.db.set_value("Clinical Procedure Template", name, "abbr", new)

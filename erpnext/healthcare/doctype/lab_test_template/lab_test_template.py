@@ -127,16 +127,6 @@ def disable_enable_test_template(status, name,  is_billable):
 	frappe.db.set_value("Lab Test Template",name,"disabled",status)
 	if(is_billable == 1):
 		frappe.db.set_value("Item",name,"disabled",status)
-@frappe.whitelist()
-def replace_abbr(name, old, new):
-	new = new.strip()
-	if not new:
-		frappe.throw(_("Abbr can not be blank or space"))
-
-	frappe.only_for("System Manager")
-
-	frappe.db.set_value("Lab Test Template", name, "abbr", new)
-
 
 def conversion_factor_validation(self):
 	if self.lab_test_template_type == "Single" and self.secondary_uom and not self.conversion_factor:
