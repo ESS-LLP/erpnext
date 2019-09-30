@@ -29,6 +29,7 @@ frappe.ui.form.on('Clinical Procedure Template', {
 		frm.fields_dict["items"].grid.set_column_disp("batch_no", false);
 		cur_frm.set_df_property("item_code", "read_only", frm.doc.__islocal ? 0 : 1);
 		if(!frm.doc.__islocal) {
+			frm.set_df_property("abbr", "read_only", 1);
 			cur_frm.add_custom_button(__('Change Item Code'), function() {
 				change_template_code(frm.doc);
 			} );
@@ -67,7 +68,43 @@ frappe.ui.form.on('Clinical Procedure Template', {
 				}
 			});
 		}
-	}
+	},
+	change_abbr : function(frm) {
+		var dialog = new frappe.ui.Dialog({
+			title: "Replace Abbr",
+			fields: [
+				{"fieldtype": "Data", "label": "New Abbreviation", "fieldname": "new_abbr",
+					"reqd": 1 },
+				{"fieldtype": "Button", "label": "Update", "fieldname": "update"},
+			]
+		});
+
+		dialog.fields_dict.update.$input.click(function() {
+			var args = dialog.get_values();
+			if(!args) return;
+			frappe.show_alert(__("Update in progress. It might take a while."));
+			return frappe.call({
+				method: "erpnext.healthcare.doctype.clinical_procedure_template.clinical_procedure_template.replace_abbr",
+				args: {
+					"name": frm.doc.name,
+					"old": frm.doc.abbr,
+					"new": args.new_abbr
+				},
+				callback: function(r) {
+					if(r.exc) {
+						frappe.msgprint(__("There were errors."));
+						return;
+					} else {
+						frm.set_value("abbr", args.new_abbr);
+					}
+					dialog.hide();
+					frm.refresh();
+				},
+				btn: this
+			})
+		});
+		dialog.show();
+	},
 });
 
 var mark_change_in_item = function(frm) {

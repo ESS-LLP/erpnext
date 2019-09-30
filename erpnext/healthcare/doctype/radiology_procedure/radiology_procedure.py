@@ -16,3 +16,12 @@ class RadiologyProcedure(Document):
 
 	def on_trash(self):
 		on_trash_doc_having_item_reference(self)
+@frappe.whitelist()
+def replace_abbr(name, old, new):
+	new = new.strip()
+	if not new:
+		frappe.throw(_("Abbr can not be blank or space"))
+
+	frappe.only_for("System Manager")
+
+	frappe.db.set_value("Radiology Procedure", name, "abbr", new)
