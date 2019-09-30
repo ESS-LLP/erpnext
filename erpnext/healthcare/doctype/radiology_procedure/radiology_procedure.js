@@ -5,6 +5,13 @@
 frappe.ui.form.on('Radiology Procedure', {
 	refresh: function(frm) {
 		item_action_buttons(frm);
+		frm.set_query("medical_department", function() {
+			return {
+				filters: {
+					'is_diagnostic_speciality': true
+				}
+			};
+		});
 	},
 	procedure_name: function(frm) {
 		if(!frm.doc.item_code)

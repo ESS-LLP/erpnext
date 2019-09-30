@@ -81,6 +81,11 @@ frappe.ui.form.on('Radiology Examination', {
 			frm.set_df_property("source", "read_only", 0);
 		}
 	},
+	onload: function (frm) {
+		if(frm.is_new()) {
+			frm.add_fetch("radiology_procedure", "medical_department", "medical_department");
+		}
+	},
 	inpatient_record:function(frm) {
 		if(frm.doc.inpatient_record){
 			frappe.call({

@@ -144,6 +144,13 @@ frappe.ui.form.on('Clinical Procedure', {
 				}
 			};
 		});
+		frm.set_query("medical_department", function() {
+			return {
+				filters: {
+					'is_diagnostic_speciality': true
+				}
+			};
+		});
 		if(frm.doc.__islocal){
 			frm.add_custom_button(__('Patient Encounter'), function () {
 				get_procedure_prescribed(frm);

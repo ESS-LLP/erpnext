@@ -17,6 +17,13 @@ frappe.ui.form.on("Lab Test Template",{
 				}
 			};
 		});
+		frm.set_query("department", function() {
+			return {
+				filters: {
+					'is_diagnostic_speciality': true
+				}
+			};
+		});
 	}
 });
 

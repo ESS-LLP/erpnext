@@ -43,6 +43,13 @@ frappe.ui.form.on('Clinical Procedure Template', {
 				} );
 			}
 		}
+		frm.set_query("medical_department", function() {
+			return {
+				filters: {
+					'is_diagnostic_speciality': true
+				}
+			};
+		});
 	},
 	clinical_procedure_check_list_template: function(frm) {
 		if(frm.doc.clinical_procedure_check_list_template){

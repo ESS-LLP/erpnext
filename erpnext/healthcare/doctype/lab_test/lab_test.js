@@ -142,9 +142,18 @@ frappe.ui.form.on('Lab Test', {
 		if(frm.doc.normal_test_items && !frm.doc.__islocal){
 			lab_test_html_tables(frm);
 		}
+		frm.set_query("department", function() {
+			return {
+				filters: {
+					'is_diagnostic_speciality': true
+				}
+			};
+		});
 	},
 	onload: function (frm) {
 		frm.add_fetch("practitioner", "department", "department");
+		if(frm.is_new()) {
+			frm.add_fetch("template", "department", "department");
 		if(frm.doc.employee){
 			frappe.call({
 				method: "frappe.client.get",
