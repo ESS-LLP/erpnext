@@ -24,12 +24,18 @@ frappe.ui.form.on('Patient Encounter', {
 		if(frm.doc.source=="Direct"){
 			frm.set_value("referring_practitioner", "");
 			frm.set_df_property("referring_practitioner", "hidden", 1);
-		}else if(frm.doc.source=="Referral"){
+		}
+		else if(frm.doc.source=="External Referral" || frm.doc.source=="Referral") {
 			if(!frm.doc.referring_practitioner){
 				if(frm.doc.practitioner){
 					frm.set_value("referring_practitioner", frm.doc.practitioner);
 					frm.set_df_property("referring_practitioner", "hidden", 0);
-					frm.set_df_property("referring_practitioner", "read_only", 1);
+					if(frm.doc.source=="External Referral"){
+						frm.set_df_property("referring_practitioner", "read_only", 0);
+					}
+					else{
+						frm.set_df_property("referring_practitioner", "read_only", 1);
+					}
 					frm.set_df_property("referring_practitioner", "reqd", 1);
 				}
 				else{
@@ -39,20 +45,13 @@ frappe.ui.form.on('Patient Encounter', {
 				}
 			}
 			else{
-				frm.set_df_property("source", "read_only", 1);
 				frm.set_df_property("referring_practitioner", "hidden", 0);
-				frm.set_df_property("referring_practitioner", "read_only", 1);
-				frm.set_df_property("referring_practitioner", "reqd", 1);
-			}
-		}else if(frm.doc.source=="External Referral"){
-			if(!frm.doc.referring_practitioner){
-				frm.set_df_property("referring_practitioner", "read_only", 0);
-				frm.set_df_property("referring_practitioner", "hidden", 0);
-				frm.set_df_property("referring_practitioner", "reqd", 1);
-			}
-			else{
-				frm.set_df_property("referring_practitioner", "read_only", 1);
-				frm.set_df_property("referring_practitioner", "hidden", 0);
+				if(frm.doc.source=="External Referral"){
+					frm.set_df_property("referring_practitioner", "read_only", 0);
+				}
+				else{
+					frm.set_df_property("referring_practitioner", "read_only", 1);
+				}
 				frm.set_df_property("referring_practitioner", "reqd", 1);
 			}
 		}
@@ -100,13 +99,18 @@ frappe.ui.form.on('Patient Encounter', {
 		if(frm.doc.source=="Direct"){
 			frm.set_value("referring_practitioner", "");
 			frm.set_df_property("referring_practitioner", "hidden", 1);
-			frm.set_df_property("referring_practitioner", "reqd", 0);
-		}else if(frm.doc.source=="Referral"){
+		}
+		else if(frm.doc.source=="External Referral" || frm.doc.source=="Referral") {
 			if(!frm.doc.referring_practitioner){
 				if(frm.doc.practitioner){
 					frm.set_value("referring_practitioner", frm.doc.practitioner);
 					frm.set_df_property("referring_practitioner", "hidden", 0);
-					frm.set_df_property("referring_practitioner", "read_only", 1);
+					if(frm.doc.source=="External Referral"){
+						frm.set_df_property("referring_practitioner", "read_only", 0);
+					}
+					else{
+						frm.set_df_property("referring_practitioner", "read_only", 1);
+					}
 					frm.set_df_property("referring_practitioner", "reqd", 1);
 				}
 				else{
@@ -116,20 +120,13 @@ frappe.ui.form.on('Patient Encounter', {
 				}
 			}
 			else{
-				frm.set_df_property("source", "read_only", 1);
 				frm.set_df_property("referring_practitioner", "hidden", 0);
-				frm.set_df_property("referring_practitioner", "read_only", 1);
-				frm.set_df_property("referring_practitioner", "reqd", 1);
-			}
-		}else if(frm.doc.source=="External Referral"){
-			if(!frm.doc.referring_practitioner){
-				frm.set_df_property("referring_practitioner", "read_only", 0);
-				frm.set_df_property("referring_practitioner", "hidden", 0);
-				frm.set_df_property("referring_practitioner", "reqd", 1);
-			}
-			else{
-				frm.set_df_property("referring_practitioner", "read_only", 1);
-				frm.set_df_property("referring_practitioner", "hidden", 0);
+				if(frm.doc.source=="External Referral"){
+					frm.set_df_property("referring_practitioner", "read_only", 0);
+				}
+				else{
+					frm.set_df_property("referring_practitioner", "read_only", 1);
+				}
 				frm.set_df_property("referring_practitioner", "reqd", 1);
 			}
 		}
