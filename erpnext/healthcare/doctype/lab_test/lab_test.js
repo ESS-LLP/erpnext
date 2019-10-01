@@ -151,9 +151,10 @@ frappe.ui.form.on('Lab Test', {
 		});
 	},
 	onload: function (frm) {
-		frm.add_fetch("practitioner", "department", "department");
+		 frm.add_fetch("practitioner", "department", "department");
 		if(frm.is_new()) {
 			frm.add_fetch("template", "department", "department");
+		}
 		if(frm.doc.employee){
 			frappe.call({
 				method: "frappe.client.get",

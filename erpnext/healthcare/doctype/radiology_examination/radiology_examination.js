@@ -192,6 +192,13 @@ frappe.ui.form.on('Radiology Examination', {
 				}
 			};
 		});
+		frm.set_query("medical_department", function() {
+			return {
+				filters: {
+					'is_diagnostic_speciality': true
+				}
+			};
+		});
 	}
 });
 var get_radiology_procedure_prescribed = function(frm){
