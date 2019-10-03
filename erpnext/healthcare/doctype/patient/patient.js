@@ -30,6 +30,13 @@ frappe.ui.form.on('Patient', {
 				btn_invoice_registration(frm);
 			});
 		}
+		if(!frm.doc.__islocal && frm.doc.inpatient_record){
+			frm.add_custom_button(__("IP Record"), function(){
+				if(frm.doc.inpatient_record){
+					frappe.set_route("Form", "Inpatient Record", frm.doc.inpatient_record);
+				}
+			});
+		}
 		if (frm.doc.patient_name && frappe.user.has_role("Physician")) {
 			frm.add_custom_button(__('Patient History'), function () {
 				frappe.route_options = { "patient": frm.doc.name };
