@@ -908,7 +908,7 @@ var get_healthcare_services_to_invoice = function(frm) {
 			selected_patient = patient;
 			var method = "erpnext.healthcare.utils.get_healthcare_services_to_invoice";
 			var args = {patient: patient};
-			var columns = (["service", "reference_name", "reference_type"]);
+			var columns = (["service","item_name", "reference_name", "reference_type"]);
 			get_healthcare_items(frm, true, $results, $placeholder, method, args, columns);
 		}
 		else if(!patient){
@@ -1106,7 +1106,7 @@ var get_drugs_to_invoice = function(frm) {
 			selected_encounter = encounter;
 			var method = "erpnext.healthcare.utils.get_drugs_to_invoice";
 			var args = {encounter: encounter};
-			var columns = (["drug_code", "quantity", "description"]);
+			var columns = (["drug_code","item_name", "quantity", "description"]);
 			get_healthcare_items(frm, false, $results, $placeholder, method, args, columns);
 		}
 		else if(!encounter){
