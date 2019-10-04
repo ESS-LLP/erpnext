@@ -18,6 +18,7 @@ def setup_healthcare():
 	add_healthcare_service_unit_tree_root()
 
 def create_medical_departments():
+	add_medical_department_tree_root()
 	departments = [
 		"Accident And Emergency Care" ,"Anaesthetics", "Biochemistry", "Cardiology", "Dermatology",
 		"Diagnostic Imaging", "ENT", "Gastroenterology", "General Surgery", "Gynaecology",
@@ -25,10 +26,12 @@ def create_medical_departments():
 		"Orthopaedics", "Pathology", "Physiotherapy", "Rheumatology", "Serology", "Urology"
 	]
 	for department in departments:
-		mediacal_department = frappe.new_doc("Medical Department")
-		mediacal_department.department = _(department)
+		medical_department = frappe.new_doc("Medical Department")
+		medical_department.medical_department_name = _(department)
+		medical_department.parent_medical_department = _("All Medical Departments")
+		medical_department.is_group = False
 		try:
-			mediacal_department.save()
+			medical_department.save(ignore_permissions = True)
 		except frappe.DuplicateEntryError:
 			pass
 
@@ -200,5 +203,15 @@ def add_healthcare_service_unit_tree_root():
 	  "healthcare_service_unit_name": "All Healthcare Service Units",
 	  "is_group": 1
 	 }
+	]
+	insert_record(record)
+
+def add_medical_department_tree_root():
+	record = [
+		{
+			"doctype": "Medical Department",
+			"medical_department_name": "All Medical Departments",
+			"is_group": 1
+		}
 	]
 	insert_record(record)
