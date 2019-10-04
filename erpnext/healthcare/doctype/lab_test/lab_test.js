@@ -3,6 +3,7 @@
 
 cur_frm.cscript.custom_refresh = function(doc) {
 	cur_frm.toggle_display("sb_sensitivity", doc.sensitivity_toggle=="1");
+	cur_frm.toggle_display("organisms_section", doc.sensitivity_toggle=="1");
 	cur_frm.toggle_display("sb_special", doc.special_toggle=="1");
 	cur_frm.toggle_display("sb_normal", doc.normal_toggle=="1");
 };
