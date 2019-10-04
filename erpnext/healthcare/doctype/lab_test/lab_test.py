@@ -280,6 +280,7 @@ def create_sample_collection(lab_test, template, patient, invoice):
 		sample_collection = create_sample_doc(template, patient, invoice)
 		if(sample_collection):
 			lab_test.sample = sample_collection.name
+			lab_test.sample_collection_details = template.sample_collection_details
 	return lab_test
 
 def load_result_format(lab_test, template, prescription, invoice):

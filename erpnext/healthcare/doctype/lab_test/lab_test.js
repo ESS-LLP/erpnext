@@ -107,6 +107,12 @@ frappe.ui.form.on('Lab Test', {
 				get_lab_test_prescribed(frm);
 			});
 		}
+		else if(frm.doc.sample_collection_details && frm.doc.docstatus==0){
+			frm.add_custom_button(__('Print Instructions'), function () {
+				frm.meta.default_print_format = "Sample Collection Instructions";
+				frm.print_doc();
+			});
+		}
 		if(frm.doc.docstatus==1	&&	frm.doc.status!='Approved'	&&	frm.doc.status!='Rejected'	&&	frappe.defaults.get_default("require_test_result_approval")	&&	frappe.user.has_role("LabTest Approver")){
 			frm.add_custom_button(__('Approve'), function() {
 				status_update(1,frm);

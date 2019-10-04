@@ -1,0 +1,23 @@
+{
+ "align_labels_right": 0,
+ "creation": "2019-10-04 18:51:11.610090",
+ "custom_format": 1,
+ "default_print_language": "en",
+ "disabled": 0,
+ "doc_type": "Lab Test",
+ "docstatus": 0,
+ "doctype": "Print Format",
+ "font": "Default",
+ "html": "<div >\n  {% if letter_head and not no_letterhead -%}\n    <div class=\"letter-head\">{{ letter_head }}</div>\n    <hr>\n  {%- endif %}\n  <div class=\"row section-break\">\n    <div class=\"col-xs-6 column-break\">\n\n      <div class=\"row\">\n        <div class=\"col-xs-4 text-left\">\n          <label>Patient</label>\n        </div>\n        {% if doc.patient_name %}\n        <div class=\"col-xs-7  value\">\n          <strong>: </strong>{{doc.patient_name}}\n        </div>\n        {% else %}\n        <div class=\"col-xs-7  value\">\n          <strong>: </strong><em>Patient Name</em>\n        </div>\n        {%- endif -%}\n      </div>\n\n      <div class=\"row\">\n        <div class=\"col-xs-4 text-left\">\n          <label>Age</label>\n        </div>\n        <div class=\"col-xs-7  value\">\n          <strong>: </strong> {{doc.patient_age}}\n        </div>\n      </div>\n\n      <div class=\"row\">\n        <div class=\"col-xs-4 text-left\">\n          <label>Gender</label>\n        </div>\n        <div class=\"col-xs-7  value\">\n          <strong>: </strong> {{doc.patient_sex}}\n        </div>\n      </div>\n\n    </div>\n\n    <div class=\"col-xs-6 column-break\">\n\n      <div class=\"row\">\n        <div class=\"col-xs-4 text-left\">\n          <label>Practitioner</label>\n        </div>\n        {% if doc.practitioner_name %}\n        <div class=\"col-xs-7  text-left value\">\n          <strong>: </strong>{{doc.practitioner_name}}\n        </div>\n\t\t\t\t{% else %}\n\t\t\t\t{% if doc.referring_practitioner_name %}\n        <div class=\"col-xs-7  text-left value\">\n          <strong>: </strong>{{doc.referring_practitioner_name}}\n        </div>\n\t\t\t\t{% endif %}\n        {%- endif -%}\n      </div>\n\n\t\t\t{% if doc.sample %}\n      <div class=\"row\">\n        <div class=\"col-xs-4 text-left\">\n          <label>Sample ID</label>\n        </div>\n        <div class=\"col-xs-7 text-left value\">\n          <strong>: </strong>{{doc.sample}}\n        </div>\n      </div>\n      {%- endif -%}\n\n      {% if doc.sample_date %}\n      <div class=\"row\">\n        <div class=\"col-xs-4 text-left\">\n          <label>Sample Date</label>\n        </div>\n        <div class=\"col-xs-7 text-left value\">\n          <strong>: </strong>{{doc.sample_date}}\n        </div>\n      </div>\n      {%- endif -%}\n    </div>\n  </div>\n\t<div align=\"center\">\n    <hr><h4 class=\"text-uppercase\"><b><u>Sample Collection Instructions</u></b></h4>\n  </div>\n\t<div>\n\t\t{% if doc.sample_collection_details %}\n\t\t<div> &nbsp;{{doc.sample_collection_details}} </div>\n\t\t{%- endif -%}\n\t</div>\n\n</div>\n",
+ "idx": 0,
+ "line_breaks": 0,
+ "modified": "2019-10-04 18:52:57.311613",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Sample Collection Instructions",
+ "owner": "Administrator",
+ "print_format_builder": 0,
+ "print_format_type": "Server",
+ "show_section_headings": 0,
+ "standard": "Yes"
+}
