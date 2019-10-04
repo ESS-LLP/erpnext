@@ -460,6 +460,10 @@ var lab_test_html_tables = function(frm) {
 	<th><b> Normal Range </b></th>
 	<th><b> Comment </b></th>`;
 
+	if (frm.doc.docstatus!=1){
+		lab_test_table_html += `<th><b> Result Format </b></th>`;
+	}
+
   frm.doc.normal_test_items.forEach(function(val, i){
 		var i = i+1
 		lab_test_table_html += `<tr style="text-align: center;"><td height="20">`
@@ -493,7 +497,7 @@ var lab_test_html_tables = function(frm) {
 		else{
 			lab_test_table_html += `<td style="width: 18%" class="${val.name}" contenteditable = 'false'>` + (val.result_value ? val.result_value : '') + "</td>";
 		}
-		lab_test_table_html +=`<td style="width: 12%">` + (val.lab_test_uom ? val.lab_test_uom : '') + "</td>";
+		lab_test_table_html +=`<td style="width: 8%">` + (val.lab_test_uom ? val.lab_test_uom : '') + "</td>";
 		if (val.docstatus!=1){
 			lab_test_table_html += `<td style="width: 14% word-wrap: break-all" class="${val.name+'_normal'}"  contenteditable = 'true' onclick="make_dirty()">` + (val.normal_range? val.normal_range : '') + "</td>";
 		}
@@ -505,6 +509,13 @@ var lab_test_html_tables = function(frm) {
 		}
 		else {
 			lab_test_table_html += `<td style="width: 20% word-wrap: break-all" class="${val.name+'_comment'}"  contenteditable = 'false'>` + (val.lab_test_comment? val.lab_test_comment : '') + "</td>";
+		}
+		if (val.docstatus!=1){
+			lab_test_table_html += `<td align="center">
+				<div><input type="checkbox" name="bold" id="${val.name+'_bold'}" onclick="make_dirty()" ${val.bold? 'checked' : ''}/><b>Bold</b></div>
+				<div><input type="checkbox" name="italic" id="${val.name+'_italic'}" onclick="make_dirty()" ${val.italic? 'checked' : ''}/><i>Italic</i></div>
+				<div><input type="checkbox" name="underline" id="${val.name+'_underline'}" onclick="make_dirty()" ${val.underline? 'checked' : ''}/><u>Underline</u></div>
+			</td>`;
 		}
 		lab_test_table_html += `</tr>`;
 	});
@@ -534,6 +545,11 @@ var get_input_data = function(frm){
 			frappe.model.set_value(val.doctype, val.name, 'result_value', result);
 			frappe.model.set_value(val.doctype, val.name, 'lab_test_comment', comment);
 			frappe.model.set_value(val.doctype, val.name, 'normal_range', normal_range);
+			if (val.docstatus!=1){
+				frappe.model.set_value(val.doctype, val.name, 'bold', document.getElementById(val.name+'_bold').checked);
+				frappe.model.set_value(val.doctype, val.name, 'italic', document.getElementById(val.name+'_italic').checked);
+				frappe.model.set_value(val.doctype, val.name, 'underline', document.getElementById(val.name+'_underline').checked);
+			}
 		});
 	}
 	frm.refresh_fields();
