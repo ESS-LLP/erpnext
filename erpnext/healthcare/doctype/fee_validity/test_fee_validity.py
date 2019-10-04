@@ -26,9 +26,13 @@ class TestFeeValidity(unittest.TestCase):
 			patient = patient.name
 
 		if not department:
+			from erpnext.healthcare.setup import add_medical_department_tree_root
+			add_medical_department_tree_root()
 			medical_department = frappe.new_doc("Medical Department")
-			medical_department.department = "_Test Medical Department"
-			medical_department.save(ignore_permissions=True)
+			medical_department.medical_department_name = "_Test Medical Department"
+			medical_department.parent_medical_department = _("All Medical Departments")
+			medical_department.is_group = False
+			medical_department.save(ignore_permissions = True)
 			department = medical_department.name
 
 		if not practitioner:
