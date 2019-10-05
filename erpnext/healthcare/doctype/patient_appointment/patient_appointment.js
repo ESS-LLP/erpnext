@@ -170,7 +170,7 @@ frappe.ui.form.on('Patient Appointment', {
 				frm.set_df_property("paid_amount", "reqd", 0);
 			}
 		});
-		if(!frm.doc.__islocal && frappe.user.has_role("Accounts User") && frm.doc.status != "Cancelled"){
+		if(!frm.doc.__islocal && frm.doc.status != "Cancelled" && (frappe.user.has_role("Accounts User") || frappe.model.can_write("Sales Invoice"))){
 			frm.add_custom_button(__('Sales Invoice'), function(){
 				btn_create_invoice(frm);
 			},"Create");
