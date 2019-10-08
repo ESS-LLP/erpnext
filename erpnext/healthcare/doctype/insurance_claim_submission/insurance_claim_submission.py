@@ -104,7 +104,7 @@ def get_claim_submission_item(insurance_company, from_date=False, to_date=False)
 	if from_date:
 		query += """ and dn.created_on >=%(from_date)s"""
 	if to_date:
-		query += """ and dn.created_on <%(to_date)s"""
+		query += """ and dn.created_on <=%(to_date)s"""
 	
 	return frappe.db.sql(query.format(insurance_company),{
 			'from_date': from_date, 'to_date':to_date
