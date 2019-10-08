@@ -89,10 +89,16 @@ frappe.ui.form.on('Patient Encounter', {
 						else{
 							frm.set_value("insurance", "");
 							frm.set_df_property("insurance", "read_only", 0);
+							frm.set_df_property("insurance_approval_number", "reqd", 1);
 						}
 					}
 				}
 			});
+		}
+	},
+	insurance: function(frm){
+		if(frm.doc.insurance && frm.doc.inpatient_record){
+			frm.set_df_property("insurance_approval_number", "reqd", 1);
 		}
 	},
 	source: function(frm){

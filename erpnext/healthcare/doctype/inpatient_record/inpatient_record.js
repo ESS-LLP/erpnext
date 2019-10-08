@@ -82,6 +82,11 @@ frappe.ui.form.on('Inpatient Record', {
 			}
 		}
 	},
+	insurance: function(frm){
+		if(frm.doc.insurance){
+			frm.set_df_property("insurance_approval_number", "reqd", 1);
+		}
+	},
 	refresh: function(frm) {
 		if(frm.doc.__islocal ){
 			frm.set_df_property("ordering_practitioner", "read_only", 0);

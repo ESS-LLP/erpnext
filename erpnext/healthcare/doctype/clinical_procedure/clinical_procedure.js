@@ -55,6 +55,7 @@ frappe.ui.form.on('Clinical Procedure', {
 						if(r.message.insurance){
 							frm.set_value("insurance", data.message.insurance)
 							frm.set_df_property("insurance", "read_only", 1);
+							frm.set_df_property("insurance_approval_number", "reqd", 1);
 						}
 						else{
 							frm.set_value("insurance", "");
@@ -63,6 +64,11 @@ frappe.ui.form.on('Clinical Procedure', {
 					}
 				}
 			});
+		}
+	},
+	insurance: function(frm){
+		if(frm.doc.insurance && frm.doc.inpatient_record){
+			frm.set_df_property("insurance_approval_number", "reqd", 1);
 		}
 	},
 	source: function(frm){
