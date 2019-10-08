@@ -109,7 +109,6 @@ def get_claim_submission_item(insurance_company, from_date=False, to_date=False)
 	return frappe.db.sql(query.format(insurance_company),{
 			'from_date': from_date, 'to_date':to_date
 		}, as_dict=True)
-x
 @frappe.whitelist()
 def update_final_claim_details(claims,submission_date=None):
 	from six import string_types
