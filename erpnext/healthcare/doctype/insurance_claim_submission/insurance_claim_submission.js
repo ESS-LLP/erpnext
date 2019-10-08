@@ -127,7 +127,7 @@ var get_insurance_claim = function(frm){
 			args:args,
 			callback: function (data) {
 				data.message.forEach(function(row){
-					var item_fields = ['insurance_claim', 'sales_invoice' , 'patient', 'insurance_company', 'claim_amount', 'claim_status']
+					var item_fields = ['insurance_claim', 'sales_invoice' , 'patient', 'patient_name',  'insurance_company','insurance_company_name', 'claim_amount', 'claim_status', 'approval_number']
 					var child_item=frappe.model.add_child(frm.doc, "Insurance Claim Submission Item", "insurance_claim_submission_item")
 					$.each(item_fields, function(i, field) {
 						frappe.model.set_value(child_item.doctype, child_item.name, field, row[field]);

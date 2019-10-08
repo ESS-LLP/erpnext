@@ -926,8 +926,20 @@ def create_insurance_claim(insurance, amount, doc):
 	insurance_claim.created_on=nowdate()
 	insurance_claim.sales_invoice=doc.name
 	insurance_claim.claim_status="Claim Created"
+	insurance_claim.approval_number=get_insurance_approval_number(doc)
 	insurance_claim.save(ignore_permissions = True)
 	insurance_claim.submit()
+
+def get_insurance_approval_number(doc):
+	approval_number=False
+	for item in doc.items:
+		if item.insurance_approval_number:
+			if not approval_number:
+				approval_number = item.insurance_approval_number
+			else:
+				approval_number += ", " + item.insurance_approval_number
+	return approval_number if approval_number else ''
+
 @frappe.whitelist()
 def get_sales_invoice_for_healthcare_doc(doctype, docname):
 	sales_item_exist = exist_invoice_item_for_healthcare_doc(doctype, docname)

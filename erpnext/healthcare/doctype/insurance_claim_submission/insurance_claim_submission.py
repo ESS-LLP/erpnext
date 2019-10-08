@@ -95,7 +95,7 @@ class InsuranceClaimSubmission(Document):
 def get_claim_submission_item(insurance_company, from_date=False, to_date=False):
 	query = """
 		select
-			 dn.name as insurance_claim, dn.sales_invoice, dn.patient, dn.insurance_company, dn.claim_amount, dn.claim_status
+			 dn.name as insurance_claim, dn.sales_invoice, dn.patient, dn.patient_name, dn.insurance_company, dn.insurance_company_name , dn.claim_amount, dn.claim_status, dn.approval_number
 		from
 			`tabInsurance Claim` dn
 		where
