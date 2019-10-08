@@ -6,13 +6,8 @@ frappe.ui.form.on('Insurance Claim Submission', {
 		cur_frm.fields_dict["insurance_claim_submission_item"].grid.frm.$wrapper.find('.grid-add-row').hide();
 		if(frm.doc.docstatus==1 && !frm.doc.__islocal){
 			if(frm.doc.is_finished != 1){
-				frm.set_df_property("approval_number", "reqd", 1);
-				frm.set_df_property("approval_date", "reqd", 1);
 				frm.add_custom_button(__("Complete"), function() {
-					if(frm.doc.approval_number && frm.doc.approval_date)
-					{
-						frm.events.update_final_claim_details(frm);
-					}
+					frm.events.update_final_claim_details(frm);
 				});
 			}
 			else{

@@ -47,7 +47,7 @@ class InsuranceClaimSubmission(Document):
 
 	def complete(self):
 		if self.insurance_claim_submission_item:
-			update_final_claim_details(self.insurance_claim_submission_item,self.approval_number,self.approval_date)
+			update_final_claim_details(self.insurance_claim_submission_item,self.approval_date)
 		self.is_finished=1
 		self.save()
 
@@ -109,9 +109,9 @@ def get_claim_submission_item(insurance_company, from_date=False, to_date=False)
 	return frappe.db.sql(query.format(insurance_company),{
 			'from_date': from_date, 'to_date':to_date
 		}, as_dict=True)
-
+x
 @frappe.whitelist()
-def update_final_claim_details(claims,approval_number,approval_date):
+def update_final_claim_details(claims,submission_date=None):
 	from six import string_types
 	if isinstance(claims, string_types):
 		claims =  json.loads(claims)
@@ -122,8 +122,8 @@ def update_final_claim_details(claims,approval_number,approval_date):
 		insurance_claim.claim_status= claim.claim_status
 		if claim.approved_amount:
 			insurance_claim.approved_amount=claim.approved_amount
-		insurance_claim.approval_number=approval_number
-		insurance_claim.approval_date=approval_date
+		if submission_date:
+			insurance_claim.submission_date=submission_date
 		insurance_claim.save()
 	return True
 
