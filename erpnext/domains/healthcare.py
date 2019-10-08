@@ -45,7 +45,7 @@ data = {
 			},
 			{
 				'fieldname': 'total_insurance_claim_amount', 'label': 'Total Insurance Claim Amount', 'fieldtype': 'Currency',
-				'insert_after': 'total_advance', 'read_only':True
+				'insert_after': 'total', 'read_only':True
 			},
 			{
 				'fieldname': 'patient_payable_amount', 'label': 'Patient Payable Amount', 'fieldtype': 'Currency',
