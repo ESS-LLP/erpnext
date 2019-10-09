@@ -516,6 +516,8 @@ def create_encounter(appointment):
 		encounter.insurance=appointment.insurance
 	if appointment.insurance_approval_number:
 		encounter.insurance_approval_number=appointment.insurance_approval_number
+	if appointment.insurance_remarks:
+		encounter.insurance_remarks=appointment.insurance_remarks
 	return encounter.as_dict()
 
 

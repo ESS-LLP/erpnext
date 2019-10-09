@@ -532,6 +532,9 @@ frappe.ui.form.on("Patient Encounter", "appointment", function(frm){
 					frappe.model.set_value(frm.doctype, frm.docname, "insurance_approval_number", data.message.insurance_approval_number)
 					frm.set_df_property("insurance_approval_number", "read_only", 1);
 				}
+				if(data.message.insurance_remarks){
+				frm.set_value("insurance_remarks", data.message.insurance_remarks)
+				}
 			}
 		});
 	}
