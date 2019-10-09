@@ -47,7 +47,7 @@ class InsuranceClaimSubmission(Document):
 
 	def complete(self):
 		if self.insurance_claim_submission_item:
-			update_final_claim_details(self.insurance_claim_submission_item,self.approval_date)
+			update_final_claim_details(self.insurance_claim_submission_item,self.submission_date)
 		self.is_finished=1
 		self.save()
 
