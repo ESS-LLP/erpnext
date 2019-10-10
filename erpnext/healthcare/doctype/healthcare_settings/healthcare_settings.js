@@ -26,6 +26,22 @@ frappe.ui.form.on('Healthcare Settings', {
 		set_query_service_item(frm, 'inpatient_visit_charge_item');
 		set_query_service_item(frm, 'op_consulting_charge_item');
 		set_query_service_item(frm, 'clinical_procedure_consumable_item');
+		frappe.model.with_doctype("Journal Entry", function() {
+			let options = frappe.get_meta("Journal Entry").fields.filter(d => d.fieldname=='voucher_type')[0].options;
+			let default_value = frappe.get_meta("Journal Entry").fields.filter(d => d.fieldname=='voucher_type')[0].default;
+			if(!frm.doc.journal_entry_type){
+				frm.set_value("journal_entry_type", default_value);
+			}
+			frm.set_df_property("journal_entry_type", "options", options);
+		});
+		frappe.model.with_doctype("Journal Entry", function() {
+			let options = frappe.get_meta("Journal Entry").fields.filter(d => d.fieldname=='naming_series')[0].options;
+			let default_value = frappe.get_meta("Journal Entry").fields.filter(d => d.fieldname=='naming_series')[0].default;
+			if(!frm.doc.journal_entry_series){
+				frm.set_value("journal_entry_series", default_value);
+			}
+			frm.set_df_property("journal_entry_series", "options", options);
+		});
 	}
 });
 

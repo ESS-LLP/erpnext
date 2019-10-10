@@ -37,7 +37,12 @@ class InsuranceClaim(Document):
 			insurance_company = frappe.get_doc('Insurance Company', self.insurance_company)
 			from erpnext.accounts.party import get_party_account
 			journal_entry = frappe.new_doc('Journal Entry')
-			journal_entry.voucher_type = 'Journal Entry'
+			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_type"):
+				journal_entry.voucher_type =frappe.db.get_value("Healthcare Settings", None, "journal_entry_type")
+			else:
+				journal_entry.voucher_type = 'Journal Entry'
+			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_series"):
+				journal_entry.naming_series =frappe.db.get_value("Healthcare Settings", None, "journal_entry_series")
 			journal_entry.company = sales_invoice.company
 			journal_entry.posting_date =  nowdate()
 			accounts = []
@@ -67,7 +72,12 @@ class InsuranceClaim(Document):
 			insurance_company = frappe.get_doc('Insurance Company', self.insurance_company)
 			from erpnext.accounts.party import get_party_account
 			journal_entry = frappe.new_doc('Journal Entry')
-			journal_entry.voucher_type = 'Journal Entry'
+			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_type"):
+				journal_entry.voucher_type =frappe.db.get_value("Healthcare Settings", None, "journal_entry_type")
+			else:
+				journal_entry.voucher_type = 'Journal Entry'
+			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_series"):
+				journal_entry.naming_series =frappe.db.get_value("Healthcare Settings", None, "journal_entry_series")
 			journal_entry.company = insurance_company.company
 			journal_entry.posting_date =  nowdate()
 			accounts = []
@@ -95,7 +105,12 @@ class InsuranceClaim(Document):
 			insurance_company = frappe.get_doc('Insurance Company', self.insurance_company)
 			from erpnext.accounts.party import get_party_account
 			journal_entry = frappe.new_doc('Journal Entry')
-			journal_entry.voucher_type = 'Journal Entry'
+			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_type"):
+				journal_entry.voucher_type =frappe.db.get_value("Healthcare Settings", None, "journal_entry_type")
+			else:
+				journal_entry.voucher_type = 'Journal Entry'
+			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_series"):
+				journal_entry.naming_series =frappe.db.get_value("Healthcare Settings", None, "journal_entry_series")
 			journal_entry.company = insurance_company.company
 			journal_entry.posting_date =  nowdate()
 			accounts = []
@@ -122,7 +137,12 @@ class InsuranceClaim(Document):
 			insurance_company = frappe.get_doc('Insurance Company', self.insurance_company)
 			from erpnext.accounts.party import get_party_account
 			journal_entry = frappe.new_doc('Journal Entry')
-			journal_entry.voucher_type = 'Journal Entry'
+			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_type"):
+				journal_entry.voucher_type =frappe.db.get_value("Healthcare Settings", None, "journal_entry_type")
+			else:
+				journal_entry.voucher_type = 'Journal Entry'
+			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_series"):
+				journal_entry.naming_series =frappe.db.get_value("Healthcare Settings", None, "journal_entry_series")
 			journal_entry.company = insurance_company.company
 			journal_entry.posting_date =  nowdate()
 			accounts = []
