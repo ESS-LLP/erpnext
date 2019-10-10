@@ -58,6 +58,9 @@ frappe.ui.form.on('Insurance Assignment', {
 				},
 				callback: function (data) {
 					frm.set_value("coverage", data.message.coverage);
+					if(data.message.ip_coverage){
+						frm.set_value("ip_coverage", data.message.ip_coverage);
+					}
 					frm.refresh_fields()
 				}
 			});
