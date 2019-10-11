@@ -146,7 +146,8 @@ def set_invoice_details_for_appointment(appointment_doc, is_pos):
 		item_line.rate = practitioner_charge
 
 	if appointment_doc.insurance and item_line.item_code:
-		insurance_details = get_insurance_details(appointment_doc.insurance, item_line.item_code)
+		patient_doc= frappe.get_doc("Patient", appointment_doc.patient)
+		insurance_details = get_insurance_details(appointment_doc.insurance, item_line.item_code, patient_doc)
 		if insurance_details:
 			item_line.discount_percentage = insurance_details.discount
 			if insurance_details.rate and insurance_details.rate > 0:

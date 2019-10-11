@@ -415,7 +415,8 @@ def invoice_lab_test(lab_test):
 	item_line.rate = item_details.price_list_rate
 	if lab_test.insurance and item_line.item_code:
 		from erpnext.healthcare.utils import get_insurance_details
-		insurance_details = get_insurance_details(lab_test.insurance, item_line.item_code)
+		patient_doc= frappe.get_doc("Patient", lab_test.patient)
+		insurance_details = get_insurance_details(lab_test.insurance, item_line.item_code, patient_doc)
 		if insurance_details:
 			item_line.discount_percentage = insurance_details.discount
 			if insurance_details.rate and insurance_details.rate > 0:

@@ -436,7 +436,8 @@ def update_ip_occupancy_invoice(sales_invoice, inpatient_occupancy, service_unit
 	item_line.reference_dn = inpatient_occupancy.name
 	item_line.rate = item_details.price_list_rate
 	if ip.insurance and item_line.item_code:
-		insurance_details = get_insurance_details(ip.insurance, item_line.item_code)
+		patient_doc= frappe.get_doc("Patient", ip.patient)
+		insurance_details = get_insurance_details(ip.insurance, item_line.item_code, patient_doc)
 		if insurance_details:
 			item_line.discount_percentage = insurance_details.discount
 			if insurance_details.rate and insurance_details.rate > 0:
