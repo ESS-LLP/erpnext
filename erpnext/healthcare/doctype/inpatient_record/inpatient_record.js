@@ -138,6 +138,12 @@ frappe.ui.form.on('Inpatient Record', {
 				}
 			};
 		});
+		if(!frm.doc.__islocal && frm.doc.status == "Discharged"){
+			let db_btns = $('.form-dashboard-wrapper').find('.btn-new').find('.btn-new');
+			$.each(db_btns.prevObject, function(i, d) {
+				$(d).hide();
+			});
+		}
 		if (!frm.doc.__islocal && frm.doc.docstatus == 0) {
 			frm.add_custom_button(__("Payment"), function() {
 				frm.events.make_payment_entry(frm);
