@@ -922,14 +922,43 @@ def create_insurance_claim(insurance, amount, doc):
 	insurance_claim.patient=doc.patient
 	insurance_claim.insurance_company=insurance.insurance_company
 	insurance_claim.insurance_assignment=insurance.name
-	insurance_claim.claim_percentage=insurance.coverage
+	if doc.inpatient_record and insurance.ip_coverage:
+		insurance_claim.claim_percentage=insurance.ip_coverage
+		insurance_claim.claim_amount=amount*0.01*insurance.ip_coverage
+	else:
+		insurance_claim.claim_percentage=insurance.coverage
+		insurance_claim.claim_amount=amount*0.01*insurance.coverage
 	insurance_claim.bill_amount=amount
-	insurance_claim.claim_amount=amount*0.01*insurance.coverage
 	insurance_claim.created_by=frappe.session.user
 	insurance_claim.created_on=nowdate()
 	insurance_claim.sales_invoice=doc.name
 	insurance_claim.claim_status="Claim Created"
-	insurance_claim.approval_number=get_insurance_approval_number(doc)
+	insurance_claim_item=[]
+	for item in doc.items:
+		reference_doc = frappe.get_doc(item.reference_dt, item.reference_dn)
+		if reference_doc.insurance and reference_doc.insurance== insurance.name :
+			insurance_remarks=''
+			if frappe.db.has_column(item.reference_dt, 'insurance_remarks'):
+				insurance_remarks = reference_doc.insurance_remarks
+			insurance_claim_item.append({
+							"patient": doc.patient,
+							"insurance_company": insurance.insurance_company,
+							"insurance_assignment": insurance.name,
+							"sales_invoice": doc.name,
+							"date_of_service": doc.posting_date,
+							"item_code": item.item_code,
+							"item_name": item.item_name,
+							"discount_percentage": item.discount_percentage,
+							"discount_amount": item.discount_amount,
+							"rate": item.rate,
+							"amount": item.amount,
+							"insurance_claim_coverage": item.insurance_claim_coverage,
+							"insurance_claim_amount": item.insurance_claim_amount,
+							"claim_status":"Claim Created",
+							"insurance_approval_number": item.insurance_approval_number,
+							"insurance_remarks": insurance_remarks if insurance_remarks else '',
+						})
+	insurance_claim.set("insurance_claim_item", insurance_claim_item)
 	insurance_claim.save(ignore_permissions = True)
 	insurance_claim.submit()
 

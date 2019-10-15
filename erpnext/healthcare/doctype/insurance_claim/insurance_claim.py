@@ -23,13 +23,7 @@ class InsuranceClaim(Document):
 			jv_obj = frappe.get_doc("Journal Entry", jv)
 			jv_obj.cancel()
 	def on_update_after_submit(self):
-		if self.claim_status == "Claim Approved":
-			self.create_journal_entry_finished_submission()
-		elif self.claim_status == "Claim Rejected":
-			self.create_journal_entry_rejected_submission()
-		elif self.claim_status == "Partial":
-			self.create_journal_entry_partial_submission()
-
+		self.calculate_total_approved_rejected_amount()
 
 	def create_journal_entry_insurance_claim(self):
 			# create jv
@@ -66,113 +60,17 @@ class InsuranceClaim(Document):
 			journal_entry.submit()
 			frappe.db.set_value("Insurance Claim", self.name, "claim_created_jv", journal_entry.name)
 
-	def create_journal_entry_finished_submission(self):
-			# create jv
-			sales_invoice = frappe.get_doc('Sales Invoice', self.sales_invoice)
-			insurance_company = frappe.get_doc('Insurance Company', self.insurance_company)
-			from erpnext.accounts.party import get_party_account
-			journal_entry = frappe.new_doc('Journal Entry')
-			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_type"):
-				journal_entry.voucher_type =frappe.db.get_value("Healthcare Settings", None, "journal_entry_type")
-			else:
-				journal_entry.voucher_type = 'Journal Entry'
-			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_series"):
-				journal_entry.naming_series =frappe.db.get_value("Healthcare Settings", None, "journal_entry_series")
-			journal_entry.company = insurance_company.company
-			journal_entry.posting_date =  nowdate()
-			accounts = []
-			tax_amount = 0.0
-			accounts.append({
-				"account": insurance_company.submission_claim_receivable_account,
-				"credit_in_account_currency":float(self.approved_amount),
-				"party_type": "Customer",
-				"party": insurance_company.customer
-			})
-			accounts.append({
-				"account": get_party_account("Customer", insurance_company.customer, insurance_company.company),
-				"debit_in_account_currency": float(self.approved_amount),
-				"party_type": "Customer",
-				"party": insurance_company.customer
-			})
-			journal_entry.set("accounts", accounts)
-			journal_entry.save(ignore_permissions = True)
-			journal_entry.submit()
-			frappe.db.set_value("Insurance Claim", self.name, "claim_submitted_jv", journal_entry.name)
-
-	def create_journal_entry_rejected_submission(self):
-			# create jv
-			sales_invoice = frappe.get_doc('Sales Invoice', self.sales_invoice)
-			insurance_company = frappe.get_doc('Insurance Company', self.insurance_company)
-			from erpnext.accounts.party import get_party_account
-			journal_entry = frappe.new_doc('Journal Entry')
-			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_type"):
-				journal_entry.voucher_type =frappe.db.get_value("Healthcare Settings", None, "journal_entry_type")
-			else:
-				journal_entry.voucher_type = 'Journal Entry'
-			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_series"):
-				journal_entry.naming_series =frappe.db.get_value("Healthcare Settings", None, "journal_entry_series")
-			journal_entry.company = insurance_company.company
-			journal_entry.posting_date =  nowdate()
-			accounts = []
-			tax_amount = 0.0
-			accounts.append({
-				"account": insurance_company.submission_claim_receivable_account,
-				"credit_in_account_currency":float(self.claim_amount-self.approved_amount),
-				"party_type": "Customer",
-				"party": insurance_company.customer
-			})
-			accounts.append({
-				"account": insurance_company.insurance_rejected_expense_account,
-				"debit_in_account_currency": float(self.claim_amount-self.approved_amount),
-				"party_type": "Customer",
-				"party": insurance_company.customer
-			})
-			journal_entry.set("accounts", accounts)
-			journal_entry.save(ignore_permissions = True)
-			journal_entry.submit()
-			frappe.db.set_value("Insurance Claim", self.name, "claim_submitted_jv", journal_entry.name)
-	def create_journal_entry_partial_submission(self):
-			# create jv
-			sales_invoice = frappe.get_doc('Sales Invoice', self.sales_invoice)
-			insurance_company = frappe.get_doc('Insurance Company', self.insurance_company)
-			from erpnext.accounts.party import get_party_account
-			journal_entry = frappe.new_doc('Journal Entry')
-			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_type"):
-				journal_entry.voucher_type =frappe.db.get_value("Healthcare Settings", None, "journal_entry_type")
-			else:
-				journal_entry.voucher_type = 'Journal Entry'
-			if frappe.db.get_value("Healthcare Settings", None, "journal_entry_series"):
-				journal_entry.naming_series =frappe.db.get_value("Healthcare Settings", None, "journal_entry_series")
-			journal_entry.company = insurance_company.company
-			journal_entry.posting_date =  nowdate()
-			accounts = []
-			tax_amount = 0.0
-			accounts.append({
-				"account": insurance_company.submission_claim_receivable_account,
-				"credit_in_account_currency":float(self.approved_amount),
-				"party_type": "Customer",
-				"party": insurance_company.customer
-			})
-			accounts.append({
-				"account": get_party_account("Customer", insurance_company.customer, insurance_company.company),
-				"debit_in_account_currency": float(self.approved_amount),
-				"party_type": "Customer",
-				"party": insurance_company.customer
-			})
-			accounts.append({
-				"account": insurance_company.submission_claim_receivable_account,
-				"credit_in_account_currency":float(self.claim_amount-self.approved_amount),
-				"party_type": "Customer",
-				"party": insurance_company.customer
-			})
-			accounts.append({
-				"account": insurance_company.insurance_rejected_expense_account,
-				"debit_in_account_currency": float(self.claim_amount-self.approved_amount),
-				"party_type": "Customer",
-				"party": insurance_company.customer
-			})
-			journal_entry.set("accounts", accounts)
-			journal_entry.save(ignore_permissions = True)
-			journal_entry.submit()
-			frappe.db.set_value("Insurance Claim", self.name, "claim_submitted_jv", journal_entry.name)
+	def calculate_total_approved_rejected_amount(self):
+		total_approved_amount=0
+		total_rejected_amount=0
+		if self.insurance_claim_item:
+			for claim_item in self.insurance_claim_item:
+				if claim_item.approved_amount:
+					total_approved_amount=total_approved_amount+claim_item.approved_amount
+				if claim_item.rejected_amount:
+					total_rejected_amount=total_rejected_amount+claim_item.rejected_amount
+			if total_approved_amount:
+				frappe.db.set_value("Insurance Claim", self.name, "approved_amount", total_approved_amount)
+			if total_rejected_amount:
+				frappe.db.set_value("Insurance Claim", self.name, "rejected_amount", total_rejected_amount)
 
