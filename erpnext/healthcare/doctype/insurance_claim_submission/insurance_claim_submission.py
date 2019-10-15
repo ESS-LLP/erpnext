@@ -47,7 +47,8 @@ class InsuranceClaimSubmission(Document):
 
 	def complete(self):
 		if self.insurance_claim_submission_item:
-			update_final_claim_details(self)
+			self.update_final_claim_details()
+		self.create_journal_entry_final_submission()
 		self.is_finished=1
 		self.save()
 
@@ -83,6 +84,44 @@ class InsuranceClaimSubmission(Document):
 		journal_entry.submit()
 		frappe.db.set_value("Insurance Claim Submission", self.name, "claim_submission_jv", journal_entry.name)
 
+	def create_journal_entry_final_submission(self):
+		# create jv
+		insurance_company = frappe.get_doc('Insurance Company', self.insurance_company)
+		from erpnext.accounts.party import get_party_account
+		journal_entry = frappe.new_doc('Journal Entry')
+		if frappe.db.get_value("Healthcare Settings", None, "journal_entry_type"):
+			journal_entry.voucher_type =frappe.db.get_value("Healthcare Settings", None, "journal_entry_type")
+		else:
+			journal_entry.voucher_type = 'Journal Entry'
+		if frappe.db.get_value("Healthcare Settings", None, "journal_entry_series"):
+			journal_entry.naming_series =frappe.db.get_value("Healthcare Settings", None, "journal_entry_series")
+		journal_entry.company = insurance_company.company
+		journal_entry.posting_date =  nowdate()
+		accounts = []
+		tax_amount = 0.0
+		accounts.append({
+			"account": insurance_company.submission_claim_receivable_account,
+			"credit_in_account_currency":float(self.total_claim_amount),
+			"party_type": "Customer",
+			"party": insurance_company.customer
+		})
+		accounts.append({
+			"account": get_party_account("Customer", insurance_company.customer, insurance_company.company),
+			"debit_in_account_currency": float(self.total_approved_amount),
+			"party_type": "Customer",
+			"party": insurance_company.customer
+		})
+		accounts.append({
+			"account": insurance_company.insurance_rejected_expense_account,
+			"debit_in_account_currency": float(self.total_rejected_amount),
+			"party_type": "Customer",
+			"party": insurance_company.customer
+		})
+		journal_entry.set("accounts", accounts)
+		journal_entry.save(ignore_permissions = True)
+		journal_entry.submit()
+		self.claim_approved_jv=journal_entry.name
+
 	def create_payment_entry(self):
 		insurance_company = frappe.get_doc('Insurance Company', self.insurance_company)
 		payment_entry = frappe.new_doc('Payment Entry')
@@ -96,6 +135,25 @@ class InsuranceClaimSubmission(Document):
 		payment_entry.setup_party_account_field()
 		payment_entry.set_missing_values()
 		return payment_entry.as_dict()
+	def update_final_claim_details(doc):
+		submittted_claim=[]
+		from six import string_types
+		if isinstance(doc, string_types):
+			doc =  json.loads(doc)
+		for claim in doc.insurance_claim_submission_item:
+			if isinstance(claim, dict):
+				claim = frappe._dict(claim)
+			frappe.db.set_value("Insurance Claim Item", claim.insurance_claim_item, "claim_status", claim.claim_status)
+			frappe.db.set_value("Insurance Claim Item", claim.insurance_claim_item, "approved_amount", claim.approved_amount)
+			frappe.db.set_value("Insurance Claim Item", claim.insurance_claim_item, "rejected_amount", claim.rejected_amount)
+			if claim.insurance_claim not in submittted_claim:
+				submittted_claim.append(claim.insurance_claim)
+		for sub_claim in submittted_claim:
+			insurance_claim=frappe.get_doc("Insurance Claim", sub_claim)
+			insurance_claim.submission_date=nowdate()
+			insurance_claim.save()
+		return True
+
 @frappe.whitelist()
 def get_claim_submission_item(insurance_company, from_date=False, to_date=False):
 	query = """
@@ -121,64 +179,5 @@ def get_claim_submission_item(insurance_company, from_date=False, to_date=False)
 		return claim_list_obj
 	return False
 
-@frappe.whitelist()
-def update_final_claim_details(doc):
-	submittted_claim=[]
-	from six import string_types
-	if isinstance(doc, string_types):
-		doc =  json.loads(doc)
-	for claim in doc.insurance_claim_submission_item:
-		if isinstance(claim, dict):
-			claim = frappe._dict(claim)
-		frappe.db.set_value("Insurance Claim Item", claim.insurance_claim_item, "claim_status", claim.claim_status)
-		frappe.db.set_value("Insurance Claim Item", claim.insurance_claim_item, "approved_amount", claim.approved_amount)
-		frappe.db.set_value("Insurance Claim Item", claim.insurance_claim_item, "rejected_amount", claim.rejected_amount)
-		if claim.insurance_claim not in submittted_claim:
-			submittted_claim.append(claim.insurance_claim)
-	for sub_claim in submittted_claim:
-		insurance_claim=frappe.get_doc("Insurance Claim", sub_claim)
-		insurance_claim.submission_date=nowdate()
-		insurance_claim.save()
-	create_journal_entry_partial_submission(doc)
-	return True
-
-@frappe.whitelist()
-def create_journal_entry_partial_submission(doc):
-	# create jv
-	insurance_company = frappe.get_doc('Insurance Company', doc.insurance_company)
-	from erpnext.accounts.party import get_party_account
-	journal_entry = frappe.new_doc('Journal Entry')
-	if frappe.db.get_value("Healthcare Settings", None, "journal_entry_type"):
-		journal_entry.voucher_type =frappe.db.get_value("Healthcare Settings", None, "journal_entry_type")
-	else:
-		journal_entry.voucher_type = 'Journal Entry'
-	if frappe.db.get_value("Healthcare Settings", None, "journal_entry_series"):
-		journal_entry.naming_series =frappe.db.get_value("Healthcare Settings", None, "journal_entry_series")
-	journal_entry.company = insurance_company.company
-	journal_entry.posting_date =  nowdate()
-	accounts = []
-	tax_amount = 0.0
-	accounts.append({
-		"account": insurance_company.submission_claim_receivable_account,
-		"credit_in_account_currency":float(doc.total_claim_amount),
-		"party_type": "Customer",
-		"party": insurance_company.customer
-	})
-	accounts.append({
-		"account": get_party_account("Customer", insurance_company.customer, insurance_company.company),
-		"debit_in_account_currency": float(doc.total_approved_amount),
-		"party_type": "Customer",
-		"party": insurance_company.customer
-	})
-	accounts.append({
-		"account": insurance_company.insurance_rejected_expense_account,
-		"debit_in_account_currency": float(doc.total_rejected_amount),
-		"party_type": "Customer",
-		"party": insurance_company.customer
-	})
-	journal_entry.set("accounts", accounts)
-	journal_entry.save(ignore_permissions = True)
-	journal_entry.submit()
-	frappe.db.set_value("Insurance Claim Submission", doc.name, "claim_approved_jv", journal_entry.name)
 
 	
