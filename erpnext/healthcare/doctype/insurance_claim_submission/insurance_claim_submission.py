@@ -113,9 +113,7 @@ class InsuranceClaimSubmission(Document):
 		})
 		accounts.append({
 			"account": insurance_company.insurance_rejected_expense_account,
-			"debit_in_account_currency": float(self.total_rejected_amount),
-			"party_type": "Customer",
-			"party": insurance_company.customer
+			"debit_in_account_currency": float(self.total_rejected_amount)
 		})
 		journal_entry.set("accounts", accounts)
 		journal_entry.save(ignore_permissions = True)
