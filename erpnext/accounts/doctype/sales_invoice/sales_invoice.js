@@ -892,6 +892,7 @@ var get_healthcare_services_to_invoice = function(frm) {
 				fieldname: "patient",
 				reqd: true
 			},
+			{ fieldtype: 'Data', read_only:1, fieldname: 'patient_name', depends_on:'eval:doc.patient', label: 'Patient Name'},
 			{ fieldtype: 'Section Break'	},
 			{ fieldtype: 'HTML', fieldname: 'results_area' }
 		]
@@ -903,6 +904,13 @@ var get_healthcare_services_to_invoice = function(frm) {
 		'patient': frm.doc.patient
 	});
 	dialog.fields_dict["patient"].df.onchange = () => {
+		frappe.db.get_value("Patient", dialog.get_value('patient'), 'patient_name', function(r) {
+			if(r && r.patient_name){
+				dialog.set_values({
+					'patient_name': r.patient_name
+				});
+			}
+		});
 		var patient = dialog.fields_dict.patient.input.value;
 		if(patient && patient!=selected_patient){
 			selected_patient = patient;
@@ -1078,6 +1086,7 @@ var get_drugs_to_invoice = function(frm) {
 		title: __("Get Items from Prescriptions"),
 		fields:[
 			{ fieldtype: 'Link', options: 'Patient', label: 'Patient', fieldname: "patient", reqd: true },
+			{ fieldtype: 'Data', read_only:1, fieldname: 'patient_name', depends_on:'eval:doc.patient', label: 'Patient Name'},
 			{ fieldtype: 'Link', options: 'Patient Encounter', label: 'Patient Encounter', fieldname: "encounter", reqd: true,
 				description:'Quantity will be calculated only for items which has "Nos" as UoM. You may change as required for each invoice item.',
 				get_query: function(doc) {
@@ -1089,6 +1098,7 @@ var get_drugs_to_invoice = function(frm) {
 					};
 				}
 			},
+			{ fieldtype: 'Data', read_only:1, fieldname: 'practitioner_name', depends_on:'eval:doc.encounter', label: 'Practitioner Name'},
 			{ fieldtype: 'Section Break' },
 			{ fieldtype: 'HTML', fieldname: 'results_area' }
 		]
@@ -1101,6 +1111,13 @@ var get_drugs_to_invoice = function(frm) {
 		'encounter': ""
 	});
 	dialog.fields_dict["encounter"].df.onchange = () => {
+		frappe.db.get_value("Patient Encounter", dialog.get_value('encounter'), 'healthcare_practitioner_name', function(r) {
+			if(r && r.healthcare_practitioner_name){
+				dialog.set_values({
+					'practitioner_name': r.healthcare_practitioner_name
+				});
+			}
+		});
 		var encounter = dialog.fields_dict.encounter.input.value;
 		if(encounter && encounter!=selected_encounter){
 			selected_encounter = encounter;
@@ -1114,6 +1131,15 @@ var get_drugs_to_invoice = function(frm) {
 			$results.empty();
 			$results.append($placeholder);
 		}
+	}
+	dialog.fields_dict["patient"].df.onchange = () => {
+		frappe.db.get_value("Patient", dialog.get_value('patient'), 'patient_name', function(r) {
+			if(r && r.patient_name){
+				dialog.set_values({
+					'patient_name': r.patient_name
+				});
+			}
+		});
 	}
 	$wrapper = dialog.fields_dict.results_area.$wrapper.append(`<div class="results"
 		style="border: 1px solid #d1d8dd; border-radius: 3px; height: 300px; overflow: auto;"></div>`);
