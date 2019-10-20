@@ -571,7 +571,7 @@ frappe.ui.form.on('Clinical Procedure Item', {
 	},
 	uom: function(doc, cdt, cdn){
 		var d = locals[cdt][cdn];
-		if(d.uom && d.item_code){
+		if(d.uom && d.item_code && d.qty){
 			return frappe.call({
 				method: "erpnext.stock.doctype.stock_entry.stock_entry.get_uom_details",
 				args: {
@@ -606,6 +606,14 @@ frappe.ui.form.on('Clinical Procedure Item', {
 						frappe.model.set_value(cdt, cdn, "stock_uom", r.message.stock_uom);
 						frappe.model.set_value(cdt, cdn, "conversion_factor", r.message.conversion_factor);
 						frappe.model.set_value(cdt, cdn, "actual_qty", r.message.actual_qty);
+						frappe.db.get_value("Item", d.item_code, 'sales_uom', function(ret) {
+							if(ret && ret.sales_uom){
+								frappe.model.set_value(cdt, cdn, "uom", ret.sales_uom);
+							}
+							else{
+								frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
+							}
+						});
 						refresh_field("items");
 					}
 				}
