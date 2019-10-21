@@ -113,9 +113,9 @@ frappe.ui.form.on('Clinical Procedure', {
 		}
 	},
 	refresh: function(frm) {
-		var df = frappe.meta.get_docfield("Clinical Procedure Item", "invoice_additional_quantity_used", frm.doc.name);
-		df.read_only = 1;
 		if(frm.doc.docstatus==1 && frm.doc.status == "Completed"){
+			var dfi = frappe.meta.get_docfield("Clinical Procedure Item", "invoice_additional_quantity_used", frm.doc.name);
+			dfi.read_only = 1;
 			var df = frappe.meta.get_docfield("Clinical Procedure Item", "qty", frm.doc.name);
 			df.read_only = 1;
 		}
