@@ -140,32 +140,36 @@ frappe.ui.form.on('Radiology Examination', {
 			frm.set_df_property("referring_practitioner", "hidden", 1);
 		}
 		else if(frm.doc.source=="External Referral" || frm.doc.source=="Referral") {
-			if(!frm.doc.referring_practitioner){
-				if(frm.doc.practitioner){
-					frm.set_value("referring_practitioner", frm.doc.practitioner);
-					frm.set_df_property("referring_practitioner", "hidden", 0);
-					if(frm.doc.source=="External Referral"){
-						frm.set_df_property("referring_practitioner", "read_only", 0);
-					}
-					else{
-						frm.set_df_property("referring_practitioner", "read_only", 1);
-					}
-					frm.set_df_property("referring_practitioner", "reqd", 1);
-				}
-				else{
-					frm.set_df_property("referring_practitioner", "read_only", 0);
-					frm.set_df_property("referring_practitioner", "hidden", 0);
-					frm.set_df_property("referring_practitioner", "reqd", 1);
-				}
-			}
-			else{
+			if(frm.doc.practitioner){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
 				if(frm.doc.source=="External Referral"){
+					frappe.db.get_value("Healthcare Practitioner", frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+						if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type=="External"){
+							frm.set_value("referring_practitioner", frm.doc.practitioner);
+						}
+						else{
+							frm.set_value("referring_practitioner", "");
+						}
+					});
 					frm.set_df_property("referring_practitioner", "read_only", 0);
 				}
 				else{
-					frm.set_df_property("referring_practitioner", "read_only", 1);
+					frappe.db.get_value("Healthcare Practitioner", frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+						if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type=="Internal"){
+							frm.set_value("referring_practitioner", frm.doc.practitioner);
+							frm.set_df_property("referring_practitioner", "read_only", 1);
+						}
+						else{
+							frm.set_value("referring_practitioner", "");
+							frm.set_df_property("referring_practitioner", "read_only", 0);
+						}
+					});
 				}
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+			else{
+				frm.set_df_property("referring_practitioner", "read_only", 0);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
 				frm.set_df_property("referring_practitioner", "reqd", 1);
 			}
 		}
@@ -198,6 +202,22 @@ frappe.ui.form.on('Radiology Examination', {
 					"docstatus":1
 				}
 			};
+		});
+		frm.set_query("referring_practitioner", function() {
+			if(frm.doc.source=="External Referral"){
+				return {
+					filters: {
+						'healthcare_practitioner_type': "External"
+					}
+				};
+			}
+			else{
+				return {
+					filters: {
+						'healthcare_practitioner_type': "Internal"
+					}
+				};
+			}
 		});
 		frm.set_query("medical_department", function() {
 			return {

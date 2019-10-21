@@ -26,32 +26,36 @@ frappe.ui.form.on('Patient Encounter', {
 			frm.set_df_property("referring_practitioner", "hidden", 1);
 		}
 		else if(frm.doc.source=="External Referral" || frm.doc.source=="Referral") {
-			if(!frm.doc.referring_practitioner){
-				if(frm.doc.practitioner){
-					frm.set_value("referring_practitioner", frm.doc.practitioner);
-					frm.set_df_property("referring_practitioner", "hidden", 0);
-					if(frm.doc.source=="External Referral"){
-						frm.set_df_property("referring_practitioner", "read_only", 0);
-					}
-					else{
-						frm.set_df_property("referring_practitioner", "read_only", 1);
-					}
-					frm.set_df_property("referring_practitioner", "reqd", 1);
-				}
-				else{
-					frm.set_df_property("referring_practitioner", "read_only", 0);
-					frm.set_df_property("referring_practitioner", "hidden", 0);
-					frm.set_df_property("referring_practitioner", "reqd", 1);
-				}
-			}
-			else{
+			if(frm.doc.practitioner){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
 				if(frm.doc.source=="External Referral"){
+					frappe.db.get_value("Healthcare Practitioner", frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+						if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type=="External"){
+							frm.set_value("referring_practitioner", frm.doc.practitioner);
+						}
+						else{
+							frm.set_value("referring_practitioner", "");
+						}
+					});
 					frm.set_df_property("referring_practitioner", "read_only", 0);
 				}
 				else{
-					frm.set_df_property("referring_practitioner", "read_only", 1);
+					frappe.db.get_value("Healthcare Practitioner", frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+						if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type=="Internal"){
+							frm.set_value("referring_practitioner", frm.doc.practitioner);
+							frm.set_df_property("referring_practitioner", "read_only", 1);
+						}
+						else{
+							frm.set_value("referring_practitioner", "");
+							frm.set_df_property("referring_practitioner", "read_only", 0);
+						}
+					});
 				}
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+			else{
+				frm.set_df_property("referring_practitioner", "read_only", 0);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
 				frm.set_df_property("referring_practitioner", "reqd", 1);
 			}
 		}
@@ -107,32 +111,36 @@ frappe.ui.form.on('Patient Encounter', {
 			frm.set_df_property("referring_practitioner", "hidden", 1);
 		}
 		else if(frm.doc.source=="External Referral" || frm.doc.source=="Referral") {
-			if(!frm.doc.referring_practitioner){
-				if(frm.doc.practitioner){
-					frm.set_value("referring_practitioner", frm.doc.practitioner);
-					frm.set_df_property("referring_practitioner", "hidden", 0);
-					if(frm.doc.source=="External Referral"){
-						frm.set_df_property("referring_practitioner", "read_only", 0);
-					}
-					else{
-						frm.set_df_property("referring_practitioner", "read_only", 1);
-					}
-					frm.set_df_property("referring_practitioner", "reqd", 1);
-				}
-				else{
-					frm.set_df_property("referring_practitioner", "read_only", 0);
-					frm.set_df_property("referring_practitioner", "hidden", 0);
-					frm.set_df_property("referring_practitioner", "reqd", 1);
-				}
-			}
-			else{
+			if(frm.doc.practitioner){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
 				if(frm.doc.source=="External Referral"){
+					frappe.db.get_value("Healthcare Practitioner", frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+						if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type=="External"){
+							frm.set_value("referring_practitioner", frm.doc.practitioner);
+						}
+						else{
+							frm.set_value("referring_practitioner", "");
+						}
+					});
 					frm.set_df_property("referring_practitioner", "read_only", 0);
 				}
 				else{
-					frm.set_df_property("referring_practitioner", "read_only", 1);
+					frappe.db.get_value("Healthcare Practitioner", frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+						if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type=="Internal"){
+							frm.set_value("referring_practitioner", frm.doc.practitioner);
+							frm.set_df_property("referring_practitioner", "read_only", 1);
+						}
+						else{
+							frm.set_value("referring_practitioner", "");
+							frm.set_df_property("referring_practitioner", "read_only", 0);
+						}
+					});
 				}
+				frm.set_df_property("referring_practitioner", "reqd", 1);
+			}
+			else{
+				frm.set_df_property("referring_practitioner", "read_only", 0);
+				frm.set_df_property("referring_practitioner", "hidden", 0);
 				frm.set_df_property("referring_practitioner", "reqd", 1);
 			}
 		}
@@ -234,6 +242,22 @@ frappe.ui.form.on('Patient Encounter', {
 				}
 			};
 		});
+		frm.set_query("referring_practitioner", function() {
+			if(frm.doc.source=="External Referral"){
+				return {
+					filters: {
+						'healthcare_practitioner_type': "External"
+					}
+				};
+			}
+			else{
+				return {
+					filters: {
+						'healthcare_practitioner_type': "Internal"
+					}
+				};
+			}
+		});
 		frm.set_df_property("appointment", "read_only", frm.doc.__islocal ? 0:1);
 		frm.set_df_property("patient", "read_only", frm.doc.__islocal ? 0:1);
 		frm.set_df_property("patient_age", "read_only", frm.doc.__islocal ? 0:1);
@@ -297,11 +321,24 @@ var schedule_inpatient = function(frm) {
 			{fieldtype: "Link", label: "Healthcare Practitioner (Secondary)", fieldname: "secondary_practitioner", options: "Healthcare Practitioner"},
 			{fieldtype: "Currency", label: "Allowed Total Credit Coverage", fieldname: "allowed_total_credit_coverage"},
 			{fieldtype: "Small Text", label: "Diagnosis", fieldname: "diagnosis"},
+			{ fieldtype: 'Link', options: 'Insurance Assignment', fieldname: 'insurance', label: 'Healthcare Insurance',
+				get_query: function () {
+					return {
+						filters: {
+							"patient" : frm.doc.patient,
+							"docstatus" :1
+						}
+					};
+				}
+			},
+			{ fieldtype: 'Data', read_only:1, fieldname: 'insurance_company_name', depends_on:'eval:doc.insurance', label: 'Insurance Company Name'},
+			{ fieldtype: 'Data', fieldname: 'insurance_approval_number', depends_on:'eval:doc.insurance', label: 'Approval Number'},
 			{fieldtype: 'Column Break'},
 			{fieldtype: "Date", label: "Admission Ordered For", fieldname: "admission_ordered_for", default: "Today"},
 			{fieldtype: "Link", label: "Service Unit Type", fieldname: "service_unit_type", options: "Healthcare Service Unit Type"},
 			{fieldtype: "Int", label: "Expected Length of Stay", fieldname: "expected_length_of_stay"},
 			{fieldtype: "Small Text", label: "Admission Instruction", fieldname: "admission_instruction"},
+			{ fieldtype: 'Small Text', fieldname: 'insurance_remarks', depends_on:'eval:doc.insurance', label: 'Insurance Remarks'},
 			{fieldtype: 'Section Break', label: "Procedure Orders"},
 			{fieldtype: 'HTML', fieldname: 'procedure_prescriptions'}
 		],
@@ -311,7 +348,9 @@ var schedule_inpatient = function(frm) {
 				patient: frm.doc.patient,
 				encounter_id: frm.doc.name,
 				ref_practitioner: frm.doc.practitioner,
-				insurance: frm.doc.insurance||'',
+				insurance: dialog.get_value('insurance')||'',
+				insurance_approval_number: dialog.get_value('insurance_approval_number')||'',
+				insurance_remarks: dialog.get_value('insurance_remarks')||'',
 				medical_department: dialog.get_value('medical_department'),
 				primary_practitioner: dialog.get_value('primary_practitioner'),
 				secondary_practitioner: dialog.get_value('secondary_practitioner'),
@@ -344,7 +383,11 @@ var schedule_inpatient = function(frm) {
 	dialog.set_values({
 		'medical_department': frm.doc.visit_department,
 		'primary_practitioner': frm.doc.practitioner,
-		'diagnosis': frm.doc.diagnosis
+		'diagnosis': frm.doc.diagnosis,
+		'insurance': frm.doc.insurance || '',
+		'insurance_approval_number': frm.doc.insurance_approval_number || '',
+		'insurance_remarks': frm.doc.insurance_remarks || '',
+
 	});
 
 	show_procedure_prescriptions(dialog)
@@ -357,7 +400,15 @@ var schedule_inpatient = function(frm) {
 			}
 		};
 	};
-
+	dialog.fields_dict["insurance"].df.onchange = () => {
+		frappe.db.get_value("Insurance Assignment", dialog.get_value('insurance'), 'insurance_company_name', function(r) {
+			if(r && r.insurance_company_name){
+				dialog.set_values({
+					'insurance_company_name': r.insurance_company_name
+				});
+			}
+		});
+	};
 	dialog.show();
 	dialog.$wrapper.find('.modal-dialog').css("width", "800px");
 
