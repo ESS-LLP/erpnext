@@ -203,7 +203,8 @@ frappe.ui.form.on('Clinical Procedure Item', {
 cur_frm.set_query("item_code", "items", function() {
 	return {
 		filters: {
-			is_stock_item:1
+			is_stock_item:1,
+			has_variants:0
 		}
 	};
 });
