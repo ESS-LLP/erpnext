@@ -114,7 +114,7 @@ def create_lab_test_from_encounter(encounter_id):
 		for lab_test_id in lab_test_ids:
 			template = get_lab_test_template(lab_test_id[1])
 			if template:
-				lab_test = create_lab_test_doc(lab_test_id[2], encounter.practitioner, patient, template, encounter.source)
+				lab_test = create_lab_test_doc(lab_test_id[2], encounter.practitioner, patient, template, encounter.source, encounter.visit_department)
 				lab_test.save(ignore_permissions = True)
 				frappe.db.set_value("Lab Prescription", lab_test_id[0], "lab_test_created", 1)
 				if not lab_test_created:
@@ -168,7 +168,7 @@ def check_template_exists(item):
 		return template_exists
 	return False
 
-def create_lab_test_doc(invoiced, practitioner, patient, template, source="Direct"):
+def create_lab_test_doc(invoiced, practitioner, patient, template, source="Direct", requesting_department=None):
 	lab_test = frappe.new_doc("Lab Test")
 	lab_test.invoiced = invoiced
 	lab_test.practitioner = practitioner
@@ -183,6 +183,8 @@ def create_lab_test_doc(invoiced, practitioner, patient, template, source="Direc
 	lab_test.result_date = getdate()
 	lab_test.report_preference = patient.report_preference
 	lab_test.source = source
+	if requesting_department:
+		lab_test.requesting_department=requesting_department
 	return lab_test
 
 def create_normals(template, lab_test):
@@ -393,7 +395,7 @@ def delete_lab_test_from_medical_record(self):
 
 @frappe.whitelist()
 def get_lab_test_prescribed(patient):
-	return frappe.db.sql("""select cp.name, cp.lab_test_code, cp.parent, cp.invoiced, ct.practitioner, ct.encounter_date, ct.source, ct.referring_practitioner, ct.insurance from `tabPatient Encounter` ct,
+	return frappe.db.sql("""select cp.name, cp.lab_test_code, cp.parent, cp.invoiced, ct.practitioner, ct.encounter_date, ct.source, ct.referring_practitioner, ct.insurance, ct.visit_department from `tabPatient Encounter` ct,
 	`tabLab Prescription` cp where ct.patient=%s and cp.parent=ct.name and cp.lab_test_created=0""", (patient))
 
 def invoice_lab_test(lab_test):

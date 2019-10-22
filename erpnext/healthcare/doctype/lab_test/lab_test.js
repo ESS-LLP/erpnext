@@ -182,7 +182,7 @@ frappe.ui.form.on('Lab Test', {
 		});
 	},
 	onload: function (frm) {
-		 frm.add_fetch("practitioner", "department", "department");
+		 frm.add_fetch("practitioner", "department", "requesting_department");
 		if(frm.is_new()) {
 			frm.add_fetch("template", "department", "department");
 		}
@@ -338,9 +338,9 @@ var show_lab_tests = function(frm, result){
 		<a data-name="%(name)s" data-lab-test="%(lab_test)s"\
 		data-encounter="%(encounter)s" data-practitioner="%(practitioner)s" \
 		data-invoiced="%(invoiced)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s" \
-		data-insurance="%(insurance)s" href="#"><button class="btn btn-default btn-xs">Get Lab Test\
+		data-insurance="%(insurance)s" data-requesting-department="%(visit_department)s" href="#"><button class="btn btn-default btn-xs">Get Lab Test\
 		</button></a></div></div>', {name:y[0], lab_test: y[1], encounter:y[2], invoiced:y[3], practitioner:y[4], date:y[5], source:y[6],
-		referring_practitioner:y[7], insurance:y[8]? [8]:''})).appendTo(html_field);
+		referring_practitioner:y[7], insurance:y[8]? [8]:'', visit_department:y[9]? y[9]:''})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.template = $(this).attr("data-lab-test");
 			frm.doc.prescription = $(this).attr("data-name");
@@ -353,6 +353,7 @@ var show_lab_tests = function(frm, result){
 				frm.set_df_property("referring_practitioner", "hidden", 0);
 				frm.set_df_property("referring_practitioner", "read_only", 1);
 			}
+			frm.doc.requesting_department = $(this).attr("data-requesting-department")
 			frm.set_df_property("template", "read_only", 1);
 			frm.set_df_property("patient", "read_only", 1);
 			frm.set_df_property("practitioner", "read_only", 1);
@@ -364,6 +365,7 @@ var show_lab_tests = function(frm, result){
 			refresh_field("template");
 			refresh_field("source");
 			refresh_field("referring_practitioner");
+			refresh_field("requesting_department");
 			d.hide();
 			return false;
 		});
