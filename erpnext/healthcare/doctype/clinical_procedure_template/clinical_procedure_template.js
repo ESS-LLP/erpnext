@@ -50,6 +50,10 @@ frappe.ui.form.on('Clinical Procedure Template', {
 				}
 			};
 		});
+		var dfi = frappe.meta.get_docfield("Clinical Procedure Item", "rate", frm.doc.name);
+		dfi.hidden = 1;
+		var df = frappe.meta.get_docfield("Clinical Procedure Item", "amount", frm.doc.name);
+		df.hidden = 1;
 	},
 	clinical_procedure_check_list_template: function(frm) {
 		if(frm.doc.clinical_procedure_check_list_template){
@@ -179,7 +183,6 @@ frappe.ui.form.on('Clinical Procedure Item', {
 			let args = {
 				'item_code'			: d.item_code,
 				'transfer_qty'		: d.transfer_qty,
-				'company'			: frm.doc.company,
 				'quantity'				: d.qty
 			};
 			return frappe.call({
