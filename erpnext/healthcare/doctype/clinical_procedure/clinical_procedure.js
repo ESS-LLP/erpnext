@@ -113,6 +113,9 @@ frappe.ui.form.on('Clinical Procedure', {
 		}
 	},
 	refresh: function(frm) {
+		if(frm.doc.consume_stock){
+			set_price_list_rate_for_items(frm);
+		}
 		if(frm.doc.docstatus==1 && frm.doc.status == "Completed"){
 			var dfi = frappe.meta.get_docfield("Clinical Procedure Item", "invoice_additional_quantity_used", frm.doc.name);
 			dfi.read_only = 1;
@@ -422,6 +425,9 @@ frappe.ui.form.on('Clinical Procedure', {
 				}
 			});
 		}
+	},
+	selling_price_list: function(frm){
+		set_price_list_rate_for_items(frm);
 	}
 });
 
@@ -593,6 +599,11 @@ frappe.ui.form.on('Clinical Procedure Item', {
 	qty: function(frm, cdt, cdn){
 		var d = locals[cdt][cdn];
 		frappe.model.set_value(cdt, cdn, "transfer_qty", d.qty*d.conversion_factor);
+		calculate_item_amount(frm, d);
+	},
+	rate: function(frm, cdt, cdn) {
+		var d = locals[cdt][cdn];
+		calculate_item_amount(frm, d);
 	},
 	uom: function(doc, cdt, cdn){
 		var d = locals[cdt][cdn];
@@ -608,6 +619,7 @@ frappe.ui.form.on('Clinical Procedure Item', {
 					if(r.message) {
 						frappe.model.set_value(cdt, cdn, r.message);
 					}
+					calculate_item_amount(frm, d);
 				}
 			});
 		}
@@ -640,12 +652,62 @@ frappe.ui.form.on('Clinical Procedure Item', {
 							}
 						});
 						refresh_field("items");
+						set_price_list_rate_for_item(frm, d);
 					}
 				}
 			});
 		}
 	}
 });
+
+var set_price_list_rate_for_items = function(frm) {
+	if(frm.doc.selling_price_list && frm.doc.items){
+		$.each(frm.doc.items, function(i, item) {
+			set_price_list_rate_for_item(frm, item);
+		});
+	}
+}
+
+var set_price_list_rate_for_item = function(frm, item) {
+	if(item.item_code){
+		return frappe.call({
+			method: "erpnext.healthcare.utils.sales_item_details_for_healthcare_doc",
+			args: {
+				'item_code' : item.item_code,
+				'doc' : frm.doc
+			},
+			callback: function(r) {
+				if(r.message) {
+					frappe.model.set_value(item.doctype, item.name, 'rate', r.message.price_list_rate)
+					refresh_field("items");
+				}
+			}
+		});
+	}
+}
+
+var calculate_item_amount = function(frm, item) {
+	if(item.qty && item.rate){
+		frappe.model.set_value(item.doctype, item.name, 'amount', item.qty*item.rate);
+		frm.refresh_field("items");
+		total_additional_consumables(frm);
+	}
+}
+
+var total_additional_consumables = function(frm) {
+	var amount = 0;
+	var additional_amount = 0;
+	if(frm.doc.consume_stock && frm.doc.items){
+		$.each(frm.doc.items, function(i, item) {
+			amount += item.amount;
+			if(item.qty > item.procedure_qty){
+				additional_amount += (item.qty-item.procedure_qty) * item.rate;
+			}
+		});
+	}
+	frm.set_value("total_consumable", amount);
+	frm.set_value("total_additional_consumable", additional_amount);
+};
 
 var calculate_age = function(birth) {
 	var ageMS = Date.parse(Date()) - Date.parse(birth);

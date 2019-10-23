@@ -281,6 +281,7 @@ def create_delivery_note(doc):
 	delivery_note.customer = frappe.db.get_value("Patient", doc.patient, "customer")
 	delivery_note.inpatient_record = frappe.db.get_value("Patient", doc.patient, "inpatient_record")
 	delivery_note.set_warehouse = doc.warehouse
+	delivery_note.selling_price_list = doc.selling_price_list
 	expense_account = get_account(None, "expense_account", "Healthcare Settings", doc.company)
 	cost_center = False
 	if doc.service_unit:
