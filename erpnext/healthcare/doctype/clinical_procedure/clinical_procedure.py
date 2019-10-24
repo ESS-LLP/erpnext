@@ -46,6 +46,7 @@ class ClinicalProcedure(Document):
 			sample_collection = create_sample_doc(template, patient, None)
 			frappe.db.set_value("Clinical Procedure", self.name, "sample", sample_collection.name)
 		create_pre_post_document(self)
+		set_price_list_rate_for_items(self)
 		self.reload()
 
 	def complete(self):
@@ -132,6 +133,23 @@ class ClinicalProcedure(Document):
 			for dn in delivery_note:
 				if 'name' in dn:
 					frappe.get_doc("Delivery Note", dn.name).cancel()
+
+def set_price_list_rate_for_items(doc):
+	if doc.selling_price_list and doc.items:
+		amount = 0
+		for item in doc.items:
+			set_price_list_rate_for_item(doc, item)
+			amount += item.amount
+		doc.total_consumable = amount
+		doc.save(ignore_permissions = True)
+
+def set_price_list_rate_for_item(doc, item):
+	if item.item_code:
+		item_details = sales_item_details_for_healthcare_doc(item.item_code, doc)
+		if item_details:
+			item.rate = item_details.price_list_rate
+			if item.rate and item.qty:
+				item.amount = item.rate*item.qty
 
 def exist_delivery_note_for_procedure(procedure):
 	query = """

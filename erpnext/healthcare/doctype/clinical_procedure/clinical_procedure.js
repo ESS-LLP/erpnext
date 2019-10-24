@@ -113,9 +113,6 @@ frappe.ui.form.on('Clinical Procedure', {
 		}
 	},
 	refresh: function(frm) {
-		if(frm.doc.consume_stock){
-			set_price_list_rate_for_items(frm);
-		}
 		if(frm.doc.docstatus==1 && frm.doc.status == "Completed"){
 			var dfi = frappe.meta.get_docfield("Clinical Procedure Item", "invoice_additional_quantity_used", frm.doc.name);
 			dfi.read_only = 1;
@@ -657,6 +654,10 @@ frappe.ui.form.on('Clinical Procedure Item', {
 				}
 			});
 		}
+	},
+	invoice_additional_quantity_used: function(frm, cdt, cdn) {
+		var d = locals[cdt][cdn];
+		calculate_item_amount(frm, d);
 	}
 });
 
@@ -700,7 +701,7 @@ var total_additional_consumables = function(frm) {
 	if(frm.doc.consume_stock && frm.doc.items){
 		$.each(frm.doc.items, function(i, item) {
 			amount += item.amount;
-			if(item.qty > item.procedure_qty){
+			if(item.invoice_additional_quantity_used && (item.qty > item.procedure_qty)){
 				additional_amount += (item.qty-item.procedure_qty) * item.rate;
 			}
 		});
