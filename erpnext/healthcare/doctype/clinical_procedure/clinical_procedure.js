@@ -596,30 +596,15 @@ frappe.ui.form.on('Clinical Procedure Item', {
 	qty: function(frm, cdt, cdn){
 		var d = locals[cdt][cdn];
 		frappe.model.set_value(cdt, cdn, "transfer_qty", d.qty*d.conversion_factor);
+		get_uom_details(frm, cdt, cdn);
 		calculate_item_amount(frm, d);
 	},
 	rate: function(frm, cdt, cdn) {
 		var d = locals[cdt][cdn];
 		calculate_item_amount(frm, d);
 	},
-	uom: function(doc, cdt, cdn){
-		var d = locals[cdt][cdn];
-		if(d.uom && d.item_code && d.qty){
-			return frappe.call({
-				method: "erpnext.stock.doctype.stock_entry.stock_entry.get_uom_details",
-				args: {
-					item_code: d.item_code,
-					uom: d.uom,
-					qty: d.qty
-				},
-				callback: function(r) {
-					if(r.message) {
-						frappe.model.set_value(cdt, cdn, r.message);
-					}
-					calculate_item_amount(frm, d);
-				}
-			});
-		}
+	uom: function(frm, cdt, cdn){
+		get_uom_details(frm, cdt, cdn);
 	},
 	item_code: function(frm, cdt, cdn) {
 		var d = locals[cdt][cdn];
@@ -649,6 +634,7 @@ frappe.ui.form.on('Clinical Procedure Item', {
 							}
 						});
 						refresh_field("items");
+						get_uom_details(frm, cdt, cdn);
 						set_price_list_rate_for_item(frm, d);
 					}
 				}
@@ -660,6 +646,27 @@ frappe.ui.form.on('Clinical Procedure Item', {
 		calculate_item_amount(frm, d);
 	}
 });
+
+var get_uom_details = function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	if(d.uom && d.item_code && d.qty){
+		console.log("EEEEEEE");
+		return frappe.call({
+			method: "erpnext.stock.doctype.stock_entry.stock_entry.get_uom_details",
+			args: {
+				item_code: d.item_code,
+				uom: d.uom,
+				qty: d.qty
+			},
+			callback: function(r) {
+				if(r.message) {
+					frappe.model.set_value(cdt, cdn, r.message);
+				}
+				calculate_item_amount(frm, d);
+			}
+		});
+	}
+};
 
 var set_price_list_rate_for_items = function(frm) {
 	if(frm.doc.selling_price_list && frm.doc.items){

@@ -158,24 +158,10 @@ frappe.ui.form.on('Clinical Procedure Item', {
 		if(frm.doc.doctype == "Clinical Procedure Template"){
 			frappe.model.set_value(cdt, cdn, "procedure_qty", d.qty);
 		}
+		get_uom_details(frm, cdn, cdt);
 	},
-	uom: function(doc, cdt, cdn){
-		var d = locals[cdt][cdn];
-		if(d.uom && d.item_code){
-			return frappe.call({
-				method: "erpnext.stock.doctype.stock_entry.stock_entry.get_uom_details",
-				args: {
-					item_code: d.item_code,
-					uom: d.uom,
-					qty: d.qty
-				},
-				callback: function(r) {
-					if(r.message) {
-						frappe.model.set_value(cdt, cdn, r.message);
-					}
-				}
-			});
-		}
+	uom: function(frm, cdt, cdn){
+		get_uom_details(frm, cdn, cdt);
 	},
 	item_code: function(frm, cdt, cdn) {
 		var d = locals[cdt][cdn];
@@ -197,11 +183,32 @@ frappe.ui.form.on('Clinical Procedure Item', {
 						});
 						refresh_field("items");
 					}
+					get_uom_details(frm, cdn, cdt);
 				}
 			});
 		}
 	}
 });
+
+var get_uom_details = function(frm, cdn, cdt) {
+	var d = locals[cdt][cdn];
+	if(d.uom && d.item_code && d.qty){
+		return frappe.call({
+			method: "erpnext.stock.doctype.stock_entry.stock_entry.get_uom_details",
+			args: {
+				item_code: d.item_code,
+				uom: d.uom,
+				qty: d.qty
+			},
+			callback: function(r) {
+				if(r.message) {
+					frappe.model.set_value(cdt, cdn, r.message);
+				}
+			}
+		});
+	}
+};
+
 // List Stock items
 cur_frm.set_query("item_code", "items", function() {
 	return {
