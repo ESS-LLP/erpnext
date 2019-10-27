@@ -650,7 +650,6 @@ frappe.ui.form.on('Clinical Procedure Item', {
 var get_uom_details = function(frm, cdt, cdn) {
 	var d = locals[cdt][cdn];
 	if(d.uom && d.item_code && d.qty){
-		console.log("EEEEEEE");
 		return frappe.call({
 			method: "erpnext.stock.doctype.stock_entry.stock_entry.get_uom_details",
 			args: {

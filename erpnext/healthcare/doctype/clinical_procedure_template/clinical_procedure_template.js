@@ -165,7 +165,7 @@ frappe.ui.form.on('Clinical Procedure Item', {
 	},
 	item_code: function(frm, cdt, cdn) {
 		var d = locals[cdt][cdn];
-		if(d.item_code) {
+		if(d.item_code && frm.doc.doctype == "Clinical Procedure Template") {
 			let args = {
 				'item_code'			: d.item_code,
 				'transfer_qty'		: d.transfer_qty,
