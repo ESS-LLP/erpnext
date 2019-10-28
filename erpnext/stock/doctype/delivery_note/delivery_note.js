@@ -164,6 +164,12 @@ frappe.ui.form.on("Delivery Note", {
 });
 
 frappe.ui.form.on("Delivery Note Item", {
+	items_add: function(frm, cdt, cdn){
+		var child = locals[cdt][cdn];
+		if(frm.doc.set_cost_center){
+			frappe.model.set_value(cdt, cdn, 'cost_center', frm.doc.set_cost_center);
+		}
+	},
 	expense_account: function(frm, dt, dn) {
 		var d = locals[dt][dn];
 		frm.update_in_all_rows('items', 'expense_account', d.expense_account);
