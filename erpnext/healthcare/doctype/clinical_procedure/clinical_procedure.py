@@ -139,7 +139,8 @@ def set_price_list_rate_for_items(doc):
 		amount = 0
 		for item in doc.items:
 			set_price_list_rate_for_item(doc, item)
-			amount += item.amount
+			if item.amount:
+				amount += item.amount
 		doc.total_consumable = amount
 		doc.save(ignore_permissions = True)
 
