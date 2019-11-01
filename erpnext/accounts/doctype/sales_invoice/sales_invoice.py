@@ -1192,6 +1192,13 @@ class SalesInvoice(SellingController):
 		self.calculate_healthcare_insurance_claim()
 		self.set_missing_values(for_validate = True)
 
+	def set_healthcare_drugs(self, checked_values):
+		self.set("items", [])
+		for checked_item in checked_values:
+			self.set_healthcare_services_to_item(checked_item)
+		self.calculate_healthcare_insurance_claim()
+		self.set_missing_values(for_validate = True)
+
 	def calculate_healthcare_insurance_claim(self):
 		total_claim_amount = 0
 		for item in self.items:
@@ -1217,10 +1224,10 @@ class SalesInvoice(SellingController):
 		for key in checked_item:
 			if checked_item[key]:
 				item_line.set(key, checked_item[key])
-		if 'rate' not in checked_item or not checked_item['rate']:
-			item_line.rate = item_details.price_list_rate
 		if 'rate' in checked_item and checked_item['rate'] == 0:
 			item_line.rate = 0
+		if 'rate' not in checked_item or not checked_item['rate']:
+			item_line.rate = item_details.price_list_rate
 		if item_line.discount_percentage and float(item_line.discount_percentage) > 0:
 			item_line.discount_amount = float(item_line.rate) * float(item_line.discount_percentage) * 0.01
 			if item_line.discount_amount and item_line.discount_amount > 0:

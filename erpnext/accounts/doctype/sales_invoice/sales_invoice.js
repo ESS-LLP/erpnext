@@ -916,7 +916,7 @@ var get_healthcare_services_to_invoice = function(frm) {
 			selected_patient = patient;
 			var method = "erpnext.healthcare.utils.get_healthcare_services_to_invoice";
 			var args = {patient: patient};
-			var columns = (["service","item_name", "reference_name", "reference_type"]);
+			var columns = {"item_code": "Service", "item_name": "Item Name", "reference_dn": "Reference Name", "reference_dt": "Reference Type"};
 			get_healthcare_items(frm, true, $results, $placeholder, method, args, columns);
 		}
 		else if(!patient){
@@ -941,7 +941,7 @@ var get_healthcare_services_to_invoice = function(frm) {
 	set_primary_action(frm, dialog, $results, true);
 	dialog.show();
 };
-
+var fields = [];
 var get_healthcare_items = function(frm, invoice_healthcare_services, $results, $placeholder, method, args, columns) {
 	var me = this;
 	$results.empty();
@@ -966,17 +966,17 @@ var make_list_row= function(columns, invoice_healthcare_services, result={}) {
 	// Make a head row by default (if result not passed)
 	let head = Object.keys(result).length === 0;
 	let contents = ``;
-	columns.forEach(function(column) {
+	$.each(columns, function(column, val) {
 		contents += `<div class="list-item__content ellipsis">
 			${
-				head ? `<span class="ellipsis">${__(frappe.model.unscrub(column))}</span>`
+				head ? `<span class="ellipsis">${__(val)}</span>`
 
 				:(column !== "name" ? `<span class="ellipsis">${__(result[column])}</span>`
 					: `<a class="list-id ellipsis">
 						${__(result[column])}</a>`)
 			}
 		</div>`;
-	})
+	});
 
 	let $row = $(`<div class="list-item">
 		<div class="list-item__content" style="flex: 0 0 10px;">
@@ -1016,63 +1016,13 @@ var get_checked_values= function($results) {
 	return $results.find('.list-item-container').map(function() {
 		let checked_values = {};
 		if ($(this).find('.list-row-check:checkbox:checked').length > 0 ) {
-			checked_values['reference_dn'] = $(this).attr('data-dn');
-			checked_values['reference_dt'] = $(this).attr('data-dt');
-			checked_values['item_code'] = $(this).attr('data-item');
-			if($(this).attr('data-rate') != 'undefined'){
-				checked_values['rate'] = $(this).attr('data-rate');
-			}
-			else{
-				checked_values['rate'] = false;
-			}
-			if($(this).attr('data-income-account') != 'undefined'){
-				checked_values['income_account'] = $(this).attr('data-income-account');
-			}
-			else{
-				checked_values['income_account'] = false;
-			}
-			if($(this).attr('data-qty') != 'undefined'){
-				checked_values['qty'] = $(this).attr('data-qty');
-			}
-			else{
-				checked_values['qty'] = false;
-			}
-			if($(this).attr('data-description') != 'undefined'){
-				checked_values['description'] = $(this).attr('data-description');
-			}
-			else{
-				checked_values['description'] = false;
-			}
-			if($(this).attr('data-discount_percentage') != 'undefined'){
-				checked_values['discount_percentage'] = $(this).attr('data-discount_percentage');
-			}
-			else{
-				checked_values['discount_percentage'] = false;
-			}
-			if($(this).attr('data-insurance_claim_coverage') != 'undefined'){
-				checked_values['insurance_claim_coverage'] = $(this).attr('data-insurance_claim_coverage');
-			}
-			else{
-				checked_values['insurance_claim_coverage'] = false;
-			}
-			if($(this).attr('data-insurance_approval_number') != 'undefined'){
-				checked_values['insurance_approval_number'] = $(this).attr('data-insurance_approval_number');
-			}
-			else{
-				checked_values['insurance_approval_number'] = false;
-			}
-			if($(this).attr('data-cost-center') != 'undefined'
-				&& $(this).attr('data-cost-center') != 'null' && $(this).attr('data-cost-center') != 'false'){
-				checked_values['cost_center'] = $(this).attr('data-cost-center');
-			}
-			else{
-				checked_values['cost_center'] = false;
-			}
-			if($(this).attr('data-delivery_note') != 'undefined'){
-				checked_values['delivery_note'] = $(this).attr('data-delivery_note');
-			}
-			else{
-				checked_values['delivery_note'] = false;
+			for(var i=0; i<fields.length; i++){
+				if($(this).attr('data_'+fields[i])){
+					checked_values[fields[i]] = $(this).attr('data_'+fields[i]);
+				}
+				else{
+					checked_values[fields[i]] = false;
+				}
 			}
 			return checked_values;
 		}
@@ -1123,7 +1073,7 @@ var get_drugs_to_invoice = function(frm) {
 			selected_encounter = encounter;
 			var method = "erpnext.healthcare.utils.get_drugs_to_invoice";
 			var args = {encounter: encounter};
-			var columns = (["drug_code","item_name", "quantity", "description"]);
+			var columns = {"item_code": "Drug Code", "item_name": "Item Name", "qty": "quantity", "description": "description"};
 			get_healthcare_items(frm, false, $results, $placeholder, method, args, columns);
 		}
 		else if(!encounter){
@@ -1159,32 +1109,22 @@ var get_drugs_to_invoice = function(frm) {
 };
 
 var list_row_data_items = function(head, $row, result, invoice_healthcare_services) {
-	if(invoice_healthcare_services){
+		var row_html = `<div class="list-item-container"`
+		$.each(result, function(field, val) {
+			row_html += ` data_`+field;
+			if(typeof(val)!="boolean"){
+				row_html += `= "${val}"`;
+			}
+			else{
+				row_html += `= ${val}`;
+			}
+			if(fields.indexOf(field) < 0){
+				fields.push(field)
+			}
+		});
+		row_html += `></div>`
 		head ? $row.addClass('list-item--head')
-			: $row = $(`<div class="list-item-container"
-				data-dn= "${result.reference_name}"
-				data-dt= "${result.reference_type}"
-				data-item= "${result.service}"
-				data-rate = ${result.rate}
-				data-income-account = "${result.income_account}"
-				data-qty = ${result.qty}
-				data-description = "${result.description}"
-				data-cost-center = "${result.cost_center}"
-				data-delivery_note = "${result.delivery_note}"
-				data-discount_percentage = ${result.discount_percentage}
-				data-insurance_claim_coverage = ${result.insurance_claim_coverage}
-				data-insurance_approval_number = ${result.insurance_approval_number}>
-				</div>`).append($row);
-	}
-	else{
-		head ? $row.addClass('list-item--head')
-			: $row = $(`<div class="list-item-container"
-				data-dn= "${result.reference_name}" data-dt= "${result.reference_type}"
-				data-item= "${result.drug_code}"
-				data-qty = ${result.quantity}
-				data-description = "${result.description}">
-				</div>`).append($row);
-	}
+			: $row = $(row_html).append($row);
 	return $row
 };
 
@@ -1203,16 +1143,17 @@ var add_to_item_line = function(frm, checked_values, invoice_healthcare_services
 		});
 	}
 	else{
-		for(let i=0; i<checked_values.length; i++){
-			var si_item = frappe.model.add_child(frm.doc, 'Sales Invoice Item', 'items');
-			frappe.model.set_value(si_item.doctype, si_item.name, 'item_code', checked_values[i]['item_code']);
-			frappe.model.set_value(si_item.doctype, si_item.name, 'qty', 1);
-			frappe.model.set_value(si_item.doctype, si_item.name, 'reference_dt', checked_values[i]['reference_dt']);
-			frappe.model.set_value(si_item.doctype, si_item.name, 'reference_dn', checked_values[i]['reference_dn']);
-			if(checked_values[i]['qty'] > 1){
-				frappe.model.set_value(si_item.doctype, si_item.name, 'qty', parseFloat(checked_values[i]['qty']));
+		frappe.call({
+			doc: frm.doc,
+			method: "set_healthcare_drugs",
+			args:{
+				checked_values: checked_values
+			},
+			callback: function() {
+				frm.trigger("validate");
+				frm.refresh_fields();
 			}
-		}
+		});
 		frm.refresh_fields();
 	}
 };
