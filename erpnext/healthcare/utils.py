@@ -290,12 +290,30 @@ def get_healthcare_services_to_invoice(patient):
 					cost_center = False
 					reference_type = False
 					reference_name = False
+					insurance_details = False
+					include_in_insurance = False
+					delivery_note = frappe.get_doc("Delivery Note", delivery_note_item[1])
 					dn_item = frappe.get_doc("Delivery Note Item", delivery_note_item[0])
 					if dn_item.reference_dt == "Clinical Procedure" and dn_item.reference_dn:
 						service_unit = frappe.get_value("Clinical Procedure", dn_item.reference_dn, 'service_unit')
 						if service_unit:
 							cost_center = frappe.db.get_value("Healthcare Service Unit", service_unit, "cost_center")
-					item_to_invoice.append({'reference_dt': "Delivery Note", 'reference_dn': delivery_note_item[1] if delivery_note_item[1] else '',
+
+					if delivery_note.insurance:
+						include_in_insurance = True
+						insurance_details = get_insurance_details(delivery_note.insurance, dn_item.item_code, patient)
+					if include_in_insurance and insurance_details:
+						invoice_item = {'reference_dt': "Delivery Note", 'reference_dn': delivery_note_item[1] if delivery_note_item[1] else '',
+						'item_code': dn_item.item_code, 'rate': dn_item.rate, 'qty': dn_item.qty, 'item_name':dn_item.item_name,
+						'cost_center': cost_center if cost_center else dn_item.cost_center,
+						'delivery_note': delivery_note_item[1] if delivery_note_item[1] else '',
+						'discount_percentage': insurance_details.discount, 'insurance_claim_coverage': insurance_details.coverage,
+						'insurance_approval_number': delivery_note.insurance_approval_number if delivery_note.insurance_approval_number else ''}
+						if insurance_details.rate:
+							invoice_item['rate'] = insurance_details.rate,
+						item_to_invoice.append(invoice_item)
+					else:
+						item_to_invoice.append({'reference_dt': "Delivery Note", 'reference_dn': delivery_note_item[1] if delivery_note_item[1] else '',
 						'item_code': dn_item.item_code, 'rate': dn_item.rate, 'qty': dn_item.qty, 'item_name':dn_item.item_name,
 						'cost_center': cost_center if cost_center else dn_item.cost_center,
 						'delivery_note': delivery_note_item[1] if delivery_note_item[1] else ''})
