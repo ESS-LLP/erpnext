@@ -491,6 +491,11 @@ def create_delivery_note(ip_record, items):
 	delivery_note.patient_name = frappe.db.get_value("Patient", doc.patient, "patient_name")
 	delivery_note.customer = frappe.db.get_value("Patient", doc.patient, "customer")
 	delivery_note.inpatient_record = ip_record
+	if doc.insurance:
+		delivery_note.insurance = doc.insurance
+		delivery_note.insurance_company_name = doc.insurance_company_name
+		delivery_note.insurance_approval_number = doc.insurance_approval_number
+		delivery_note.insurance_remarks = doc.insurance_remarks
 	source_service_unit = False
 	items = json.loads(items)
 	for item_line in items:

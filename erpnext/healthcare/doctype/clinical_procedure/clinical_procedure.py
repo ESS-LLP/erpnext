@@ -309,6 +309,11 @@ def create_delivery_note(doc):
 		cost_center = frappe.get_cached_value('Company',  doc.company,  'cost_center')
 	delivery_note.source_service_unit = doc.service_unit
 	delivery_note.set_cost_center = cost_center if cost_center else ''
+	if doc.insurance:
+		delivery_note.insurance = doc.insurance
+		delivery_note.insurance_company_name = doc.insurance_company_name
+		delivery_note.insurance_approval_number = doc.insurance_approval_number
+		delivery_note.insurance_remarks = doc.insurance_remarks
 	for item in doc.items:
 		child = delivery_note.append('items')
 		item_details = sales_item_details_for_healthcare_doc(item.item_code, doc)
