@@ -75,7 +75,15 @@ frappe.ui.form.on("Delivery Note", {
 			}
 		});
 
-
+		// Healthcare
+		frm.set_query("insurance", function(){
+			return{
+				filters:{
+					"patient": frm.doc.patient,
+					"docstatus": 1
+				}
+			};
+		});
 	},
 	print_without_amount: function(frm) {
 		erpnext.stock.delivery_note.set_print_hide(frm.doc);
@@ -120,7 +128,16 @@ frappe.ui.form.on("Delivery Note", {
 							if(r.message.patient != frm.doc.patient){
 								frm.set_value("patient", r.message.patient);
 							}
-							frm.set_value('set_warehouse', r.message.current_service_unit_warehouse)
+							frm.set_value('set_warehouse', r.message.current_service_unit_warehouse);
+							if(r.message.insurance){
+								frm.set_value("insurance", data.message.insurance)
+								frm.set_df_property("insurance", "read_only", 1);
+								frm.set_df_property("insurance_approval_number", "reqd", 1);
+							}
+							else{
+								frm.set_value("insurance", "");
+								frm.set_df_property("insurance", "read_only", 0);
+							}
 							frm.refresh_fields();
 						}
 					}
@@ -159,6 +176,14 @@ frappe.ui.form.on("Delivery Note", {
 					frappe.model.set_value("Delivery Note Item", item.name, "cost_center", frm.doc.set_cost_center);
 				});
 			}
+		}
+	},
+	insurance: function(frm){
+		if(frm.doc.insurance && frm.doc.inpatient_record){
+			frm.set_df_property("insurance_approval_number", "reqd", 1);
+		}
+		else{
+			frm.set_df_property("insurance_approval_number", "reqd", 0);
 		}
 	}
 });

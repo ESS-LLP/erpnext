@@ -95,6 +95,23 @@ data = {
 			{
 				'fieldname': 'set_cost_center', 'label': 'Cost Center', 'fieldtype': 'Link', 'fetch_from': 'source_service_unit.cost_center',
 				'insert_after': 'set_warehouse', 'fetch_if_empty': True, 'options': 'Cost Center', 'depends_on': 'source_service_unit'
+			},
+			{
+				'fieldname': 'insurance', 'label': 'Insurance', 'fieldtype': 'Link', 'insert_after': 'customer_name',
+				'options': 'Insurance Assignment'
+			},
+			{
+				'fieldname': 'insurance_company_name', 'label': 'Insurance Company Name', 'fieldtype': 'Data',
+				'fetch_from': 'insurance.insurance_company_name', 'read_only': True, 'insert_after': 'insurance', 'fetch_if_empty': True,
+				'depends_on': 'insurance'
+			},
+			{
+				'fieldname': 'insurance_approval_number', 'label': 'Insurance Approval Number', 'fieldtype': 'Data',
+				'insert_after': 'insurance_company_name', 'depends_on': 'insurance'
+			},
+			{
+				'fieldname': 'insurance_remarks', 'label': 'Insurance Remarks', 'fieldtype': 'Small Text',
+				'insert_after': 'return_against', 'depends_on': 'insurance'
 			}
 
 		],
