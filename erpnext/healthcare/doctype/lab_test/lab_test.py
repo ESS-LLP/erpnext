@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import getdate, cstr, now_datetime
+from frappe.utils import getdate, cstr, now_datetime, today, month_diff
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account
 
 class LabTest(Document):
@@ -198,13 +198,34 @@ def create_normals(template, lab_test):
 	normal.type = template.type
 	if normal.type=="Select":
 		normal.options = template.options
-	if lab_test.patient_sex=="Female" and template.lab_test_normal_range_female:
-		normal.normal_range=template.lab_test_normal_range_female
-	else:
-		normal.normal_range = template.lab_test_normal_range
+	normal.normal_range = get_normal_range(lab_test, template.lab_test_normal_range)
 	normal.require_result_value = 1
 	normal.allow_blank = template.allow_blank
 	normal.template = template.name
+
+def get_normal_range(lab_test, normal_range_doc_id):
+	normal_range_doc = frappe.get_doc("Lab Test Normal Range", normal_range_doc_id)
+	patient = frappe.get_doc("Patient", lab_test.patient)
+	normal_range = False
+	if normal_range_doc.normal_range_condition:
+		for item in normal_range_doc.normal_range_condition:
+			if (item.gender and patient.sex and patient.sex == item.gender) or not item.gender:
+				normal_range = get_conditional_normal_range(item, patient, normal_range)
+
+	return normal_range if normal_range else normal_range_doc.default_normal_range
+
+def get_conditional_normal_range(item, patient, normal_range):
+	if not item.condition_field:
+		return item.normal_range
+	if item.condition_field and frappe.db.has_column("Patient", item.condition_field):
+		if item.condition_field in ["age_html", "dob"]:
+			if patient.dob:
+				age = month_diff(today(), getdate(patient.dob))/12
+				if eval(str(age)+" "+item.condition_formula):
+					normal_range = item.normal_range
+		elif patient[item.condition_field] and eval(str(patient[item.condition_field])+" "+item.condition_formula):
+			normal_range = item.normal_range
+	return normal_range
 
 def create_compounds(template, lab_test, is_group):
 	lab_test.normal_toggle = "1"
@@ -219,10 +240,7 @@ def create_compounds(template, lab_test, is_group):
 		if normal_test_template.secondary_uom:
 			normal.secondary_uom = normal_test_template.secondary_uom
 			normal.conversion_factor = normal_test_template.conversion_factor
-		if lab_test.patient_sex=="Female":
-			normal.normal_range = normal_test_template.normal_range_female
-		else:
-			normal.normal_range = normal_test_template.normal_range
+		normal.normal_range = get_normal_range(lab_test, normal_test_template.normal_range)
 		normal.type = normal_test_template.type
 		if normal.type=="Select":
 			normal.options = normal_test_template.options
@@ -317,7 +335,7 @@ def load_result_format(lab_test, template, prescription, invoice):
 				if lab_test_group.secondary_uom:
 					normal.secondary_uom = lab_test_group.secondary_uom
 					normal.conversion_factor = lab_test_group.conversion_factor
-				normal.normal_range = lab_test_group.group_test_normal_range
+				normal.normal_range = get_normal_range(lab_test, lab_test_group.group_test_normal_range)
 				normal.require_result_value = 1
 				normal.allow_blank = lab_test_group.allow_blank
 				normal.template = template.name
