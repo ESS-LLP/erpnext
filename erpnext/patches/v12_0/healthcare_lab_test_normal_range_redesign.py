@@ -20,22 +20,22 @@ def execute():
 			if frappe.db.has_column("Lab Test Template", "abbr") and not template.abbr:
 				template.abbr = template.lab_test_name
 			if template_type == "Single" and template.lab_test_normal_range:
-				normal_range_name = '-'.join(filter(lambda x: x, [template.lab_test_name, template.lab_test_normal_range]))
+				normal_range_name = '-'.join(filter(lambda x: x, [template.name, template.lab_test_name]))
 				if frappe.db.has_column("Lab Test Template", "lab_test_normal_range_female") and template.lab_test_normal_range_female:
 					female_normal_range = template.lab_test_normal_range_female
-				template.lab_test_normal_range = create_lab_test_normal_range(template, template.lab_test_normal_range, normal_range_name, female_normal_range)
+				template.normal_range = create_lab_test_normal_range(template, template.lab_test_normal_range, normal_range_name, female_normal_range)
 			elif template_type == "Compound" and template.normal_test_templates:
 				for normal_test_template in template.normal_test_templates:
 					if normal_test_template.normal_range:
-						normal_range_name = '-'.join(filter(lambda x: x, [normal_test_template.lab_test_event, normal_test_template.normal_range]))
+						normal_range_name = '-'.join(filter(lambda x: x, [template.name, normal_test_template.lab_test_event]))
 						if frappe.db.has_column("Normal Test Template", "normal_range_female") and normal_test_template.normal_range_female:
 							female_normal_range = normal_test_template.normal_range_female
-						normal_test_template.normal_range = create_lab_test_normal_range(template, normal_test_template.normal_range, normal_range_name, female_normal_range)
+						normal_test_template.compound_normal_range = create_lab_test_normal_range(template, normal_test_template.normal_range, normal_range_name, female_normal_range)
 			elif template_type == "Grouped" and template.lab_test_groups:
 				for lab_test_group in template.lab_test_groups:
 					if lab_test_group.group_test_normal_range:
-						normal_range_name = '-'.join(filter(lambda x: x, [lab_test_group.group_event, lab_test_group.group_test_normal_range]))
-						lab_test_group.group_test_normal_range = create_lab_test_normal_range(template, lab_test_group.group_test_normal_range, normal_range_name)
+						normal_range_name = '-'.join(filter(lambda x: x, [template.name, lab_test_group.group_event]))
+						lab_test_group.group_normal_range = create_lab_test_normal_range(template, lab_test_group.group_test_normal_range, normal_range_name)
 			template.save(ignore_permissions=True)
 
 def create_lab_test_normal_range(template, normal_range, normal_range_name, female_normal_range=False):
