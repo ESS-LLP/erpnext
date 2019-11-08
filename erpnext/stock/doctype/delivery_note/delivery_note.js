@@ -130,7 +130,7 @@ frappe.ui.form.on("Delivery Note", {
 							}
 							frm.set_value('set_warehouse', r.message.current_service_unit_warehouse);
 							if(r.message.insurance){
-								frm.set_value("insurance", data.message.insurance)
+								frm.set_value("insurance", r.message.insurance)
 								frm.set_df_property("insurance", "read_only", 1);
 								frm.set_df_property("insurance_approval_number", "reqd", 1);
 							}
