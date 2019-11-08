@@ -54,7 +54,7 @@ frappe.ui.form.on('Clinical Procedure', {
 							frm.set_df_property("referring_practitioner", "read_only", 0);
 						}
 						if(r.message.insurance){
-							frm.set_value("insurance", data.message.insurance)
+							frm.set_value("insurance", r.message.insurance)
 							frm.set_df_property("insurance", "read_only", 1);
 							frm.set_df_property("insurance_approval_number", "reqd", 1);
 						}
