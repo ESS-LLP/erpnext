@@ -55,6 +55,10 @@ def create_lab_test_normal_range(template, normal_range, normal_range_name, fema
 		lab_test_normal_range = frappe.new_doc("Lab Test Normal Range")
 		lab_test_normal_range.lab_test_normal_range = normal_range_name
 		lab_test_normal_range.default_normal_range = normal_range
+		if normal_range:
+			normal_range_condition = lab_test_normal_range.append("normal_range_condition")
+			normal_range_condition.gender = "Male"
+			normal_range_condition.normal_range = normal_range
 		if female_normal_range:
 			normal_range_condition = lab_test_normal_range.append("normal_range_condition")
 			normal_range_condition.gender = "Female"
