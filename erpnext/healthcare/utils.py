@@ -1110,3 +1110,106 @@ def delete_medical_record(reference_doc, reference_name):
 		where
 			reference_doctype = %s and reference_name = %s"""
 	frappe.db.sql(query, (reference_doc, reference_name))
+
+@frappe.whitelist()
+def get_revenue_sharing_distribution(invoice_items):
+	from six import string_types
+	if isinstance(invoice_items, string_types):
+		item = json.loads(invoice_items)
+	else:
+		item = invoice_items
+	distributions = []
+	if item.reference_dt and item.reference_dn:
+		not_share_revenue_dt = ["Inpatient Record Procedure", "Inpatient Occupancy", "Lab Prescription", "Procedure Prescription", "Radiology Procedure Prescription", "Drug Prescription",]
+		if not item.delivery_note and item.reference_dt != "Delivery Note" and item.reference_dt not in not_share_revenue_dt:
+			ref_doc = frappe.get_doc(item.reference_dt, item.reference_dn)
+			is_external = frappe.get_value("Healthcare Practitioner", ref_doc.referring_practitioner, "healthcare_practitioner_type")
+			if ref_doc.source == "Direct":
+				assignment = frappe.db.exists("Healthcare Service Profile Assignment",
+					{
+						"practitioner": ref_doc.practitioner,
+						"is_active": 1
+					}
+				)
+				if assignment:
+					assignment_doc=frappe.get_doc("Healthcare Service Profile Assignment", assignment)
+					if assignment_doc:
+						distribute_amount=0
+						if assignment_doc.revenue_sharing_items:
+							item_group=frappe.db.get_value("Item", item.item_code, "item_group")
+							for sharing_item in assignment_doc.revenue_sharing_items:
+								if sharing_item.item_group==item_group:
+									distribute_amount=(item.amount* 0.01 * sharing_item.direct_percentage)
+						distribution = {
+							'item_code': item.item_code,
+							'item_amount': item.amount,
+							'reference_dt': item.reference_dt,
+							'reference_dn': item.reference_dn,
+							'amount': distribute_amount
+						}
+						distribution['practitioner'] = ref_doc.practitioner
+						distributions.append(distribution)
+			elif ref_doc.source == "Referral" and ref_doc.referring_practitioner:
+				assignment = frappe.db.exists("Healthcare Service Profile Assignment",
+					{
+						"practitioner": ref_doc.referring_practitioner,
+						"is_active": 1
+					}
+				)
+				if assignment:
+					assignment_doc=frappe.get_doc("Healthcare Service Profile Assignment", assignment)
+					if assignment_doc:
+						distribute_amount=0
+						if assignment_doc.revenue_sharing_items:
+							item_group=frappe.db.get_value("Item", item.item_code, "item_group")
+							for sharing_item in assignment_doc.revenue_sharing_items:
+								if sharing_item.item_group==item_group:
+									distribute_amount=(item.amount* 0.01 * sharing_item.referral_percentage)
+							distribution = {
+							'item_code': item.item_code,
+							'item_amount': item.amount,
+							'reference_dt': item.reference_dt,
+							'reference_dn': item.reference_dn,
+							'amount': distribute_amount}
+							distribution['practitioner'] = ref_doc.referring_practitioner
+							distributions.append(distribution)
+					if assignment_doc.allow_multiple:
+						distribute_amount=0
+						if assignment_doc.revenue_sharing_items:
+							item_group=frappe.db.get_value("Item", item.item_code, "item_group")
+							for sharing_item in assignment_doc.revenue_sharing_items:
+								if sharing_item.item_group==item_group:
+									distribute_amount=(item.amount* 0.01 * sharing_item.direct_percentage)
+							distribution = {
+							'item_code': item.item_code,
+							'item_amount': item.amount,
+							'reference_dt': item.reference_dt,
+							'reference_dn': item.reference_dn,
+							'amount': distribute_amount}
+							distribution['practitioner'] = ref_doc.practitioner
+							distributions.append(distribution)
+			elif ref_doc.source == "External Referral" and ref_doc.referring_practitioner:
+				assignment = frappe.db.exists("Healthcare Service Profile Assignment",
+					{
+						"practitioner": ref_doc.referring_practitioner,
+						"is_active": 1
+					}
+				)
+				if assignment:
+					assignment_doc=frappe.get_doc("Healthcare Service Profile Assignment", assignment)
+					if assignment_doc:
+						distribute_amount=0
+						if assignment_doc.revenue_sharing_items:
+							item_group=frappe.db.get_value("Item", item.item_code, "item_group")
+							for sharing_item in assignment_doc.revenue_sharing_items:
+								if sharing_item.item_group==item_group:
+									distribute_amount=(item.amount* 0.01 * sharing_item.referral_percentage)
+						distribution = {
+						'item_code': item.item_code,
+						'item_amount': item.amount,
+						'reference_dt': item.reference_dt,
+						'reference_dn': item.reference_dn,
+						'amount': distribute_amount}
+						distribution['practitioner'] = ref_doc.referring_practitioner
+						distributions.append(distribution)
+	return distributions

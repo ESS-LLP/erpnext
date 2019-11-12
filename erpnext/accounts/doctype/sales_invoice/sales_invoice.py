@@ -25,7 +25,7 @@ from erpnext.accounts.doctype.loyalty_program.loyalty_program import \
 	get_loyalty_program_details_with_points, get_loyalty_details, validate_loyalty_points
 from erpnext.accounts.deferred_revenue import validate_service_stop_date
 
-from erpnext.healthcare.utils import manage_invoice_submit_cancel
+from erpnext.healthcare.utils import manage_invoice_submit_cancel, get_revenue_sharing_distribution
 
 from six import iteritems
 
@@ -1199,6 +1199,20 @@ class SalesInvoice(SellingController):
 		self.calculate_healthcare_insurance_claim()
 		self.set_missing_values(for_validate = True)
 
+	def set_revenue_sharing_distribution(self, invoice_items):
+		self.set("practitioner_revenue_distributions", [])
+		distributions=get_revenue_sharing_distribution(invoice_items)
+		if distributions:
+			for distribution in distributions:
+				dist_line = self.append("practitioner_revenue_distributions", {})
+				dist_line.practitioner= distribution["practitioner"]
+				dist_line.item_code= distribution["item_code"]
+				dist_line.item_amount= distribution["item_amount"]
+				dist_line.amount= distribution["amount"]
+				dist_line.mode_of_sharing = "Percentage"
+				dist_line.reference_dt= distribution["reference_dt"]
+				dist_line.reference_dn= distribution["reference_dn"]
+
 	def calculate_healthcare_insurance_claim(self):
 		total_claim_amount = 0
 		for item in self.items:
@@ -1235,6 +1249,7 @@ class SalesInvoice(SellingController):
 		item_line.amount = float(item_line.rate) * float(item_line.qty)
 		if item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
 			item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
+		self.set_revenue_sharing_distribution(item_line)
 
 	def set_clinical_procedure_delivery_note(self, checked_item):
 		procedure_obj = frappe.get_doc("Clinical Procedure", checked_item['reference_dn'])
