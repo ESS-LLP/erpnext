@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import getdate, cstr, now_datetime, today, month_diff
+from frappe.utils import getdate, cstr, now_datetime, today, month_diff, date_diff
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account
 
 class LabTest(Document):
@@ -216,13 +216,22 @@ def get_normal_range(lab_test, normal_range_doc_id):
 	return normal_range if normal_range else normal_range_doc.default_normal_range
 
 def get_conditional_normal_range(item, patient, normal_range):
+	import re
 	if not item.condition_field:
 		return item.normal_range
 	if item.condition_field and frappe.db.has_column("Patient", item.condition_field):
 		if item.condition_field in ["age_html", "dob"]:
 			if patient.dob:
-				age = month_diff(today(), getdate(patient.dob))/12
-				if eval(str(age)+" "+item.condition_formula):
+				if item.calculate_age_by == "Year":
+					age = month_diff(today(), getdate(patient.dob))/12
+				elif item.calculate_age_by == "Month":
+					age = month_diff(today(), getdate(patient.dob))
+				elif item.calculate_age_by == "Day":
+					age = date_diff(today(), getdate(patient.dob))
+				eval_formula = str(age)+" "+item.condition_formula
+				if not re.match("^[a-zA-Z0-9_]*$", item.condition_formula[-2:]):
+					eval_formula += " "+str(age)
+				if eval(eval_formula):
 					normal_range = item.normal_range
 		elif patient[item.condition_field] and eval(str(patient[item.condition_field])+" "+item.condition_formula):
 			normal_range = item.normal_range
