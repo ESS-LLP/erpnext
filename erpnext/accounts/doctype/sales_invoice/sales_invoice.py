@@ -1212,6 +1212,36 @@ class SalesInvoice(SellingController):
 				dist_line.mode_of_sharing = "Percentage"
 				dist_line.reference_dt= distribution["reference_dt"]
 				dist_line.reference_dn= distribution["reference_dn"]
+				reference_doc=frappe.get_doc(dist_line.reference_dt, dist_line.reference_dn)
+				if reference_doc.insurance:
+					allow_split = frappe.db.get_value("Healthcare Settings", None, "allow_split_amount")
+					if allow_split:
+						sharing_item = frappe.db.get_value("Healthcare Settings", None, "revenue_split_item")
+						if sharing_item:
+							self.set_revenue_sharing_item_insurance(dist_line, sharing_item, reference_doc)
+
+	def set_revenue_sharing_item_insurance(self, dist_line, sharing_item, reference_doc):
+		item_line = self.append("items")
+		item_line.item_code = sharing_item
+		from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
+		item_details = sales_item_details_for_healthcare_doc(item_line.item_code, self)
+		item_line.item_name = item_details.item_name
+		item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
+		item_line.rate = dist_line.amount
+		if reference_doc.insurance and item_line.item_code:
+			from erpnext.healthcare.utils import get_insurance_details
+			patient_doc= frappe.get_doc("Patient", self.patient)
+			insurance_details = get_insurance_details(reference_doc.insurance, item_line.item_code, patient_doc)
+			if insurance_details:
+				item_line.insurance_claim_coverage = insurance_details.coverage
+				item_line.insurance_approval_number=  reference_doc.insurance_approval_number if reference_doc.insurance_approval_number else ''
+		item_line.qty = 1
+		item_line.amount = item_line.rate*item_line.qty
+		item_line.reference_dt = "Sales Invoice"
+		item_line.reference_dn = self.name
+		item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
+		self.total_insurance_claim_amount =+ item_line.insurance_claim_amount
+
 
 	def calculate_healthcare_insurance_claim(self):
 		total_claim_amount = 0
