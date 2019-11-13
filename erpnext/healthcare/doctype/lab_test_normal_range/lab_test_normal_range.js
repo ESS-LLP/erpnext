@@ -21,3 +21,17 @@ var set_options_for_child_fields = function(frm) {
 		df.options = options;
 	});
 };
+
+frappe.ui.form.on('Lab Test Normal Range Condition', {
+	based_on: function(frm, cdt, cdn) {
+		var child = locals[cdt][cdn];
+		if(child.based_on && child.based_on=="Age"){
+			if(child.condition_field!="dob"){
+				frappe.model.set_value(cdt, cdn, 'condition_field', 'dob');
+			}
+		}
+		else if(!child.based_on){
+			frappe.model.set_value(cdt, cdn, 'condition_field', '');
+		}
+	}
+});
