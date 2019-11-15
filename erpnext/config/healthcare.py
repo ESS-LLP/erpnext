@@ -258,6 +258,21 @@ def get_data():
 					"type": "doctype",
 					"name": "Insurance Contract",
 					"label": _("Insurance Contract"),
+				},
+				{
+					"type": "doctype",
+					"name": "Healthcare Service Profile Assignment",
+					"label": _("Healthcare Service Profile Assignment"),
+				},
+				{
+					"type": "doctype",
+					"name": "Practitioner Service Profile",
+					"label": _("Practitioner Service Profile"),
+				},
+				{
+					"type": "doctype",
+					"name": "Healthcare Service Revenue Allocation",
+					"label": _("Healthcare Service Revenue Allocation"),
 				}
 			]
 		}

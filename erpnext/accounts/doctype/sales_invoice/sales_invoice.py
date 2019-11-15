@@ -1199,9 +1199,9 @@ class SalesInvoice(SellingController):
 		self.calculate_healthcare_insurance_claim()
 		self.set_missing_values(for_validate = True)
 
-	def set_revenue_sharing_distribution(self, invoice_items):
+	def set_revenue_sharing_distribution(self, invoice_item):
 		self.set("practitioner_revenue_distributions", [])
-		distributions=get_revenue_sharing_distribution(invoice_items)
+		distributions=get_revenue_sharing_distribution(invoice_item)
 		if distributions:
 			for distribution in distributions:
 				dist_line = self.append("practitioner_revenue_distributions", {})
@@ -1209,18 +1209,19 @@ class SalesInvoice(SellingController):
 				dist_line.item_code= distribution["item_code"]
 				dist_line.item_amount= distribution["item_amount"]
 				dist_line.amount= distribution["amount"]
-				dist_line.mode_of_sharing = "Percentage"
+				dist_line.mode_of_sharing = distribution["type_of_sharing"]
 				dist_line.reference_dt= distribution["reference_dt"]
 				dist_line.reference_dn= distribution["reference_dn"]
 				reference_doc=frappe.get_doc(dist_line.reference_dt, dist_line.reference_dn)
-				if reference_doc.insurance:
-					allow_split = frappe.db.get_value("Healthcare Settings", None, "allow_split_amount")
-					if allow_split:
-						sharing_item = frappe.db.get_value("Healthcare Settings", None, "revenue_split_item")
-						if sharing_item:
-							self.set_revenue_sharing_item_insurance(dist_line, sharing_item, reference_doc)
+				allow_split = frappe.db.get_value("Healthcare Settings", None, "allow_split_amount")
+				if allow_split:
+					sharing_item = frappe.db.get_value("Healthcare Settings", None, "revenue_split_item")
+					if sharing_item:
+						self.set_revenue_sharing_item(dist_line, sharing_item, reference_doc)
+						invoice_item.rate=invoice_item.rate-(dist_line.amount/invoice_item.qty)
+		return invoice_item
 
-	def set_revenue_sharing_item_insurance(self, dist_line, sharing_item, reference_doc):
+	def set_revenue_sharing_item(self, dist_line, sharing_item, reference_doc):
 		item_line = self.append("items")
 		item_line.item_code = sharing_item
 		from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
@@ -1237,11 +1238,11 @@ class SalesInvoice(SellingController):
 				item_line.insurance_approval_number=  reference_doc.insurance_approval_number if reference_doc.insurance_approval_number else ''
 		item_line.qty = 1
 		item_line.amount = item_line.rate*item_line.qty
-		item_line.reference_dt = "Sales Invoice"
-		item_line.reference_dn = self.name
-		item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
-		self.total_insurance_claim_amount =+ item_line.insurance_claim_amount
-
+		item_line.reference_dt = reference_doc.doctype
+		item_line.reference_dn = reference_doc.name
+		if reference_doc.insurance and item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
+			item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
+			self.total_insurance_claim_amount =+ item_line.insurance_claim_amount
 
 	def calculate_healthcare_insurance_claim(self):
 		total_claim_amount = 0
@@ -1276,10 +1277,10 @@ class SalesInvoice(SellingController):
 			item_line.discount_amount = float(item_line.rate) * float(item_line.discount_percentage) * 0.01
 			if item_line.discount_amount and item_line.discount_amount > 0:
 				item_line.rate = float(item_line.rate) - float(item_line.discount_amount)
+		item_line  = self.set_revenue_sharing_distribution(item_line)
 		item_line.amount = float(item_line.rate) * float(item_line.qty)
 		if item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
-			item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
-		self.set_revenue_sharing_distribution(item_line)
+			item_line.insurance_claim_amount = item_line.amount * 0.01 * float(item_line.insurance_claim_coverage)
 
 	def set_clinical_procedure_delivery_note(self, checked_item):
 		procedure_obj = frappe.get_doc("Clinical Procedure", checked_item['reference_dn'])

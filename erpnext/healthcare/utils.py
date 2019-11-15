@@ -7,7 +7,7 @@ import frappe, json
 import datetime
 from frappe import _
 import math
-from frappe.utils import time_diff_in_hours, rounded, getdate, add_days, nowdate
+from frappe.utils import time_diff_in_hours, rounded, getdate, add_days, nowdate, nowtime
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_income_account
 from erpnext.healthcare.doctype.fee_validity.fee_validity import create_fee_validity, update_fee_validity
 from erpnext.healthcare.doctype.lab_test.lab_test import create_multiple
@@ -165,7 +165,6 @@ def get_healthcare_services_to_invoice(patient):
 						else:
 							item_to_invoice.append({'reference_dt': 'Lab Test', 'reference_dn': lab_test_obj.name, 'item_name':service_item_name,
 							'item_code': frappe.db.get_value("Lab Test Template", lab_test_obj.template, "item"), 'cost_center': cost_center if cost_center else ''})
-							print(item_to_invoice)
 
 			lab_rxs = frappe.db.sql("""select lp.name,et.name from `tabPatient Encounter` et, `tabLab Prescription` lp
 			where et.patient=%s and lp.parent=et.name and lp.lab_test_created=0 and lp.invoiced=0""", (patient.name))
@@ -434,12 +433,176 @@ def manage_invoice_submit_cancel(doc, method):
 				create_insurance_claim(frappe.get_doc("Insurance Assignment", key), jv_amount[key], doc)
 	if method=="on_submit" and frappe.db.get_value("Healthcare Settings", None, "create_test_on_si_submit") == '1':
 		create_multiple("Sales Invoice", doc.name)
+	manage_revenue_sharing(doc, method)	
+
+def manage_revenue_sharing(doc, method):
+	if method == "on_submit":
+		allocations = {}
+		revenue_allocation = None
+		#CREATE ALLOCATIONS
+		for item in doc.items:
+			if item.reference_dt and item.reference_dn and item.reference_dt != "Delivery Note" and not item.delivery_note:
+				print("\n\n\n\n1234567890-")
+				ref_doc = frappe.get_doc(item.reference_dt, item.reference_dn)
+				item_group = item.item_group
+				source = False
+				practitioner = False
+				if "Prescription" in item.reference_dt:
+					source, practitioner = frappe.db.get_value("Patient Encounter",
+						ref_doc.parent,	["source", "practitioner"])
+				elif "Inpatient Occupancy" in item.reference_dt:
+					source, practitioner = frappe.db.get_value("Inpatient Record",
+						ref_doc.parent,	["source", "primary_practitioner"])
+				else:
+					practitioner = ref_doc.practitioner
+					source = ref_doc.source
+				if not source:
+					continue
+				for dist in doc.practitioner_revenue_distributions:
+					if dist.reference_dt == item.reference_dt and dist.reference_dn == item.reference_dn and \
+						dist.item_code == item.item_code and item.amount > 0 and dist.amount > 0:
+							revenue_allocation = None
+							percentage = dist.amount / item.amount * 100
+							if percentage > 0:
+								if not revenue_allocation or revenue_allocation.practitioner != dist.practitioner:
+									revenue_allocation = get_revenue_allocation(allocations, dist.practitioner)
+								revenue_allocation.append("revenue_items", {
+									"item": item.item_code,
+									"reference_dt": item.reference_dt,
+									"reference_dn": item.reference_dn,
+									"invoice_amount": item.amount,
+									"percentage": percentage,
+									"amount": item.amount * percentage * .01
+								})
+								allocations[dist.practitioner] = revenue_allocation
+		for practitioner in allocations:
+			allocation = allocations[practitioner]
+			entry = None
+			if not allocation.revenue_items:
+				continue
+			# CREATE ADDITIONAL SLAARY OR PURCHASE INVOICE FOR EACH PRACTITIONER
+			else:
+				ptype, emp, sup = frappe.db.get_value("Healthcare Practitioner",
+					practitioner,	["healthcare_practitioner_type", "employee", "supplier"])
+
+				total_amount = get_total_revenue_share(allocation)
+				if total_amount:
+					if ptype == "External":
+						inv_item = frappe.db.get_value("Healthcare Settings",
+							None, "revenue_booking_item")
+
+						if not sup or not inv_item:
+							frappe.throw("Missing required configurations to process revenue allocation, Supplier / Revenue Booking Item")
+						entry = create_purchase_invoice(doc, sup, inv_item, total_amount)
+					else:
+						sc = frappe.db.get_value("Healthcare Settings", None,
+							"revenue_booking_salary_compnent")
+
+						if not emp or not sc:
+							frappe.throw("Missing required configurations to process revenue allocation, Employee / Salary Component")
+						entry = create_additional_salary(doc.company, emp, sc, total_amount)
+					if entry:
+						allocation.sales_invoice = doc.name
+						allocation.patient = doc.patient
+						allocation.allocation_date = getdate()
+						allocation.allocation_time = nowtime()
+						allocation.reference_dt = entry.doctype
+						allocation.reference_dn = entry.name
+						allocation.total_amount = total_amount
+						allocation.insert(ignore_permissions=1)
+						if allocation.practitioner == practitioner:
+							allocation.status = "Completed"
+							allocation.submit()
+						else:
+							# mismatch in data! alert user role
+							allocation.status = "Pending"
+							allocation.save()
+	elif method == "on_cancel":
+		# cancel related Additional Salary or Purchase Invoice
+		allocations = frappe.get_all("Healthcare Service Revenue Allocation",
+			{"sales_invoice": doc.name}, ["name", "reference_dt", "reference_dn"])
+		if allocations:
+			for alloc in allocations:
+				try:
+					frappe.get_doc("Healthcare Service Revenue Allocation", alloc.name).cancel()
+					frappe.get_doc(alloc.reference_dt, alloc.reference_dn).cancel()
+				except Exception:
+					# log error and warn
+					frappe.throw("Did not Cancel, failed to process revenue allocation lnked to this Invoice")
+
+def get_total_revenue_share(alloc):
+	amount = 0
+	for item in alloc.revenue_items:
+		amount += item.amount
+	return amount
+
+def get_revenue_allocation(allocations, practitioner):
+	if allocations.get(practitioner) and allocations[practitioner]:
+		return allocations[practitioner]
+	else:
+		revenue_alloc = frappe.new_doc("Healthcare Service Revenue Allocation")
+		revenue_alloc.practitioner = practitioner
+		return revenue_alloc
+
+def create_purchase_invoice(doc, supplier, item, amount):
+	item_name, item_uom = frappe.db.get_value("Item", {"name": item},
+		["item_name", "stock_uom"])
+	pi = frappe.new_doc("Purchase Invoice")
+	pi.posting_date = getdate()
+	pi.supplier = supplier
+	pi.company = doc.company
+	pi.sch_sales_invoice=doc.name
+	pi.update_stock = 0
+	pi.is_paid = 0
+	pi.append("items", {
+			"item_code": item,
+			"item_name": item_name,
+			"qty": 1,
+			"stock_uom": item_uom,
+			"rate": amount
+		})
+	default_taxes_and_charge = frappe.db.exists(
+		"Purchase Taxes and Charges Template",
+		{
+			"is_default": True,
+			'company': doc.company
+		}
+	)
+	if default_taxes_and_charge:
+		pi.taxes_and_charges = default_taxes_and_charge
+		taxes_and_charges = frappe.get_doc("Purchase Taxes and Charges Template", pi.taxes_and_charges)
+		for tax in taxes_and_charges.taxes:
+			tax_item = pi.append('taxes')
+			tax_item.category = tax.category
+			tax_item.add_deduct_tax = tax.add_deduct_tax
+			tax_item.charge_type = tax.charge_type
+			tax_item.included_in_print_rate = tax.included_in_print_rate
+			tax_item.rate = tax.rate
+			tax_item.account_head = tax.account_head
+			tax_item.cost_center = tax.cost_center
+			tax_item.description = tax.description
+	pi.set_missing_values(True)
+	pi.save(ignore_permissions=True)
+	pi.submit()
+	return pi
+
+def create_additional_salary(company, employee, component, amount):
+	additional_salary = frappe.get_doc({
+		"doctype": "Additional Salary",
+		"employee": employee,
+		"payroll_date": getdate(),
+		"amount": amount,
+		"salary_component": component,
+		"company": company
+	}).insert(ignore_permissions=1)
+	additional_salary.submit()
+	return additional_salary
 
 def set_invoiced(item, method, ref_invoice=None):
 	invoiced = False
 	if(method=="on_submit"):
-		if not item.delivery_note:
-			validate_invoiced_on_submit(item)
+		# if not item.delivery_note:
+			# validate_invoiced_on_submit(item)
 		invoiced = True
 
 	if item.reference_dt == 'Inpatient Occupancy' and frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
@@ -468,8 +631,9 @@ def set_invoiced(item, method, ref_invoice=None):
 
 def validate_invoiced_on_submit(item):
 	if frappe.db.get_value(item.reference_dt, item.reference_dn, "invoiced") == 1:
-		frappe.throw(_("The item referenced by {0} - {1} is already invoiced"\
+		msg_print(_("The item referenced by {0} - {1} is already invoiced"\
 		).format(item.reference_dt, item.reference_dn))
+
 
 def manage_prescriptions(invoiced, ref_dt, ref_dn, dt, created_check_field):
 	created = frappe.db.get_value(ref_dt, ref_dn, created_check_field)
@@ -945,7 +1109,6 @@ def manage_insurance_claim_on_si_cancel(doc):
 			claim_obj.cancel()
 			frappe.db.set_value("Insurance Claim", claim_obj.name, "claim_status", "Cancelled")
 def create_insurance_claim(insurance, amount, doc):
-	# create claim
 	insurance_claim=frappe.new_doc('Insurance Claim')
 	insurance_claim.patient=doc.patient
 	insurance_claim.insurance_company=insurance.insurance_company
@@ -963,34 +1126,35 @@ def create_insurance_claim(insurance, amount, doc):
 	insurance_claim.claim_status="Claim Created"
 	insurance_claim_item=[]
 	for item in doc.items:
-		if frappe.get_meta(item.reference_dt).has_field("insurance"):
-			reference_doc = frappe.get_doc(item.reference_dt, item.reference_dn)
-		elif item.reference_dt in  ['Lab Prescription', 'Procedure Prescription', 'Inpatient Occupancy', 'Drug Prescription']:
-			reference_obj = frappe.get_doc(item.reference_dt, item.reference_dn)
-			if frappe.get_meta(reference_obj.parenttype).has_field("insurance"):
-				reference_doc = frappe.get_doc(reference_obj.parenttype,  reference_obj.parent)
-		if reference_doc.insurance and reference_doc.insurance== insurance.name :
-			insurance_remarks=''
-			if frappe.db.has_column(item.reference_dt, 'insurance_remarks'):
-				insurance_remarks = reference_doc.insurance_remarks
-			insurance_claim_item.append({
-							"patient": doc.patient,
-							"insurance_company": insurance.insurance_company,
-							"insurance_assignment": insurance.name,
-							"sales_invoice": doc.name,
-							"date_of_service": doc.posting_date,
-							"item_code": item.item_code,
-							"item_name": item.item_name,
-							"discount_percentage": item.discount_percentage,
-							"discount_amount": item.discount_amount,
-							"rate": item.rate,
-							"amount": item.amount,
-							"insurance_claim_coverage": item.insurance_claim_coverage,
-							"insurance_claim_amount": item.insurance_claim_amount,
-							"claim_status":"Claim Created",
-							"insurance_approval_number": item.insurance_approval_number,
-							"insurance_remarks": insurance_remarks if insurance_remarks else '',
-						})
+		if item.reference_dt:
+			if frappe.get_meta(item.reference_dt).has_field("insurance"):
+				reference_doc = frappe.get_doc(item.reference_dt, item.reference_dn)
+			elif item.reference_dt in  ['Lab Prescription', 'Procedure Prescription', 'Inpatient Occupancy', 'Drug Prescription']:
+				reference_obj = frappe.get_doc(item.reference_dt, item.reference_dn)
+				if frappe.get_meta(reference_obj.parenttype).has_field("insurance"):
+					reference_doc = frappe.get_doc(reference_obj.parenttype,  reference_obj.parent)
+			if reference_doc.insurance and reference_doc.insurance== insurance.name :
+				insurance_remarks=''
+				if frappe.db.has_column(item.reference_dt, 'insurance_remarks'):
+					insurance_remarks = reference_doc.insurance_remarks
+				insurance_claim_item.append({
+								"patient": doc.patient,
+								"insurance_company": insurance.insurance_company,
+								"insurance_assignment": insurance.name,
+								"sales_invoice": doc.name,
+								"date_of_service": doc.posting_date,
+								"item_code": item.item_code,
+								"item_name": item.item_name,
+								"discount_percentage": item.discount_percentage,
+								"discount_amount": item.discount_amount,
+								"rate": item.rate,
+								"amount": item.amount,
+								"insurance_claim_coverage": item.insurance_claim_coverage,
+								"insurance_claim_amount": item.insurance_claim_amount,
+								"claim_status":"Claim Created",
+								"insurance_approval_number": item.insurance_approval_number,
+								"insurance_remarks": insurance_remarks if insurance_remarks else '',
+							})
 	insurance_claim.set("insurance_claim_item", insurance_claim_item)
 	insurance_claim.save(ignore_permissions = True)
 	insurance_claim.submit()
@@ -1112,12 +1276,12 @@ def delete_medical_record(reference_doc, reference_name):
 	frappe.db.sql(query, (reference_doc, reference_name))
 
 @frappe.whitelist()
-def get_revenue_sharing_distribution(invoice_items):
+def get_revenue_sharing_distribution(invoice_item):
 	from six import string_types
-	if isinstance(invoice_items, string_types):
-		item = json.loads(invoice_items)
+	if isinstance(invoice_item, string_types):
+		item = json.loads(invoice_item)
 	else:
-		item = invoice_items
+		item = invoice_item
 	distributions = []
 	if item.reference_dt and item.reference_dn:
 		not_share_revenue_dt = ["Inpatient Record Procedure", "Inpatient Occupancy", "Lab Prescription", "Procedure Prescription", "Radiology Procedure Prescription", "Drug Prescription",]
@@ -1135,6 +1299,7 @@ def get_revenue_sharing_distribution(invoice_items):
 					assignment_doc=frappe.get_doc("Healthcare Service Profile Assignment", assignment)
 					if assignment_doc:
 						distribute_amount=0
+						item_amount= item.rate * item.qty
 						if assignment_doc.revenue_sharing_items:
 							item_group=frappe.db.get_value("Item", item.item_code, "item_group")
 							for sharing_item in assignment_doc.revenue_sharing_items:
@@ -1142,16 +1307,17 @@ def get_revenue_sharing_distribution(invoice_items):
 									if sharing_item.type_of_sharing=="Fixed":
 										distribute_amount=direct_amount
 									else:
-										distribute_amount=(item.amount* 0.01 * sharing_item.direct_percentage)
-						distribution = {
-							'item_code': item.item_code,
-							'item_amount': item.amount,
-							'reference_dt': item.reference_dt,
-							'reference_dn': item.reference_dn,
-							'amount': distribute_amount
-						}
-						distribution['practitioner'] = ref_doc.practitioner
-						distributions.append(distribution)
+										distribute_amount=(item_amount * 0.01 * sharing_item.direct_percentage)
+									distribution = {
+										'item_code': item.item_code,
+										'item_amount': item_amount,
+										'reference_dt': item.reference_dt,
+										'reference_dn': item.reference_dn,
+										'type_of_sharing' : sharing_item.type_of_sharing,
+										'amount': distribute_amount
+									}
+									distribution['practitioner'] = ref_doc.practitioner
+									distributions.append(distribution)
 			elif ref_doc.source == "Referral" and ref_doc.referring_practitioner:
 				assignment = frappe.db.exists("Healthcare Service Profile Assignment",
 					{
@@ -1163,6 +1329,7 @@ def get_revenue_sharing_distribution(invoice_items):
 					assignment_doc=frappe.get_doc("Healthcare Service Profile Assignment", assignment)
 					if assignment_doc:
 						distribute_amount=0
+						item_amount= item.rate * item.qty
 						if assignment_doc.revenue_sharing_items:
 							item_group=frappe.db.get_value("Item", item.item_code, "item_group")
 							for sharing_item in assignment_doc.revenue_sharing_items:
@@ -1170,17 +1337,19 @@ def get_revenue_sharing_distribution(invoice_items):
 									if sharing_item.type_of_sharing=="Fixed":
 										distribute_amount=referral_amount
 									else:
-										distribute_amount=(item.amount* 0.01 * sharing_item.referral_percentage)
-							distribution = {
-							'item_code': item.item_code,
-							'item_amount': item.amount,
-							'reference_dt': item.reference_dt,
-							'reference_dn': item.reference_dn,
-							'amount': distribute_amount}
-							distribution['practitioner'] = ref_doc.referring_practitioner
-							distributions.append(distribution)
+										distribute_amount=(item_amount* 0.01 * sharing_item.referral_percentage)
+									distribution = {
+									'item_code': item.item_code,
+									'item_amount': item_amount,
+									'reference_dt': item.reference_dt,
+									'reference_dn': item.reference_dn,
+									'type_of_sharing' : sharing_item.type_of_sharing,
+									'amount': distribute_amount}
+									distribution['practitioner'] = ref_doc.referring_practitioner
+									distributions.append(distribution)
 					if assignment_doc.allow_multiple:
 						distribute_amount=0
+						item_amount= item.rate * item.qty
 						if assignment_doc.revenue_sharing_items:
 							item_group=frappe.db.get_value("Item", item.item_code, "item_group")
 							for sharing_item in assignment_doc.revenue_sharing_items:
@@ -1188,15 +1357,16 @@ def get_revenue_sharing_distribution(invoice_items):
 									if sharing_item.type_of_sharing=="Fixed":
 										distribute_amount=direct_amount
 									else:
-										distribute_amount=(item.amount* 0.01 * sharing_item.direct_percentage)
-							distribution = {
-							'item_code': item.item_code,
-							'item_amount': item.amount,
-							'reference_dt': item.reference_dt,
-							'reference_dn': item.reference_dn,
-							'amount': distribute_amount}
-							distribution['practitioner'] = ref_doc.practitioner
-							distributions.append(distribution)
+										distribute_amount=(item_amount* 0.01 * sharing_item.direct_percentage)
+									distribution = {
+									'item_code': item.item_code,
+									'item_amount': item_amount,
+									'reference_dt': item.reference_dt,
+									'reference_dn': item.reference_dn,
+									'type_of_sharing' : sharing_item.type_of_sharing,
+									'amount': distribute_amount}
+									distribution['practitioner'] = ref_doc.practitioner
+									distributions.append(distribution)
 			elif ref_doc.source == "External Referral" and ref_doc.referring_practitioner:
 				assignment = frappe.db.exists("Healthcare Service Profile Assignment",
 					{
@@ -1208,6 +1378,7 @@ def get_revenue_sharing_distribution(invoice_items):
 					assignment_doc=frappe.get_doc("Healthcare Service Profile Assignment", assignment)
 					if assignment_doc:
 						distribute_amount=0
+						item_amount= item.rate * item.qty
 						if assignment_doc.revenue_sharing_items:
 							item_group=frappe.db.get_value("Item", item.item_code, "item_group")
 							for sharing_item in assignment_doc.revenue_sharing_items:
@@ -1215,13 +1386,14 @@ def get_revenue_sharing_distribution(invoice_items):
 									if sharing_item.type_of_sharing=="Fixed":
 										distribute_amount=referral_amount
 									else:
-										distribute_amount=(item.amount* 0.01 * sharing_item.referral_percentage)
-						distribution = {
-						'item_code': item.item_code,
-						'item_amount': item.amount,
-						'reference_dt': item.reference_dt,
-						'reference_dn': item.reference_dn,
-						'amount': distribute_amount}
-						distribution['practitioner'] = ref_doc.referring_practitioner
-						distributions.append(distribution)
+										distribute_amount=(item_amount* 0.01 * sharing_item.referral_percentage)
+									distribution = {
+									'item_code': item.item_code,
+									'item_amount': item_amount,
+									'reference_dt': item.reference_dt,
+									'reference_dn': item.reference_dn,
+									'type_of_sharing' : sharing_item.type_of_sharing,
+									'amount': distribute_amount}
+									distribution['practitioner'] = ref_doc.referring_practitioner
+									distributions.append(distribution)
 	return distributions
