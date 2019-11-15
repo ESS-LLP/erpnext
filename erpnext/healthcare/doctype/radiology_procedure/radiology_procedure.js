@@ -8,7 +8,8 @@ frappe.ui.form.on('Radiology Procedure', {
 		frm.set_query("medical_department", function() {
 			return {
 				filters: {
-					'is_diagnostic_speciality': true
+					'is_diagnostic_speciality': true,
+					'is_group': false
 				}
 			};
 		});

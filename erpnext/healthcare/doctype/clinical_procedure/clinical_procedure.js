@@ -157,7 +157,8 @@ frappe.ui.form.on('Clinical Procedure', {
 		frm.set_query("medical_department", function() {
 			return {
 				filters: {
-					'is_diagnostic_speciality': true
+					'is_diagnostic_speciality': false,
+					'is_group': false
 				}
 			};
 		});

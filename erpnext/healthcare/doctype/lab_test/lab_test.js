@@ -160,7 +160,15 @@ frappe.ui.form.on('Lab Test', {
 		frm.set_query("department", function() {
 			return {
 				filters: {
-					'is_diagnostic_speciality': true
+					'is_diagnostic_speciality': true,
+					'is_group': false
+				}
+			};
+		});
+		frm.set_query("requesting_department", function() {
+			return {
+				filters: {
+					'is_group': false
 				}
 			};
 		});
