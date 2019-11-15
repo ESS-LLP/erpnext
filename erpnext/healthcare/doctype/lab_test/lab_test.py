@@ -216,24 +216,31 @@ def get_normal_range(lab_test, normal_range_doc_id):
 	return normal_range if normal_range else normal_range_doc.default_normal_range
 
 def get_conditional_normal_range(item, patient, normal_range):
-	import re
-	if not item.condition_field:
+	if not item.condition_formula:
 		return item.normal_range
-	if item.condition_field and frappe.db.has_column("Patient", item.condition_field):
-		if item.condition_field in ["age_html", "dob"]:
-			if patient.dob:
-				if item.calculate_age_by == "Year":
-					age = month_diff(today(), getdate(patient.dob))/12
-				elif item.calculate_age_by == "Month":
-					age = month_diff(today(), getdate(patient.dob))
-				elif item.calculate_age_by == "Day":
-					age = date_diff(today(), getdate(patient.dob))
-				eval_formula = str(age)+" "+item.condition_formula
-				if not re.match("^[a-zA-Z0-9_]*$", item.condition_formula[-2:]):
-					eval_formula += " "+str(age)
-				if eval(eval_formula):
-					normal_range = item.normal_range
-		elif patient[item.condition_field] and eval(str(patient[item.condition_field])+" "+item.condition_formula):
+	if item.condition_formula:
+		import datetime
+		whitelisted_globals = {
+			"int": int,
+			"float": float,
+			"long": int,
+			"round": round,
+			"date": datetime.date,
+			"getdate": getdate
+		}
+		data = frappe._dict()
+		data.update(patient.as_dict())
+		if patient.dob:
+			age = False
+			if item.calculate_age_by == "Year":
+				age = month_diff(today(), getdate(patient.dob))/12
+			elif item.calculate_age_by == "Month":
+				age = month_diff(today(), getdate(patient.dob))
+			elif item.calculate_age_by == "Day":
+				age = date_diff(today(), getdate(patient.dob))
+			if age:
+				data.update({'age': age})
+		if frappe.safe_eval(item.condition_formula, whitelisted_globals, data):
 			normal_range = item.normal_range
 	return normal_range
 
