@@ -216,6 +216,8 @@ def set_ip_admission_record_details(inpatient_record, dialog):
 		inpatient_record.source=encounter.source
 	if encounter.referring_practitioner:
 		inpatient_record.referring_practitioner=encounter.referring_practitioner
+	if encounter.company:
+		inpatient_record.company=encounter.company
 	inpatient_record.medical_department = dialog['medical_department']
 	inpatient_record.primary_practitioner = dialog['primary_practitioner']
 	inpatient_record.secondary_practitioner = dialog['secondary_practitioner']

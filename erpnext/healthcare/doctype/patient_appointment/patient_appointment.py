@@ -46,6 +46,11 @@ class PatientAppointment(Document):
 			frappe.throw(_("""Appointment overlaps with {0}.<br> {1} has appointment scheduled
 			with {2} at {3} having {4} minute(s) duration.""").format(overlaps[0][0], overlaps[0][1], overlaps[0][2], overlaps[0][3], overlaps[0][4]))
 
+		if self.service_unit:
+			service_unit_company = frappe.db.get_value("Healthcare Service Unit", self.service_unit, "company")
+			if service_unit_company and service_unit_company != self.company:
+				self.company = service_unit_company
+
 	def after_insert(self):
 		if self.procedure_prescription:
 			frappe.db.set_value("Procedure Prescription", self.procedure_prescription, "appointment_booked", True)
@@ -508,6 +513,9 @@ def create_encounter(appointment):
 	encounter.visit_department = appointment.department
 	encounter.patient_sex = appointment.patient_sex
 	encounter.encounter_date = appointment.appointment_date
+	encounter.service_unit = appointment.service_unit
+	if appointment.company:
+		encounter.company = appointment.company
 	encounter.source=appointment.source
 	if appointment.referring_practitioner:
 		encounter.referring_practitioner=appointment.referring_practitioner

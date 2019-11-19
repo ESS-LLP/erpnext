@@ -20,6 +20,16 @@ class ClinicalProcedure(Document):
 				frappe.throw(_("Set warehouse for Procedure {0} ").format(self.name))
 			self.set_actual_qty()
 
+		ref_company = False
+		if self.inpatient_record:
+			ref_company = frappe.db.get_value("Inpatient Record", self.inpatient_record, "company")
+		elif self.appointment:
+			ref_company = frappe.db.get_value("Patient Appointment", self.appointment, "company")
+		elif self.service_unit:
+			ref_company = frappe.db.get_value("Healthcare Service Unit", self.service_unit, "company")
+		if ref_company:
+			self.company = ref_company
+
 	def before_insert(self):
 		self.consume_stock = frappe.db.get_value("Clinical Procedure Template", self.procedure_template, 'consume_stock')
 		if self.consume_stock:

@@ -124,6 +124,9 @@ frappe.ui.form.on('Radiology Examination', {
 							frm.set_value("insurance", "")
 							frm.set_df_property("insurance", "read_only", 0);
 						}
+						if(r.message.company){
+							frm.set_value("company", r.message.company)
+						}
 					}
 				}
 			});

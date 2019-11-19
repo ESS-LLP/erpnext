@@ -267,6 +267,15 @@ frappe.ui.form.on('Patient Encounter', {
 		frm.set_df_property("visit_department", "read_only", frm.doc.__islocal ? 0:1);
 		frm.set_df_property("encounter_date", "read_only", frm.doc.__islocal ? 0:1);
 		frm.set_df_property("encounter_time", "read_only", frm.doc.__islocal ? 0:1);
+	},
+	service_unit: function(frm) {
+		if(frm.doc.service_unit){
+			frappe.db.get_value("Healthcare Service Unit", frm.doc.service_unit, "company", function(r) {
+				if(r && r.company){
+					frm.set_value("company", r.company)
+				}
+			});
+		}
 	}
 });
 

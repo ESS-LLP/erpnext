@@ -10,6 +10,12 @@ from frappe.utils import cstr
 from erpnext.healthcare.utils import manage_healthcare_doc_cancel
 
 class PatientEncounter(Document):
+	def validate(self):
+		if self.service_unit:
+			service_unit_company = frappe.db.get_value("Healthcare Service Unit", self.service_unit, "company")
+			if service_unit_company and service_unit_company != self.company:
+				self.company = service_unit_company
+
 	def on_update(self):
 		if self.appointment and self.docstatus == 0:
 			frappe.db.set_value("Patient Appointment", self.appointment, "status", "In Progress")

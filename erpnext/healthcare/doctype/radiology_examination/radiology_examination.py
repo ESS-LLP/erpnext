@@ -14,6 +14,17 @@ class RadiologyExamination(Document):
 	def on_cancel(self):
 		manage_healthcare_doc_cancel(self)
 
+	def validate(self):
+		ref_company = False
+		if self.inpatient_record:
+			ref_company = frappe.db.get_value("Inpatient Record", self.inpatient_record, "company")
+		elif self.appointment:
+			ref_company = frappe.db.get_value("Patient Appointment", self.appointment, "company")
+		elif self.service_unit:
+			ref_company = frappe.db.get_value("Healthcare Service Unit", self.service_unit, "company")
+		if ref_company:
+			self.company = ref_company
+
 @frappe.whitelist()
 def get_radiology_procedure_prescribed(patient, encounter_practitioner=False):
 	query = """

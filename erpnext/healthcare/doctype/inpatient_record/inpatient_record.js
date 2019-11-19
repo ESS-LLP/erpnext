@@ -229,6 +229,15 @@ frappe.ui.form.on('Inpatient Record', {
 			}
 		});
 	},
+	referring_encounter: function(frm) {
+		if(frm.doc.referring_encounter){
+			frappe.db.get_value("Patient Encounter", frm.doc.referring_encounter, "company", function(r) {
+				if(r && r.company){
+					frm.set_value("company", r.company)
+				}
+			});
+		}
+	}
 });
 
 var submit_all_ip_invoices = function(frm) {
