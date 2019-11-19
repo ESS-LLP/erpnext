@@ -1213,17 +1213,17 @@ class SalesInvoice(SellingController):
 				dist_line.reference_dt= distribution["reference_dt"]
 				dist_line.reference_dn= distribution["reference_dn"]
 				reference_doc=frappe.get_doc(dist_line.reference_dt, dist_line.reference_dn)
-				allow_split = frappe.db.get_value("Healthcare Settings", None, "allow_split_amount")
+				allow_split = frappe.db.get_value("Healthcare Settings", None, "practitioner_charge_separately")
 				if allow_split:
-					sharing_item = frappe.db.get_value("Healthcare Settings", None, "revenue_split_item")
-					if sharing_item:
-						self.set_revenue_sharing_item(dist_line, sharing_item, reference_doc)
+					practitioner_charge_item = frappe.db.get_value("Healthcare Settings", None, "practitioner_charge_item")
+					if practitioner_charge_item:
+						self.set_revenue_sharing_item(dist_line, practitioner_charge_item, reference_doc)
 						invoice_item.rate=invoice_item.rate-(dist_line.amount/invoice_item.qty)
 		return invoice_item
 
-	def set_revenue_sharing_item(self, dist_line, sharing_item, reference_doc):
+	def set_revenue_sharing_item(self, dist_line, practitioner_charge_item, reference_doc):
 		item_line = self.append("items")
-		item_line.item_code = sharing_item
+		item_line.item_code = practitioner_charge_item
 		from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
 		item_details = sales_item_details_for_healthcare_doc(item_line.item_code, self)
 		item_line.item_name = item_details.item_name

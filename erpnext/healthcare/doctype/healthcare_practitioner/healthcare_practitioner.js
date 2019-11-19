@@ -27,8 +27,63 @@ frappe.ui.form.on('Healthcare Practitioner', {
 				}
 			};
 		});
+		if(frm.doc.department){
+			frm.set_query("practitioner_service_profile", function () {
+				return {
+					filters: {department : frm.doc.department}
+				}
+			});
+		}
+		manage_internal_external_practitioner(frm);
 		set_query_service_item(frm, 'inpatient_visit_charge_item');
 		set_query_service_item(frm, 'op_consulting_charge_item');
+	},
+	practitioner_service_profile: function(frm) {
+		if(frm.doc.practitioner_service_profile){
+			frappe.call({
+				method: "frappe.client.get",
+				args : {doctype: "Practitioner Service Profile", name: frm.doc.practitioner_service_profile},
+				callback: function(r){
+					if(r.message){
+						if(r.message.appointment_types){
+							var appointment_types = r.message.appointment_types;
+							appointment_types.forEach(function(appt) {
+								var appointment_type_item = frappe.model.add_child(frm.doc, 'Service Profile Appointment Type', 'appointment_types');
+								frappe.model.set_value(appointment_type_item.doctype, appointment_type_item.name, 'appointment_type', appt.appointment_type)
+							});
+						}
+						if(r.message.clinical_procedure_templates){
+							var clinical_procedure_templates = r.message.clinical_procedure_templates;
+							clinical_procedure_templates.forEach(function(template) {
+								var template_item = frappe.model.add_child(frm.doc, 'Service Profile Procedure Template', 'clinical_procedure_templates');
+								frappe.model.set_value(template_item.doctype, template_item.name, 'clinical_procedure_template', template.clinical_procedure_template)
+							});
+						}
+						refresh_field("appointment_types");
+						refresh_field("clinical_procedure_templates");
+					}
+				}
+			});
+		}
+	},
+	healthcare_practitioner_type: function(frm) {
+		manage_internal_external_practitioner(frm);
+	},
+	supplier: function(frm) {
+		if(frm.doc.supplier){
+			frappe.call({
+				"method": "frappe.client.get",
+				args: {
+					doctype: "Supplier",
+					name: frm.doc.supplier
+				},
+				callback: function (data) {
+					if(!frm.doc.first_name || !frm.doc.user_id){
+						frappe.model.set_value(frm.doctype,frm.docname, "first_name", data.message.supplier_name);
+					}
+				}
+			});
+		}
 	}
 });
 
@@ -42,6 +97,23 @@ var set_query_service_item = function(frm, service_item_field) {
 		};
 	});
 };
+
+var manage_internal_external_practitioner = function(frm) {
+	frm.set_df_property("employee", "reqd", 0);
+	frm.set_df_property("employee", "hidden", 1);
+	frm.set_df_property("supplier", "reqd", 0);
+	frm.set_df_property("supplier", "hidden", 1);
+	if(frm.doc.healthcare_practitioner_type){
+		if(frm.doc.healthcare_practitioner_type == "Internal"){
+			frm.set_df_property("employee", "hidden", 0);
+			frm.set_df_property("employee", "reqd", 1);
+		}
+		else if(frm.doc.healthcare_practitioner_type == "External"){
+			frm.set_df_property("supplier", "hidden", 0);
+			frm.set_df_property("supplier", "reqd", 1);
+		}
+	}
+}
 
 frappe.ui.form.on("Healthcare Practitioner", "user_id",function(frm) {
 	if(frm.doc.user_id){

@@ -23,6 +23,29 @@ frappe.ui.form.on('Healthcare Settings', {
 				}
 			};
 		});
+		frm.set_query("revenue_booking_salary_compnent", function(){
+			return {
+				filters: {
+					"type": "Earning"
+				}
+			};
+		});
+		frm.set_query("revenue_booking_item", function() {
+			return {
+				filters: {
+					'is_purchase_item': 1,
+					'is_stock_item': 0
+				}
+			};
+		});
+		frm.set_query("practitioner_charge_item", function() {
+			return {
+				filters: {
+					'is_sales_item': 1,
+					'is_stock_item': 0
+				}
+			};
+		});
 		set_query_service_item(frm, 'inpatient_visit_charge_item');
 		set_query_service_item(frm, 'op_consulting_charge_item');
 		set_query_service_item(frm, 'clinical_procedure_consumable_item');

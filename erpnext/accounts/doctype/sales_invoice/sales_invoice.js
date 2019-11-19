@@ -1157,3 +1157,11 @@ var add_to_item_line = function(frm, checked_values, invoice_healthcare_services
 		frm.refresh_fields();
 	}
 };
+
+frappe.ui.form.on('Practitioner Revenue Distribution', 'amount', function(frm, cdt, cdn) {
+    let total = 0;
+    frm.doc.practitioner_revenue_distributions.forEach(function(dist) {
+        total += flt(dist.amount);
+    });
+    frm.set_value('total_doctors_charges', total);
+});

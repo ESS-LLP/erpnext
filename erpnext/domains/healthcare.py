@@ -51,6 +51,18 @@ data = {
 				'fieldname': 'patient_payable_amount', 'label': 'Patient Payable Amount', 'fieldtype': 'Currency',
 				'insert_after': 'total_insurance_claim_amount', 'read_only':True,
 				'depends_on':'eval:doc.docstatus < 1 && doc.total_insurance_claim_amount && doc.total_insurance_claim_amount > 0'
+			},
+			{
+				'fieldname': 'practitioner_revenue_sharing', 'label': 'Practitioner Revenue Sharing Distribution', 'fieldtype': 'Section Break',
+				'insert_after': 'discount_amount'
+			},
+			{
+				'fieldname': 'practitioner_revenue_distributions', 'label': 'Practitioner Revenue Distributions', 'fieldtype': 'Table', 'options': 'Practitioner Revenue Distribution',
+				'insert_after': 'practitioner_revenue_sharing'
+			},
+			{
+				'fieldname': 'total_doctors_charges', 'label': 'Total Doctors Charges', 'fieldtype': 'Currency',
+				'insert_after': 'practitioner_revenue_distributions', 'read_only':True
 			}
 		],
 		'Sales Invoice Item': [

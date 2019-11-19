@@ -442,7 +442,6 @@ def manage_revenue_sharing(doc, method):
 		#CREATE ALLOCATIONS
 		for item in doc.items:
 			if item.reference_dt and item.reference_dn and item.reference_dt != "Delivery Note" and not item.delivery_note:
-				print("\n\n\n\n1234567890-")
 				ref_doc = frappe.get_doc(item.reference_dt, item.reference_dn)
 				item_group = item.item_group
 				source = False
@@ -461,20 +460,33 @@ def manage_revenue_sharing(doc, method):
 				for dist in doc.practitioner_revenue_distributions:
 					if dist.reference_dt == item.reference_dt and dist.reference_dn == item.reference_dn and \
 						dist.item_code == item.item_code and item.amount > 0 and dist.amount > 0:
-							revenue_allocation = None
-							percentage = dist.amount / item.amount * 100
-							if percentage > 0:
-								if not revenue_allocation or revenue_allocation.practitioner != dist.practitioner:
-									revenue_allocation = get_revenue_allocation(allocations, dist.practitioner)
-								revenue_allocation.append("revenue_items", {
-									"item": item.item_code,
-									"reference_dt": item.reference_dt,
-									"reference_dn": item.reference_dn,
-									"invoice_amount": item.amount,
-									"percentage": percentage,
-									"amount": item.amount * percentage * .01
-								})
-								allocations[dist.practitioner] = revenue_allocation
+
+						item_amount=0
+						allow_split = frappe.db.get_value("Healthcare Settings", None, "practitioner_charge_separately")
+						if allow_split:
+							split_amount=0
+							for split_item in doc.items:
+								if split_item.reference_dt== item.reference_dt and split_item.reference_dn == item.reference_dn and \
+									split_item.item_code != item.item_code and split_item.amount > 0:
+									split_amount=split_amount + split_item.amount
+							item_amount= split_amount + item.amount
+						else:
+							item_amount=item.amount
+
+						revenue_allocation = None
+						percentage = dist.amount / item_amount * 100
+						if percentage > 0:
+							if not revenue_allocation or revenue_allocation.practitioner != dist.practitioner:
+								revenue_allocation = get_revenue_allocation(allocations, dist.practitioner)
+							revenue_allocation.append("revenue_items", {
+								"item": item.item_code,
+								"reference_dt": item.reference_dt,
+								"reference_dn": item.reference_dn,
+								"invoice_amount": item_amount,
+								"percentage": percentage,
+								"amount": item_amount * percentage * .01
+							})
+							allocations[dist.practitioner] = revenue_allocation
 		for practitioner in allocations:
 			allocation = allocations[practitioner]
 			entry = None

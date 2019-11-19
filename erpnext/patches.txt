@@ -620,3 +620,5 @@ erpnext.patches.v12_0.healthcare_fields_for_delivery_note
 erpnext.patches.v12_0.add_medical_department_tree_root
 erpnext.patches.v12_0.healthcare_insurance_fields_in_delivery_note
 erpnext.patches.v12_0.healthcare_lab_test_normal_range_redesign
+erpnext.patches.v12_0.revenue_sharing_fields_for_sales_invoice
+erpnext.patches.v12_0.revenue_sharing_fields_for_sales_invoice_0
