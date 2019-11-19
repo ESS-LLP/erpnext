@@ -6,7 +6,8 @@ frappe.ui.form.on('Practitioner Event', {
 		frm.set_query("service_unit", function(){
 			return {
 				filters: {
-					"is_group": false
+					"is_group": false,
+					"allow_appointments": true
 				}
 			};
 		});
