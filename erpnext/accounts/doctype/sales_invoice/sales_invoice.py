@@ -1277,6 +1277,7 @@ class SalesInvoice(SellingController):
 			item_line.discount_amount = float(item_line.rate) * float(item_line.discount_percentage) * 0.01
 			if item_line.discount_amount and item_line.discount_amount > 0:
 				item_line.rate = float(item_line.rate) - float(item_line.discount_amount)
+		item_line.rate  = float(item_line.rate)
 		item_line  = self.set_revenue_sharing_distribution(item_line)
 		item_line.amount = float(item_line.rate) * float(item_line.qty)
 		if item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
