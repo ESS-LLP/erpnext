@@ -11,8 +11,17 @@ class RadiologyExamination(Document):
 	def after_insert(self):
 		if self.radiology_procedure_prescription:
 			frappe.db.set_value("Radiology Procedure Prescription", self.radiology_procedure_prescription, "radiology_examination_created", True)
+		if self.appointment and self.docstatus==0:
+			frappe.db.set_value("Patient Appointment", self.appointment, "status", "In Progress")
+
 	def on_cancel(self):
 		manage_healthcare_doc_cancel(self)
+		if self.appointment:
+			frappe.get_doc("Patient Appointment", self.appointment).save(ignore_permissions=True)
+
+	def on_submit(self):
+		if self.appointment:
+			frappe.db.set_value("Patient Appointment", self.appointment, "status", "Closed")
 
 	def validate(self):
 		ref_company = False
@@ -46,3 +55,30 @@ def get_radiology_procedure_prescribed(patient, encounter_practitioner=False):
 	return frappe.db.sql(query.format(patient),{
 		"encounter_practitioner": encounter_practitioner
 	})
+
+@frappe.whitelist()
+def create_radiology_examination(appointment):
+	appointment = frappe.get_doc("Patient Appointment",appointment)
+	radiology_examination = frappe.new_doc("Radiology Examination")
+	radiology_examination.appointment = appointment.name
+	radiology_examination.patient = appointment.patient
+	radiology_examination.radiology_procedure = appointment.radiology_procedure
+	radiology_examination.radiology_procedure_prescription = appointment.radiology_procedure_prescription
+	radiology_examination.practitioner = appointment.practitioner
+	radiology_examination.invoiced = appointment.invoiced
+	radiology_examination.medical_department = appointment.department
+	radiology_examination.start_date = appointment.appointment_date
+	radiology_examination.start_time = appointment.appointment_time
+	radiology_examination.notes = appointment.notes
+	radiology_examination.service_unit = appointment.service_unit
+	radiology_examination.company = appointment.company
+	radiology_examination.modality_type = appointment.modality_type
+	radiology_examination.modality = appointment.modality
+	if appointment.insurance:
+		radiology_examination.insurance=appointment.insurance
+	radiology_examination.source=appointment.source
+	if appointment.referring_practitioner:
+		radiology_examination.referring_practitioner=appointment.referring_practitioner
+	if appointment.insurance_approval_number:
+		radiology_examination.insurance_approval_number=appointment.insurance_approval_number
+	return radiology_examination.as_dict()

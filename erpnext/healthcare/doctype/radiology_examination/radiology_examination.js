@@ -22,6 +22,13 @@ frappe.ui.form.on('Radiology Examination', {
 						frm.set_value("patient", appointment.patient);
 						frm.set_value("patient_name", appointment.patient_name);
 						frm.set_value( "source", data.message.source);
+						frm.set_value("radiology_procedure", data.message.radiology_procedure);
+						frm.set_value("medical_department", data.message.department);
+						frm.set_value("start_date", data.message.appointment_date);
+						frm.set_value("start_time", data.message.appointment_time);
+						frm.set_value("notes", data.message.notes);
+						frm.set_value("service_unit", data.message.service_unit);
+						frm.set_value("modality", data.message.modality);
 						frm.set_value( "referring_practitioner", appointment.referring_practitioner);
 						frm.set_df_property("patient", "hidden", 1);
 						frm.set_df_property("patient_name", "hidden", 1);
@@ -34,6 +41,13 @@ frappe.ui.form.on('Radiology Examination', {
 						frm.set_value("patient_name", "");
 						frm.set_value("source", "");
 						frm.set_value("referring_practitioner", "");
+						frm.set_value("radiology_procedure", "");
+						frm.set_value("medical_department", "");
+						frm.set_value("start_date", "");
+						frm.set_value("start_time", "");
+						frm.set_value("notes", "");
+						frm.set_value("service_unit", "");
+						frm.set_value("modality", "");
 						frm.fields_dict.appointment_details_html.html("");
 					}
 					if(data.message.insurance){
@@ -191,6 +205,19 @@ frappe.ui.form.on('Radiology Examination', {
 			frm.set_df_property("patient", "read_only", 0);
 			refresh_field("patient");
 		}
+		frm.set_query("patient", function () {
+			return {
+				filters: {"disabled": 0}
+			};
+		});
+		frm.set_query("appointment", function () {
+			return {
+				filters: {
+					"radiology_procedure": ["not in", null],
+					"status": ['in', 'Open, Scheduled']
+				}
+			};
+		});
 		frm.set_query("service_unit", function(){
 			return {
 				filters: {

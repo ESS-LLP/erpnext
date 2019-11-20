@@ -113,6 +113,11 @@ frappe.ui.form.on('Patient Appointment', {
 					btn_create_procedure(frm);
 				},"Create");
 			}
+			else if(frm.doc.radiology_procedure){
+				frm.add_custom_button(__("Radiology Examination"),function(){
+					btn_create_radiology_exam(frm);
+				},"Create");
+			}
 			else{
 				frm.add_custom_button(__("Patient Encounter"),function(){
 					btn_create_encounter(frm);
@@ -133,6 +138,11 @@ frappe.ui.form.on('Patient Appointment', {
 			if(frm.doc.procedure_template){
 				frm.add_custom_button(__("Procedure"),function(){
 					btn_create_procedure(frm);
+				},"Create");
+			}
+			else if(frm.doc.radiology_procedure){
+				frm.add_custom_button(__("Radiology Examination"),function(){
+					btn_create_radiology_exam(frm);
 				},"Create");
 			}
 			else{
@@ -826,6 +836,20 @@ var btn_create_procedure = function(frm){
 	var doc = frm.doc;
 	frappe.call({
 		method:"erpnext.healthcare.doctype.clinical_procedure.clinical_procedure.create_procedure",
+		args: {appointment: doc.name},
+		callback: function(data){
+			if(!data.exc){
+				var doclist = frappe.model.sync(data.message);
+				frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+			}
+		}
+	});
+};
+
+var btn_create_radiology_exam = function(frm){
+	var doc = frm.doc;
+	frappe.call({
+		method:"erpnext.healthcare.doctype.radiology_examination.radiology_examination.create_radiology_examination",
 		args: {appointment: doc.name},
 		callback: function(data){
 			if(!data.exc){
