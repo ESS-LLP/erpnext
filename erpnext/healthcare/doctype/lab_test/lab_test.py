@@ -230,16 +230,15 @@ def get_conditional_normal_range(item, patient, normal_range):
 		}
 		data = frappe._dict()
 		data.update(patient.as_dict())
+		age = 0
 		if patient.dob:
-			age = False
 			if item.calculate_age_by == "Year":
-				age = month_diff(today(), getdate(patient.dob))/12
+				age = month_diff(today(), getdate(patient.dob))-1/12
 			elif item.calculate_age_by == "Month":
-				age = month_diff(today(), getdate(patient.dob))
+				age = month_diff(today(), getdate(patient.dob))-1
 			elif item.calculate_age_by == "Day":
-				age = date_diff(today(), getdate(patient.dob))
-			if age:
-				data.update({'age': age})
+				age = date_diff(today(), getdate(patient.dob))+1
+		data.update({'age': age})
 		if frappe.safe_eval(item.condition_formula, whitelisted_globals, data):
 			normal_range = item.normal_range
 	return normal_range
