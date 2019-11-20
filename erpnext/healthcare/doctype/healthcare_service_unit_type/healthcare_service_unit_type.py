@@ -25,18 +25,21 @@ class HealthcareServiceUnitType(Document):
 				frappe.throw(_("""Not permitted. Please disable the Service Unit Type"""))
 
 	def on_update(self):
-		if(self.change_in_item and self.is_billable == 1 and self.item):
-			updating_item(self)
-			item_price = item_price_exist(self)
-			if not item_price:
-				if(self.rate != 0.0):
-					price_list_name = frappe.db.get_value("Price List", {"selling": 1})
-					if(self.rate):
-						make_item_price(self.item_code, price_list_name, self.rate)
-					else:
-						make_item_price(self.item_code, price_list_name, 0.0)
+		if(self.change_in_item and self.is_billable == 1):
+			if self.item:
+				updating_item(self)
+				item_price = item_price_exist(self)
+				if not item_price:
+					if(self.rate != 0.0):
+						price_list_name = frappe.db.get_value("Price List", {"selling": 1})
+						if(self.rate):
+							make_item_price(self.item_code, price_list_name, self.rate)
+						else:
+							make_item_price(self.item_code, price_list_name, 0.0)
+				else:
+					frappe.db.set_value("Item Price", item_price, "price_list_rate", self.rate)
 			else:
-				frappe.db.set_value("Item Price", item_price, "price_list_rate", self.rate)
+				create_item(self)
 
 			frappe.db.set_value(self.doctype,self.name,"change_in_item",0)
 		elif(self.is_billable == 0 and self.item):
