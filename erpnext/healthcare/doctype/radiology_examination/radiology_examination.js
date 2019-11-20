@@ -294,9 +294,9 @@ var show_radiology_procedure = function(frm, result){
 		<a data-name="%(name)s" data-radiology-procedure="%(radiology_procedure)s"\
 		data-encounter="%(encounter)s"\
 		data-invoiced="%(invoiced)s" data-source="%(source)s" data-referring-practitioner="%(referring_practitioner)s" \
-		data-insurance="%(insurance)s" href="#"><button class="btn btn-default btn-xs">Get Radiology\
+		data-insurance="%(insurance)s" data-comments="%(comments)s" href="#"><button class="btn btn-default btn-xs">Get Radiology\
 		</button></a></div></div>', {name:y[0], radiology_procedure: y[1], encounter:y[2], invoiced:y[3],  date:y[4], source:y[5],
-		referring_practitioner:y[6], insurance:y[8]? y[8]:''})).appendTo(html_field);
+		referring_practitioner:y[6], insurance:y[8]? y[8]:'', comments:y[9]? y[9]:''})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.radiology_procedure = $(this).attr("data-radiology-procedure");
 			frm.doc.radiology_procedure_prescription = $(this).attr("data-name");
@@ -304,6 +304,9 @@ var show_radiology_procedure = function(frm, result){
 			frm.doc.invoiced = 0;
 			if($(this).attr("data-invoiced") == 1){
 				frm.doc.invoiced = 1;
+			}
+			if($(this).attr("data-comments")){
+				frm.set_value("notes", $(this).attr("data-comments"));
 			}
 			frm.doc.source =  $(this).attr("data-source");
 			frm.doc.referring_practitioner= $(this).attr("data-referring-practitioner")
