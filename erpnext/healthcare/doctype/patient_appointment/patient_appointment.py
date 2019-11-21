@@ -11,6 +11,7 @@ from frappe import _
 import datetime
 from frappe.core.doctype.sms_settings.sms_settings import send_sms
 from erpnext.hr.doctype.employee.employee import is_holiday
+from erpnext.accounts.doctype.sales_invoice.sales_invoice import set_revenue_sharing_distribution
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account,get_income_account
 from erpnext.healthcare.utils import validity_exists, service_item_and_practitioner_charge, sales_item_details_for_healthcare_doc, get_insurance_details
 
@@ -167,11 +168,13 @@ def set_invoice_details_for_appointment(appointment_doc, is_pos):
 			item_line.insurance_claim_coverage = insurance_details.coverage
 			item_line.insurance_approval_number=  appointment_doc.insurance_approval_number if appointment_doc.insurance_approval_number else ''
 
-	item_line.cost_center = cost_center if cost_center else ''
-	item_line.qty = 1
-	item_line.amount = item_line.rate*item_line.qty
 	item_line.reference_dt = "Patient Appointment"
 	item_line.reference_dn = appointment_doc.name
+	item_line.cost_center = cost_center if cost_center else ''
+	item_line.qty = 1
+	item_line.rate  = float(item_line.rate)
+	item_line  = set_revenue_sharing_distribution(sales_invoice,item_line)
+	item_line.amount = item_line.rate*item_line.qty
 	if appointment_doc.insurance and item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
 		item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
 		sales_invoice.total_insurance_claim_amount = item_line.insurance_claim_amount

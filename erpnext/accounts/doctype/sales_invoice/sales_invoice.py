@@ -1199,51 +1199,6 @@ class SalesInvoice(SellingController):
 		self.calculate_healthcare_insurance_claim()
 		self.set_missing_values(for_validate = True)
 
-	def set_revenue_sharing_distribution(self, invoice_item):
-		self.set("practitioner_revenue_distributions", [])
-		distributions=get_revenue_sharing_distribution(invoice_item)
-		if distributions:
-			for distribution in distributions:
-				dist_line = self.append("practitioner_revenue_distributions", {})
-				dist_line.practitioner= distribution["practitioner"]
-				dist_line.item_code= distribution["item_code"]
-				dist_line.item_amount= distribution["item_amount"]
-				dist_line.amount= distribution["amount"]
-				dist_line.mode_of_sharing = distribution["type_of_sharing"]
-				dist_line.reference_dt= distribution["reference_dt"]
-				dist_line.reference_dn= distribution["reference_dn"]
-				reference_doc=frappe.get_doc(dist_line.reference_dt, dist_line.reference_dn)
-				allow_split = frappe.db.get_value("Healthcare Settings", None, "practitioner_charge_separately")
-				if allow_split:
-					practitioner_charge_item = frappe.db.get_value("Healthcare Settings", None, "practitioner_charge_item")
-					if practitioner_charge_item:
-						self.set_revenue_sharing_item(dist_line, practitioner_charge_item, reference_doc)
-						invoice_item.rate=invoice_item.rate-(dist_line.amount/invoice_item.qty)
-		return invoice_item
-
-	def set_revenue_sharing_item(self, dist_line, practitioner_charge_item, reference_doc):
-		item_line = self.append("items")
-		item_line.item_code = practitioner_charge_item
-		from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
-		item_details = sales_item_details_for_healthcare_doc(item_line.item_code, self)
-		item_line.item_name = item_details.item_name
-		item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
-		item_line.rate = dist_line.amount
-		if reference_doc.insurance and item_line.item_code:
-			from erpnext.healthcare.utils import get_insurance_details
-			patient_doc= frappe.get_doc("Patient", self.patient)
-			insurance_details = get_insurance_details(reference_doc.insurance, item_line.item_code, patient_doc)
-			if insurance_details:
-				item_line.insurance_claim_coverage = insurance_details.coverage
-				item_line.insurance_approval_number=  reference_doc.insurance_approval_number if reference_doc.insurance_approval_number else ''
-		item_line.qty = 1
-		item_line.amount = item_line.rate*item_line.qty
-		item_line.reference_dt = reference_doc.doctype
-		item_line.reference_dn = reference_doc.name
-		if reference_doc.insurance and item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
-			item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
-			self.total_insurance_claim_amount =+ item_line.insurance_claim_amount
-
 	def calculate_healthcare_insurance_claim(self):
 		total_claim_amount = 0
 		for item in self.items:
@@ -1278,7 +1233,7 @@ class SalesInvoice(SellingController):
 			if item_line.discount_amount and item_line.discount_amount > 0:
 				item_line.rate = float(item_line.rate) - float(item_line.discount_amount)
 		item_line.rate  = float(item_line.rate)
-		item_line  = self.set_revenue_sharing_distribution(item_line)
+		item_line  = set_revenue_sharing_distribution(self,item_line)
 		item_line.amount = float(item_line.rate) * float(item_line.qty)
 		if item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
 			item_line.insurance_claim_amount = item_line.amount * 0.01 * float(item_line.insurance_claim_coverage)
@@ -1519,3 +1474,49 @@ def get_loyalty_programs(customer):
 		return []
 	else:
 		return lp_details
+@frappe.whitelist()
+def set_revenue_sharing_distribution(doc, invoice_item):
+	doc.set("practitioner_revenue_distributions", [])
+	distributions=get_revenue_sharing_distribution(invoice_item)
+	if distributions:
+		for distribution in distributions:
+			dist_line = doc.append("practitioner_revenue_distributions", {})
+			dist_line.practitioner= distribution["practitioner"]
+			dist_line.item_code= distribution["item_code"]
+			dist_line.item_amount= distribution["item_amount"]
+			dist_line.amount= distribution["amount"]
+			dist_line.mode_of_sharing = distribution["type_of_sharing"]
+			dist_line.reference_dt= distribution["reference_dt"]
+			dist_line.reference_dn= distribution["reference_dn"]
+			reference_doc=frappe.get_doc(dist_line.reference_dt, dist_line.reference_dn)
+			allow_split = frappe.db.get_value("Healthcare Settings", None, "practitioner_charge_separately")
+			if allow_split:
+				practitioner_charge_item = frappe.db.get_value("Healthcare Settings", None, "practitioner_charge_item")
+				if practitioner_charge_item:
+					set_revenue_sharing_item(doc,dist_line, practitioner_charge_item, reference_doc)
+					invoice_item.rate=invoice_item.rate-(dist_line.amount/invoice_item.qty)
+	return invoice_item
+
+@frappe.whitelist()
+def set_revenue_sharing_item(doc, dist_line, practitioner_charge_item, reference_doc):
+	item_line = doc.append("items")
+	item_line.item_code = practitioner_charge_item
+	from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
+	item_details = sales_item_details_for_healthcare_doc(item_line.item_code, doc)
+	item_line.item_name = item_details.item_name
+	item_line.description = frappe.db.get_value("Item", item_line.item_code, "description")
+	item_line.rate = dist_line.amount
+	if reference_doc.insurance and item_line.item_code:
+		from erpnext.healthcare.utils import get_insurance_details
+		patient_doc= frappe.get_doc("Patient", doc.patient)
+		insurance_details = get_insurance_details(reference_doc.insurance, item_line.item_code, patient_doc)
+		if insurance_details:
+			item_line.insurance_claim_coverage = insurance_details.coverage
+			item_line.insurance_approval_number=  reference_doc.insurance_approval_number if reference_doc.insurance_approval_number else ''
+	item_line.qty = 1
+	item_line.amount = item_line.rate*item_line.qty
+	item_line.reference_dt = reference_doc.doctype
+	item_line.reference_dn = reference_doc.name
+	if reference_doc.insurance and item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
+		item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
+		doc.total_insurance_claim_amount =+ item_line.insurance_claim_amount

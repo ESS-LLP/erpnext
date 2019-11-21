@@ -9,6 +9,7 @@ from frappe.model.document import Document
 from frappe.utils import cint, flt, nowdate, nowtime, cstr, to_timedelta, getdate
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_account, get_receivable_account
 from erpnext.healthcare.doctype.lab_test.lab_test import create_sample_doc, create_lab_test_doc
+from erpnext.accounts.doctype.sales_invoice.sales_invoice import set_revenue_sharing_distribution
 from erpnext.stock.stock_ledger import get_previous_sle
 import datetime
 from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc, get_procedure_delivery_item, item_reduce_procedure_rate, manage_healthcare_doc_cancel, get_insurance_details
@@ -464,18 +465,19 @@ def invoice_clinical_procedure(procedure):
 			item_line.insurance_claim_coverage = insurance_details.coverage
 			item_line.insurance_approval_number=  procedure.insurance_approval_number if procedure.insurance_approval_number else ''
 	item_line.qty = 1
-	item_line.amount = item_line.rate*item_line.qty
-	item_line.cost_center = cost_center if cost_center else ''
 	if procedure.appointment:
 		item_line.reference_dt = "Patient Appointment"
 		item_line.reference_dn = procedure.appointment
 	else:
 		item_line.reference_dt = "Clinical Procedure"
 		item_line.reference_dn = procedure.name
+	item_line.rate  = float(item_line.rate)
+	item_line  = set_revenue_sharing_distribution(sales_invoice,item_line)
+	item_line.amount = item_line.rate*item_line.qty
+	item_line.cost_center = cost_center if cost_center else ''
 	if procedure.insurance and item_line.insurance_claim_coverage and float(item_line.insurance_claim_coverage) > 0:
 		item_line.insurance_claim_amount = item_line.amount*0.01*float(item_line.insurance_claim_coverage)
 		sales_invoice.total_insurance_claim_amount = item_line.insurance_claim_amount
-
 	sales_invoice.set_missing_values(for_validate = True)
 
 	sales_invoice.save(ignore_permissions=True)
