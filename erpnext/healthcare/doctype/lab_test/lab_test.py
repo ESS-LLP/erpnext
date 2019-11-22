@@ -499,7 +499,7 @@ def set_revenue_sharing_distribution(doc, invoice_item):
 			dist_line.reference_dn= distribution["reference_dn"]
 			reference_doc=frappe.get_doc(dist_line.reference_dt, dist_line.reference_dn)
 			allow_split = frappe.db.get_value("Healthcare Settings", None, "practitioner_charge_separately")
-			if allow_split ==1:
+			if allow_split =="1":
 				practitioner_charge_item = frappe.db.get_value("Healthcare Settings", None, "practitioner_charge_item")
 				if practitioner_charge_item:
 					set_revenue_sharing_item(doc,dist_line, practitioner_charge_item, reference_doc)
