@@ -1086,7 +1086,7 @@ def check_if_healthcare_doc_is_linked(doc, method):
 	for linked_doc in linked_docs:
 		if linked_doc not in exclude_docs:
 			for linked_doc_obj in linked_docs[linked_doc]:
-				if method == "Cancel":
+				if method == "Cancel" and linked_doc_obj.docstatus < 2:
 					if linked_doc in item_linked:
 						item_linked[linked_doc].append(linked_doc_obj.name)
 					else:
