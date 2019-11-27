@@ -15,6 +15,7 @@ from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc, get_
 
 class ClinicalProcedure(Document):
 	def validate(self):
+		self.set_title_field()
 		if self.consume_stock and not self.status == 'Draft':
 			if not self.warehouse:
 				frappe.throw(_("Set warehouse for Procedure {0} ").format(self.name))
@@ -29,6 +30,10 @@ class ClinicalProcedure(Document):
 			ref_company = frappe.db.get_value("Healthcare Service Unit", self.service_unit, "company")
 		if ref_company:
 			self.company = ref_company
+
+	def set_title_field(self):
+		if not self.procedure_title_field:
+			self.procedure_title_field = " - ".join(filter(lambda x: x, [self.patient_name, self.procedure_template]))
 
 	def before_insert(self):
 		self.consume_stock = frappe.db.get_value("Clinical Procedure Template", self.procedure_template, 'consume_stock')
