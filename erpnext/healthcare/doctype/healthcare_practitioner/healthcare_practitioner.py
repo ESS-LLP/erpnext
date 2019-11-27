@@ -9,7 +9,7 @@ from frappe import throw, _
 from frappe.utils import cstr
 from erpnext.accounts.party import validate_party_accounts
 from frappe.contacts.address_and_contact import load_address_and_contact, delete_contact_and_address
-from frappe.desk.reportview import build_match_conditions, get_filters_cond
+from frappe.desk.reportview import get_match_cond, get_filters_cond
 from frappe.model.naming import set_name_by_naming_series
 
 class HealthcarePractitioner(Document):
@@ -85,35 +85,36 @@ def validate_service_item(item, msg):
 	if frappe.db.get_value("Item", item, "is_stock_item") == 1:
 		frappe.throw(_(msg))
 
-def get_practitioner_list(doctype, txt, searchfield, start, page_len, filters=None):
+def get_practitioner_list(doctype, txt, searchfield, start, page_len, filters):
+	conditions = []
 	fields = ["name", "practitioner_name", "mobile_phone"]
-	match_conditions = build_match_conditions("Healthcare Practitioner")
-	match_conditions = "and {}".format(match_conditions) if match_conditions else ""
 
-	if filters:
-		filter_conditions = get_filters_cond(doctype, filters, [])
-		match_conditions += "{}".format(filter_conditions)
+	meta = frappe.get_meta("Healthcare Practitioner")
+	searchfields = meta.get_search_fields()
+	searchfields = searchfields + [f for f in [searchfield or "name", "practitioner_name"] \
+			if not f in searchfields]
+	fields = fields + [f for f in searchfields if not f in fields]
 
-	return frappe.db.sql("""select %s from `tabHealthcare Practitioner` where docstatus < 2
-		and (%s like %s or first_name like %s)
-		and active = 1
-		{match_conditions}
+	fields = ", ".join(fields)
+	searchfields = " or ".join([field + " like %(txt)s" for field in searchfields])
+
+	return frappe.db.sql("""select {fields} from `tabHealthcare Practitioner`
+		where docstatus < 2
+			and ({scond}) and active=1
+			{fcond} {mcond}
 		order by
-		case when name like %s then 0 else 1 end,
-		case when first_name like %s then 0 else 1 end,
-		name, first_name limit %s, %s""".format(
-			match_conditions=match_conditions) %
-			(
-				", ".join(fields),
-				frappe.db.escape(searchfield),
-				"%s", "%s", "%s", "%s", "%s", "%s"
-			),
-			(
-				"%%%s%%" % frappe.db.escape(txt),
-				"%%%s%%" % frappe.db.escape(txt),
-				"%%%s%%" % frappe.db.escape(txt),
-				"%%%s%%" % frappe.db.escape(txt),
-				start,
-				page_len
-			)
-		)
+			if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
+			if(locate(%(_txt)s, practitioner_name), locate(%(_txt)s, practitioner_name), 99999),
+			idx desc,
+			name, practitioner_name
+		limit %(start)s, %(page_len)s""".format(**{
+			"fields": fields,
+			"scond": searchfields,
+			"mcond": get_match_cond(doctype),
+			"fcond": get_filters_cond(doctype, filters, conditions).replace('%', '%%'),
+		}), {
+			'txt': "%%%s%%" % txt,
+			'_txt': txt.replace("%", ""),
+			'start': start,
+			'page_len': page_len
+		})
