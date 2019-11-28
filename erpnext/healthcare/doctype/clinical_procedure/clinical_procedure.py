@@ -12,6 +12,7 @@ from erpnext.healthcare.doctype.lab_test.lab_test import create_sample_doc, crea
 from erpnext.stock.stock_ledger import get_previous_sle
 import datetime
 from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc, get_procedure_delivery_item, item_reduce_procedure_rate, manage_healthcare_doc_cancel, get_insurance_details
+from erpnext.healthcare.doctype.patient_appointment.patient_appointment import update_status
 
 class ClinicalProcedure(Document):
 	def validate(self):
@@ -54,7 +55,7 @@ class ClinicalProcedure(Document):
 		if self.inpatient_record_procedure:
 			frappe.db.set_value("Inpatient Record Procedure", self.inpatient_record_procedure, "procedure_created", 1)
 		if self.appointment and self.docstatus==0:
-			frappe.db.set_value("Patient Appointment", self.appointment, "status", "In Progress")
+			update_status(self.appointment, "In Progress")
 		template = frappe.get_doc("Clinical Procedure Template", self.procedure_template)
 		if template.sample:
 			patient = frappe.get_doc("Patient", self.patient)
@@ -84,7 +85,7 @@ class ClinicalProcedure(Document):
 		if allow_start:
 			self.status = 'In Progress'
 			insert_clinical_procedure_to_medical_record(self)
-			frappe.db.set_value("Patient Appointment", self.appointment, "status", "Closed")
+			update_status(self.appointment, "Closed")
 		else:
 			self.status = 'Draft'
 		self.save()
@@ -136,7 +137,7 @@ class ClinicalProcedure(Document):
 		if self.inpatient_record_procedure:
 			frappe.db.set_value("Inpatient Record Procedure", self.inpatient_record_procedure, "procedure_created", 0)
 		if self.appointment:
-			frappe.db.set_value("Patient Appointment", self.appointment, "status", "Scheduled")
+			update_status(self.appointment, "Scheduled")
 		if self.sample:
 			frappe.db.set_value(self.doctype, self.name, 'sample', '')
 		delete_pre_post_documents(self)

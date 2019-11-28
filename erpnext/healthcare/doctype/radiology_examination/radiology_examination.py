@@ -6,13 +6,14 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from erpnext.healthcare.utils import manage_healthcare_doc_cancel
+from erpnext.healthcare.doctype.patient_appointment.patient_appointment import update_status
 
 class RadiologyExamination(Document):
 	def after_insert(self):
 		if self.radiology_procedure_prescription:
 			frappe.db.set_value("Radiology Procedure Prescription", self.radiology_procedure_prescription, "radiology_examination_created", True)
 		if self.appointment and self.docstatus==0:
-			frappe.db.set_value("Patient Appointment", self.appointment, "status", "In Progress")
+			update_status(self.appointment, "In Progress")
 
 	def on_cancel(self):
 		manage_healthcare_doc_cancel(self)
@@ -21,7 +22,7 @@ class RadiologyExamination(Document):
 
 	def on_submit(self):
 		if self.appointment:
-			frappe.db.set_value("Patient Appointment", self.appointment, "status", "Closed")
+			update_status(self.appointment, "Closed")
 
 	def validate(self):
 		ref_company = False

@@ -25,6 +25,13 @@ class HealthcareSettings(Document):
 			validate_service_item(self.op_consulting_charge_item, "Configure a service Item for Out Patient Consulting Charge Item")
 		if self.clinical_procedure_consumable_item:
 			validate_service_item(self.clinical_procedure_consumable_item, "Configure a service Item for Clinical Procedure Consumable Item")
+		if self.app_rem:
+			if self.appointment_action:
+				for reminder in self.appointment_action:
+					if reminder.action_on == "Time Before" and not reminder.remind_before:
+						frappe.throw(_("Appointment Action set time to send SMS"))
+			else:
+				frappe.throw(_("Appointment Action can not be empty"))
 
 @frappe.whitelist()
 def get_sms_text(doc):
