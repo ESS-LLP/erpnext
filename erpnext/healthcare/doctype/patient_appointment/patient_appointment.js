@@ -887,21 +887,31 @@ var btn_create_vital_signs = function (frm) {
 
 var btn_update_status = function(frm, status){
 	var doc = frm.doc;
-	frappe.confirm(__('Are you sure you want to cancel this appointment?'),
-		function() {
-			frappe.call({
-				method:
-				"erpnext.healthcare.doctype.patient_appointment.patient_appointment.update_status",
-				args: {appointment_id: doc.name, status:status},
-				callback: function(data){
-					if(!data.exc){
-						frm.reload_doc();
-					}
-				}
-			});
-		}
-	);
+	if(status == "Cancelled"){
+		cancellation_reasons(frm);
+	}
+	else{
+		var msg = __('Are you sure you want to '+status+' this appointment?');
+		frappe.confirm(msg,
+			function() {
+					update_status(frm, status);
+			}
+		);
+	}
 };
+
+var update_status = function(frm, status){
+	frappe.call({
+		method:
+		"erpnext.healthcare.doctype.patient_appointment.patient_appointment.update_status",
+		args: {appointment_id: frm.doc.name, status:status},
+		callback: function(data){
+			if(!data.exc){
+				frm.reload_doc();
+			}
+		}
+	});
+}
 
 frappe.ui.form.on("Patient Appointment", "practitioner", function(frm) {
 	if(frm.doc.practitioner){
@@ -1138,5 +1148,47 @@ var self_appointment = function (frm, data) {
 		}
 		d.show();
 		d.$wrapper.find('.modal-dialog').css("width", "800px");
+	}
+}
+//cancellation
+var cancellation_reasons = function(frm) {
+	var d_reasons = new frappe.ui.Dialog({
+		title: __("Cancellation Reasons"),
+		fields: [
+			{ fieldtype: 'Select', options: '\nPatient\nPractitioner\nFacility', reqd:1, fieldname: 'cancellation_source', label: 'Cancellation Source'},
+			{ fieldtype: 'Link', options: 'Appointment Cancellation Reason', reqd:1, fieldname: 'cancellation_reason', label: 'Cancellation Reason',
+				get_query:function () {
+					return {
+						filters: {
+							"cancellation_source": d_reasons.get_value('cancellation_source')
+						}
+					};
+				}
+			},
+			{ fieldtype: 'Column Break'},
+			{ fieldtype: 'Select', options: frappe.meta.get_docfield("Patient Appointment", "cancelled_by" ).options, fieldname: 'cancelled_by', label: 'Cancelled By'},
+			{ fieldtype: 'Small Text', fieldname: 'cancellation_notes', label: 'Cancellation Notes'},
+		],
+		primary_action_label: __("Cancel"),
+		primary_action: function() {
+			frm.set_value('cancellation_source', d_reasons.get_value('cancellation_source'));
+			frm.set_value('cancellation_reason', d_reasons.get_value('cancellation_reason'));
+			frm.set_value('cancelled_by', d_reasons.get_value('cancelled_by'));
+			frm.set_value('cancellation_notes', d_reasons.get_value('cancellation_notes'));
+			d_reasons.hide();
+			frm.enable_save();
+			frm.save();
+			frm.enable_save();
+			d_reasons.get_primary_btn().attr('disabled', true);
+			update_status(frm, "Cancelled")
+		}
+	});
+	// disable dialog action initially
+	d_reasons.get_primary_btn().attr('disabled', true);
+	d_reasons.show();
+	d_reasons.$wrapper.find('.modal-dialog').css("width", "800px");
+
+	d_reasons.fields_dict["cancellation_reason"].df.onchange = () => {
+		d_reasons.get_primary_btn().attr('disabled', null);
 	}
 }
