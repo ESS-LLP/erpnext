@@ -6,6 +6,7 @@ from erpnext.domains.healthcare import data
 def execute():
 	frappe.reload_doc('stock', 'doctype', 'delivery_note')
 	frappe.reload_doc('stock', 'doctype', 'delivery_note_item')
+	frappe.reload_doc('accounts', 'doctype', 'sales_invoice_item')
 
 	if "Healthcare" not in frappe.get_active_domains():
 		return
