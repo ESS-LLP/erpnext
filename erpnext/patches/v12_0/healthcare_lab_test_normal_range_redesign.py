@@ -52,6 +52,9 @@ def create_lab_test_normal_range(template, normal_range, normal_range_name, fema
 			lab_test_normal_range.save(ignore_permissions=True)
 		return lab_test_normal_range_id
 	else:
+		bad_chars = ['>','<']
+		for i in bad_chars :
+			normal_range_name = normal_range_name.replace(i, '')
 		lab_test_normal_range = frappe.new_doc("Lab Test Normal Range")
 		lab_test_normal_range.lab_test_normal_range = normal_range_name
 		lab_test_normal_range.default_normal_range = normal_range
