@@ -19,13 +19,14 @@ class PatientAppointment(Document):
 		today = datetime.date.today()
 		appointment_date = getdate(self.appointment_date)
 
-		# If appointment created for today set as open
-		if today == appointment_date:
-			update_status(self.name, "Open")
-		elif today < appointment_date:
-			update_status(self.name, "Scheduled")
-		elif today > appointment_date:
-			update_status(self.name, "Pending")
+		if(self.status != "Cancelled"):
+			# If appointment created for today set as open
+			if today == appointment_date:
+				update_status(self.name, "Open")
+			elif today < appointment_date:
+				update_status(self.name, "Scheduled")
+			elif today > appointment_date:
+				update_status(self.name, "Pending")
 		self.reload()
 
 	def validate(self):
@@ -598,7 +599,10 @@ def send_message(doc, message):
 		# jinja to string convertion happens here
 		message = frappe.render_template(message, context)
 		number = [patient.mobile]
-		send_sms(number, message)
+		try:
+			send_sms(number, message)
+		except Exception as e:
+			frappe.msgprint(_("SMS not send Please check your SMS Settings"), alert=True)
 
 
 @frappe.whitelist()
