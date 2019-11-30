@@ -325,15 +325,15 @@ frappe.ui.form.on('Patient Appointment', {
 		if(frm.is_new()) {
 			frm.set_value("appointment_time", null);
 			frm.disable_save();
+			frappe.db.get_value("Healthcare Settings", "", "default_practitioner_source", function(r) {
+				if(r && r.default_practitioner_source){
+					frm.set_value("source", r.default_practitioner_source)
+				}
+				else{
+					frm.set_value("source", "");
+				}
+			});
 		}
-		frappe.db.get_value("Healthcare Settings", "", "default_practitioner_source", function(r) {
-			if(r && r.default_practitioner_source){
-				frm.set_value("source", r.default_practitioner_source)
-			}
-			else{
-				frm.set_value("source", "");
-			}
-		});
 		if(frm.doc.source=="Direct"){
 			frm.set_value("referring_practitioner", "");
 			frm.set_df_property("referring_practitioner", "hidden", 1);
