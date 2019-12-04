@@ -629,6 +629,7 @@ frappe.ui.form.on('Clinical Procedure Item', {
 						frappe.model.set_value(cdt, cdn, "stock_uom", r.message.stock_uom);
 						frappe.model.set_value(cdt, cdn, "conversion_factor", r.message.conversion_factor);
 						frappe.model.set_value(cdt, cdn, "actual_qty", r.message.actual_qty);
+						frappe.model.set_value(cdt, cdn, "valuation_rate", r.message.valuation_rate);
 						frappe.db.get_value("Item", d.item_code, 'sales_uom', function(ret) {
 							if(ret && ret.sales_uom){
 								frappe.model.set_value(cdt, cdn, "uom", ret.sales_uom);
