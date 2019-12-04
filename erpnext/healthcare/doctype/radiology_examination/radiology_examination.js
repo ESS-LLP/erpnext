@@ -101,6 +101,14 @@ frappe.ui.form.on('Radiology Examination', {
 	onload: function (frm) {
 		if(frm.is_new()) {
 			frm.add_fetch("radiology_procedure", "medical_department", "medical_department");
+			frappe.db.get_value("Healthcare Settings", "", "default_practitioner_source", function(r) {
+				if(r && r.default_practitioner_source){
+					frm.set_value("source", r.default_practitioner_source);
+				}
+				else{
+					frm.set_value("source", "");
+				}
+			});
 		}
 	},
 	inpatient_record:function(frm) {

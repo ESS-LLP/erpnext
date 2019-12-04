@@ -273,6 +273,14 @@ frappe.ui.form.on('Clinical Procedure', {
 		if(frm.is_new()) {
 			frm.add_fetch("procedure_template", "medical_department", "medical_department");
 			frm.set_value("start_time", null);
+			frappe.db.get_value("Healthcare Settings", "", "default_practitioner_source", function(r) {
+				if(r && r.default_practitioner_source){
+					frm.set_value("source", r.default_practitioner_source);
+				}
+				else{
+					frm.set_value("source", "");
+				}
+			});
 		}
 		if(frm.doc.appointment){
 			frm.set_df_property("source", "read_only", 1);

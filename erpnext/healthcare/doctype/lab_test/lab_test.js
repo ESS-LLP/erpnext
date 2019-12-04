@@ -193,6 +193,14 @@ frappe.ui.form.on('Lab Test', {
 		 frm.add_fetch("practitioner", "department", "requesting_department");
 		if(frm.is_new()) {
 			frm.add_fetch("template", "department", "department");
+			frappe.db.get_value("Healthcare Settings", "", "default_practitioner_source", function(r) {
+				if(r && r.default_practitioner_source){
+					frm.set_value("source", r.default_practitioner_source);
+				}
+				else{
+					frm.set_value("source", "");
+				}
+			});
 		}
 		if(frm.doc.employee){
 			frappe.call({
