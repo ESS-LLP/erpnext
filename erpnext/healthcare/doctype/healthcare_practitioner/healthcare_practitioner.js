@@ -30,7 +30,7 @@ frappe.ui.form.on('Healthcare Practitioner', {
 		if(frm.doc.department){
 			frm.set_query("practitioner_service_profile", function () {
 				return {
-					filters: {department : frm.doc.department}
+					filters: {healthcare_practitioner_type : frm.doc.healthcare_practitioner_type}
 				}
 			});
 		}
