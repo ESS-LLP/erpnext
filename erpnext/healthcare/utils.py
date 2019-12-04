@@ -1299,7 +1299,6 @@ def get_revenue_sharing_distribution(invoice_item):
 		not_share_revenue_dt = ["Inpatient Record Procedure", "Inpatient Occupancy", "Lab Prescription", "Procedure Prescription", "Radiology Procedure Prescription", "Drug Prescription",]
 		if not item.delivery_note and item.reference_dt != "Delivery Note" and item.reference_dt not in not_share_revenue_dt:
 			ref_doc = frappe.get_doc(item.reference_dt, item.reference_dn)
-			is_external = frappe.get_value("Healthcare Practitioner", ref_doc.referring_practitioner, "healthcare_practitioner_type")
 			if ref_doc.source == "Direct":
 				assignment = frappe.db.exists("Healthcare Service Profile Assignment",
 					{
