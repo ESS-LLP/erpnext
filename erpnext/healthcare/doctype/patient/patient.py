@@ -84,7 +84,9 @@ class Patient(Document):
 			return {'invoice': sales_invoice.name}
 
 def create_customer(doc):
-	customer_group = frappe.get_value("Selling Settings", None, "customer_group")
+	customer_group = doc.customer_group
+	if not customer_group:
+		customer_group = frappe.get_value("Selling Settings", None, "customer_group")
 	territory = frappe.get_value("Selling Settings", None, "territory")
 	if not (customer_group and territory):
 		customer_group = "Commercial"
