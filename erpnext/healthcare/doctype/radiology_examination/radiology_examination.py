@@ -7,6 +7,7 @@ import frappe
 from frappe.model.document import Document
 from erpnext.healthcare.utils import manage_healthcare_doc_cancel
 from erpnext.healthcare.doctype.patient_appointment.patient_appointment import update_status
+from frappe.utils import cstr
 
 class RadiologyExamination(Document):
 	def after_insert(self):
@@ -21,6 +22,7 @@ class RadiologyExamination(Document):
 			frappe.get_doc("Patient Appointment", self.appointment).save(ignore_permissions=True)
 
 	def on_submit(self):
+		insert_to_medical_record(self)
 		if self.appointment:
 			update_status(self.appointment, "Closed")
 
@@ -83,3 +85,20 @@ def create_radiology_examination(appointment):
 	if appointment.insurance_approval_number:
 		radiology_examination.insurance_approval_number=appointment.insurance_approval_number
 	return radiology_examination.as_dict()
+
+def insert_to_medical_record(doc):
+	subject = cstr(doc.radiology_procedure)
+	if doc.practitioner:
+		subject += " "+doc.practitioner
+	if subject and doc.notes:
+		subject += "<br/>"+doc.notes
+
+	medical_record = frappe.new_doc("Patient Medical Record")
+	medical_record.patient = doc.patient
+	medical_record.subject = subject
+	medical_record.status = "Open"
+	medical_record.communication_date = doc.start_date
+	medical_record.reference_doctype = "Radiology Examination"
+	medical_record.reference_name = doc.name
+	medical_record.reference_owner = doc.owner
+	medical_record.save(ignore_permissions=True)
