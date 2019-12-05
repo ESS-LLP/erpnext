@@ -18,10 +18,11 @@ from erpnext.healthcare.doctype.patient_appointment.patient_appointment import u
 class ClinicalProcedure(Document):
 	def validate(self):
 		self.set_title_field()
-		if self.consume_stock and not self.status == 'Draft':
+		if self.consume_stock:
 			if not self.warehouse:
 				frappe.throw(_("Set warehouse for Procedure {0} ").format(self.name))
-			self.set_actual_qty()
+			if not self.status == 'Draft':
+				self.set_actual_qty()
 
 		ref_company = False
 		if self.inpatient_record:
@@ -283,6 +284,13 @@ def set_stock_items(doc, stock_detail_parent, parenttype):
 		if parenttype == "Clinical Procedure Template" and doc.doctype == "Clinical Procedure":
 			se_child.invoice_additional_quantity_used = d["invoice_additional_quantity_used"]
 			se_child.procedure_qty = flt(d["qty"])
+			from erpnext.stock.get_item_details import get_item_details
+			se_child.valuation_rate = get_item_details({
+				'doctype' : "Clinical Procedure",
+				'item_code' : d['item_code'],
+				'company' : doc.company,
+				'warehouse': doc.warehouse
+			}).valuation_rate
 	return doc
 
 def get_item_dict(table, parent, parenttype):

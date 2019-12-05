@@ -55,6 +55,8 @@ frappe.ui.form.on('Clinical Procedure Template', {
 		dfi.hidden = 1;
 		var df = frappe.meta.get_docfield("Clinical Procedure Item", "amount", frm.doc.name);
 		df.hidden = 1;
+		var dfj = frappe.meta.get_docfield("Clinical Procedure Item", "valuation_rate", frm.doc.name);
+		dfj.hidden = 1;
 	},
 	clinical_procedure_check_list_template: function(frm) {
 		if(frm.doc.clinical_procedure_check_list_template){
