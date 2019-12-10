@@ -52,15 +52,32 @@ frappe.ui.form.on('Healthcare Practitioner', {
 								frappe.model.set_value(appointment_type_item.doctype, appointment_type_item.name, 'appointment_type', appt.appointment_type)
 							});
 						}
-						if(r.message.clinical_procedure_templates){
-							var clinical_procedure_templates = r.message.clinical_procedure_templates;
+						if(r.message.clinical_procedures){
+							var clinical_procedure_templates = r.message.clinical_procedures;
 							clinical_procedure_templates.forEach(function(template) {
-								var template_item = frappe.model.add_child(frm.doc, 'Service Profile Procedure Template', 'clinical_procedure_templates');
+								var template_item = frappe.model.add_child(frm.doc, 'Service Profile Clinical Procedures', 'clinical_procedures');
 								frappe.model.set_value(template_item.doctype, template_item.name, 'clinical_procedure_template', template.clinical_procedure_template)
 							});
 						}
+						if(r.message.revenue_sharing_items){
+							var revenue_sharing = r.message.revenue_sharing_items;
+							revenue_sharing.forEach(function(item) {
+								var revenue_sharing_item = frappe.model.add_child(frm.doc, 'Service Profile Item Groups', 'revenue_sharing_items');
+								frappe.model.set_value(revenue_sharing_item.doctype, revenue_sharing_item.name, 'item_group', item.item_group)
+								frappe.model.set_value(revenue_sharing_item.doctype, revenue_sharing_item.name, 'type_of_sharing', item.type_of_sharing)
+								if(item.type_of_sharing == "Fixed"){
+									frappe.model.set_value(revenue_sharing_item.doctype, revenue_sharing_item.name, 'direct_amount', item.direct_amount)
+									frappe.model.set_value(revenue_sharing_item.doctype, revenue_sharing_item.name, 'referral_amount', item.referral_amount)
+								}
+								else if(item.type_of_sharing == "Percentage"){
+									frappe.model.set_value(revenue_sharing_item.doctype, revenue_sharing_item.name, 'direct_percentage', item.direct_percentage)
+									frappe.model.set_value(revenue_sharing_item.doctype, revenue_sharing_item.name, 'referral_percentage', item.referral_percentage)
+								}
+							});
+						}
 						refresh_field("appointment_types");
-						refresh_field("clinical_procedure_templates");
+						refresh_field("clinical_procedures");
+						refresh_field("revenue_sharing_items")
 					}
 				}
 			});
