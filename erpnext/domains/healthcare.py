@@ -167,6 +167,11 @@ data = {
 				'insert_after': 'patient_name', 'read_only': True, 'fetch_if_empty': True, 'options': 'Inpatient Record'
 			}
 		],
+		'Contact': [
+			{
+				'fieldname': 'patient_companion', 'label': 'Patient Companion', 'fieldtype': 'Check', 'insert_after': 'is_primary_contact'
+			}
+		],
 	},
 	'on_setup': 'erpnext.healthcare.setup.setup_healthcare'
 }

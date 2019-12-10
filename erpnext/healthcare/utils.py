@@ -1493,3 +1493,23 @@ def get_insurance_pricelist(insurance):
 			price_list = insurance_contract.price_list
 			insurance_company_name= healthcare_insurance.insurance_company_name
 	return price_list,insurance_company_name
+
+@frappe.whitelist()
+def get_patient_companion_contact(doctype, name):
+	import functools
+	'''Returns default contact for the given doctype, name'''
+	out = frappe.db.sql('''select parent,
+			(select patient_companion from tabContact c where c.name = dl.parent)
+				as patient_companion
+		from
+			`tabDynamic Link` dl
+		where
+			dl.link_doctype=%s and
+			dl.link_name=%s and
+			dl.parenttype = "Contact"''', (doctype, name) , as_dict=True)
+
+	if out:
+		if out[0].patient_companion==1:
+			return out[0].parent
+	else:
+		return None

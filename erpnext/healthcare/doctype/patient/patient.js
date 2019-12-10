@@ -20,6 +20,10 @@ frappe.ui.form.on('Patient', {
 				}
 			};
 		});
+		frappe.dynamic_link = {doc: frm.doc, fieldname: 'name', doctype: 'Patient'};
+		if(!frm.is_new()) {
+			frappe.contacts.render_address_and_contact(frm);
+		}
 		if (frappe.defaults.get_default("patient_master_name") != "Naming Series") {
 			frm.toggle_display("naming_series", false);
 		} else {

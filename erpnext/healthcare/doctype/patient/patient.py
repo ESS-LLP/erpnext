@@ -8,6 +8,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, cstr, getdate, flt
 import dateutil
+from frappe.contacts.address_and_contact import load_address_and_contact, delete_contact_and_address
 from frappe.model.naming import set_name_by_naming_series
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account,get_income_account,send_registration_sms
 
@@ -20,10 +21,13 @@ class Patient(Document):
 		else:
 			send_registration_sms(self)
 		self.reload()
+	def onload(self):
+		load_address_and_contact(self)
 
 	def on_update(self):
 		self.add_as_website_user()
 		self.update_customer()
+		self.add_patient_contact()
 
 	def add_as_website_user(self):
 		if(self.email):
@@ -46,6 +50,32 @@ class Patient(Document):
 				account_line.company = receivable_account.company
 				account_line.account = receivable_account.account
 			customer.save(ignore_permissions=True)
+
+	def add_patient_contact(self):
+		if(self.email):
+			user=frappe.db.exists ("User", self.email)
+			if user:
+				contact=frappe.get_doc("Contact", {"email_id":self.email})
+				if contact:
+					contact.is_primary_contact= True
+					if self.mobile:
+						contact.mobile=self.mobile
+					links=[]
+					links.append({
+						"link_doctype": "Patient",
+						"link_name": self.name
+					})
+					links.append({
+						"link_doctype": "Customer",
+						"link_name": self.customer
+					})
+					contact.set("links", links)
+					contact.save(ignore_permissions=True)
+			else:
+				create_new_contact(self)
+		else:
+			if(self.mobile):
+				create_new_contact(self)
 
 	def autoname(self):
 		patient_master_name = frappe.defaults.get_global_default('patient_master_name')
@@ -121,6 +151,27 @@ def make_invoice(patient, company):
 	sales_invoice.set_missing_values()
 	return sales_invoice
 
+def create_new_contact(doc):
+	contact= frappe.new_doc("Contact")
+	contact.first_name=doc.patient_name
+	if doc.mobile:
+		contact.mobile=doc.mobile
+	contact.gender=doc.sex
+	contact.status="Passive"
+	contact.is_primary_contact= True
+	links=[]
+	links.append({
+		"link_doctype": "Patient",
+		"link_name": doc.name
+	})
+	links.append({
+		"link_doctype": "Customer",
+		"link_name": doc.customer
+	})
+	contact.set("links", links)
+	contact.insert(ignore_permissions=True)
+
+
 @frappe.whitelist()
 def get_patient_detail(patient):
 	patient_dict = frappe.db.sql("""select * from tabPatient where name=%s""", (patient), as_dict=1)
@@ -128,7 +179,6 @@ def get_patient_detail(patient):
 		frappe.throw(_("Patient not found"))
 	vital_sign = frappe.db.sql("""select * from `tabVital Signs` where patient=%s
 		order by signs_date desc limit 1""", (patient), as_dict=1)
-
 	details = patient_dict[0]
 	if vital_sign:
 		details.update(vital_sign[0])

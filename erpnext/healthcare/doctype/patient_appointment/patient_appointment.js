@@ -71,6 +71,13 @@ frappe.ui.form.on('Patient Appointment', {
 				}
 			};
 		});
+		frm.set_query("companion", function() {
+			return {
+				filters: {
+					'patient_companion': true
+				}
+			};
+		});
 		frm.set_query("insurance", function(){
 			return{
 				filters:{
@@ -981,6 +988,18 @@ frappe.ui.form.on("Patient Appointment", "patient", function(frm) {
 			}
 		});
 	}
+	if(frm.doc.patient){
+			frappe.call({
+				"method": "erpnext.healthcare.utils.get_patient_companion_contact",
+				args: {
+					doctype: "Patient",
+					name: frm.doc.patient
+				},
+				callback: function (data) {
+					frm.set_value("companion", data.message);
+				}
+			});
+		}
 });
 
 var calculate_age = function(birth) {
