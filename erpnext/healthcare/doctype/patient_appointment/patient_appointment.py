@@ -54,6 +54,7 @@ class PatientAppointment(Document):
 			service_unit_company = frappe.db.get_value("Healthcare Service Unit", self.service_unit, "company")
 			if service_unit_company and service_unit_company != self.company:
 				self.company = service_unit_company
+		appointment_action(self, "SMS")
 
 	def after_insert(self):
 		if self.procedure_prescription:
@@ -464,7 +465,7 @@ def get_availability_data(date, practitioner):
 def update_status(appointment_id, status):
 	if status == "Cancelled":
 		appointment_cancel(appointment_id)
-	appointment_action(appointment_id, "SMS", status)
+	appointment_action(frappe.get_doc("Patient Appointment", appointment_id), "SMS", status)
 	frappe.db.set_value("Patient Appointment", appointment_id, "status", status)
 
 def appointment_cancel(appointment_id):
@@ -573,24 +574,38 @@ def get_context(doc):
 	from frappe.utils import nowdate
 	return {"doc": doc, "nowdate": nowdate, "frappe.utils": frappe.utils}
 
-def appointment_action(appointment_id, action_type, status=False):
-	if status and action_type == "SMS":
+def appointment_action(appointment_obj, action_type, status=False):
+	if action_type == "SMS":
 		appointment_reminder_list = frappe.get_list("Appointment Action",{"parentfield": "appointment_action",
-		"parent": "Healthcare Settings", "action_on": "Status Change"})
+		"parent": "Healthcare Settings", "action_on": "Value Change"})
 		if appointment_reminder_list and len(appointment_reminder_list) > 0:
 			for appointment_reminder in appointment_reminder_list:
 				reminder_obj = frappe.get_doc("Appointment Action", appointment_reminder.name)
-				doc = frappe.get_doc("Patient Appointment", appointment_id)
 				condition_satisfy = True
+				send_sms = False
 				if reminder_obj.condition:
-					context = get_context(doc)
+					context = get_context(appointment_obj)
 					if not frappe.safe_eval(reminder_obj.condition, None, context):
 						condition_satisfy = False
 				if condition_satisfy:
-					db_appointment_status = frappe.db.get_value("Patient Appointment", appointment_id, "status")
-					if status == reminder_obj.appointment_status and status != db_appointment_status:
-						message = reminder_obj.message_content
-						send_message(doc, message)
+					db_appointment_field = frappe.db.get_value("Patient Appointment", appointment_obj.name, reminder_obj.value_change_field)
+					obj_appointment_field = appointment_obj.get(reminder_obj.value_change_field)
+					if isinstance(db_appointment_field, datetime.timedelta):
+						db_appointment_field = str(db_appointment_field)
+						obj_appointment_field = str(obj_appointment_field)
+					elif isinstance(db_appointment_field, datetime.date):
+						obj_appointment_field  = getdate(obj_appointment_field)
+					if status and status == reminder_obj.appointment_status:
+						if reminder_obj.value_change_field == "status":
+							if status != db_appointment_field:
+								send_sms = True
+						elif db_appointment_field != obj_appointment_field:
+							send_sms = True
+					elif not status and appointment_obj.status == reminder_obj.appointment_status and db_appointment_field and db_appointment_field != obj_appointment_field:
+						send_sms = True
+				if send_sms:
+					message = reminder_obj.message_content
+					send_message(appointment_obj, message)
 
 def send_message(doc, message):
 	patient = frappe.get_doc("Patient", doc.patient)
