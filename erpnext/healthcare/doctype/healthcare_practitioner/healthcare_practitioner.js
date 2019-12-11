@@ -39,6 +39,9 @@ frappe.ui.form.on('Healthcare Practitioner', {
 		set_query_service_item(frm, 'op_consulting_charge_item');
 	},
 	practitioner_service_profile: function(frm) {
+		frm.clear_table("appointment_types");
+		frm.clear_table("clinical_procedures");
+		frm.clear_table("revenue_sharing_items");
 		if(frm.doc.practitioner_service_profile){
 			frappe.call({
 				method: "frappe.client.get",
