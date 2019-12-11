@@ -548,7 +548,7 @@ def remind_appointment():
 				rem_before = reminder_obj.remind_before #datetime.datetime.strptime(reminder_obj.remind_before, "%H:%M:%S")
 				# rem_dt = datetime.datetime.now() + datetime.timedelta(
 				# 	hours=rem_before.hour, minutes=rem_before.minute, seconds=rem_before.second)
-				rem_dt = datetime.datetime.now() +rem_before
+				rem_dt = datetime.datetime.now() + rem_before
 				query = """
 					select
 						name
@@ -561,14 +561,19 @@ def remind_appointment():
 				appointment_list = frappe.db.sql(query, (datetime.datetime.now(), rem_dt, reminder_obj.appointment_status))
 				for i in range(0, len(appointment_list)):
 					doc = frappe.get_doc("Patient Appointment", appointment_list[i][0])
-					condition_satisfy = True
-					if reminder_obj.condition:
-						context = get_context(doc)
-						if not frappe.safe_eval(reminder_obj.condition, None, context):
-							condition_satisfy = False
-					if condition_satisfy:
-						message = reminder_obj.message_content
-						send_message(doc, message)
+					app_date_time = datetime.datetime.combine(getdate(doc.appointment_date), get_time(doc.appointment_time))
+					app_dt_rem = app_date_time - rem_before
+					now = datetime.datetime.now()
+					app_dt_dif_in_min = (now - app_dt_rem).seconds/60
+					if (app_dt_rem <= now) and (app_dt_dif_in_min<= 4):
+						condition_satisfy = True
+						if reminder_obj.condition:
+							context = get_context(doc)
+							if not frappe.safe_eval(reminder_obj.condition, None, context):
+								condition_satisfy = False
+						if condition_satisfy:
+							message = reminder_obj.message_content
+							send_message(doc, message)
 
 def get_context(doc):
 	from frappe.utils import nowdate
