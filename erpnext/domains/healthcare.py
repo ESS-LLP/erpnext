@@ -170,6 +170,12 @@ data = {
 		'Contact': [
 			{
 				'fieldname': 'patient_companion', 'label': 'Patient Companion', 'fieldtype': 'Check', 'insert_after': 'is_primary_contact'
+			},
+			{
+				'fieldname': 'companion_id', 'label': 'Companion ID', 'fieldtype': 'Data', 'insert_after': 'user'
+			},
+			{
+				'fieldname': 'companion_relation', 'label': 'Companion Relation', 'fieldtype': 'Select', 'insert_after': 'companion_id', 'options': '\nFather\nMother\nSister\nBrother\nSpouse\nBairn\nRelative\nFriend\nColleague\nOther'
 			}
 		],
 	},

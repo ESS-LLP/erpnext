@@ -1513,3 +1513,47 @@ def get_patient_companion_contact(doctype, name):
 			return out[0].parent
 	else:
 		return None
+
+@frappe.whitelist()
+def get_contact_details(mobile_no):
+	if mobile_no:
+		contact = frappe.db.exists("Contact",
+		{
+			'mobile_no': mobile_no
+		})
+		if contact:
+			return frappe.get_doc("Contact", contact)
+		else:
+			return ""
+
+@frappe.whitelist()
+def create_companion_contact(patient, companion_name, companion_mobile, companion_email=None, companion_id=None, companion_relation=None):
+	contact = frappe.db.exists("Contact",
+	{
+		'mobile_no': companion_mobile
+	})
+	if contact:
+		companion_contact=frappe.get_doc("Contact", contact)
+		companion_contact.first_name=companion_name
+		companion_contact.mobile_no=companion_mobile
+		companion_contact.email_id=companion_email
+		companion_contact.companion_id=companion_id
+		companion_contact.companion_relation=companion_relation
+		companion_contact.save(ignore_permissions=True)
+		return contact
+	else:
+		companion_contact=frappe.new_doc("Contact")
+		companion_contact.first_name=companion_name
+		companion_contact.mobile_no=companion_mobile
+		companion_contact.email_id=companion_email
+		companion_contact.companion_id=companion_id
+		companion_contact.companion_relation=companion_relation
+		companion_contact.patient_companion=True
+		links=[]
+		links.append({
+			"link_doctype": "Patient",
+			"link_name": patient
+		})
+		companion_contact.set("links", links)
+		companion_contact.insert(ignore_permissions=True)
+		return companion_contact.name

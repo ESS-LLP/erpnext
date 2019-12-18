@@ -231,6 +231,9 @@ frappe.ui.form.on('Patient Appointment', {
 				}
 			}
 		});
+		if(frm.doc.patient){
+			frm.set_df_property("patient_companion", "hidden", 0);
+		}
 	},
 	check_availability: function(frm) {
 		if(frm.doc.patient){
@@ -418,7 +421,26 @@ frappe.ui.form.on('Patient Appointment', {
 				}
 			});
 		}
-	}
+	},
+	companion_mobile: function(frm) {
+		frappe.call({
+			method: "erpnext.healthcare.utils.get_contact_details",
+			args: {
+					'mobile_no': frm.doc.companion_mobile
+			},
+			callback: function(r) {
+				console.log(r.message.name);
+				if(r && r.message){
+					frm.set_value("companion_name",r.message.first_name);
+					frm.set_value("companion_email",r.message.email_id);
+					frm.set_value("companion_id",r.message.companion_id);
+					frm.set_value("companion_relation",r.message.companion_relation);
+					frm.set_value("companion", r.message.name)
+				}
+			}
+		});
+	},
+
 });
 
 var set_outstanding_amount = function(frm) {
@@ -507,6 +529,7 @@ var check_and_set_availability = function(frm) {
 				frm.enable_save();
 				frm.save();
 				frm.enable_save();
+
 				d.get_primary_btn().attr('disabled', true);
 			}
 		});
@@ -724,7 +747,7 @@ var check_and_set_availability = function(frm) {
 
 								if(frm.doc.service_unit && (have_atleast_one_schedule || data.present_events) && !have_atleast_one_schedule_for_service_unit){
 									slot_html = __("There are no schedules for service unit {0}", [frm.doc.service_unit||'']).bold();
-								}
+									}
 
 								$wrapper
 									.css('margin-bottom', 0)
@@ -987,19 +1010,9 @@ frappe.ui.form.on("Patient Appointment", "patient", function(frm) {
 				frappe.model.set_value(frm.doctype,frm.docname, "patient_age", age);
 			}
 		});
+		frm.set_df_property("patient_companion", "hidden", 0);
+			frm.refresh_fields();
 	}
-	if(frm.doc.patient){
-			frappe.call({
-				"method": "erpnext.healthcare.utils.get_patient_companion_contact",
-				args: {
-					doctype: "Patient",
-					name: frm.doc.patient
-				},
-				callback: function (data) {
-					frm.set_value("companion", data.message);
-				}
-			});
-		}
 });
 
 var calculate_age = function(birth) {

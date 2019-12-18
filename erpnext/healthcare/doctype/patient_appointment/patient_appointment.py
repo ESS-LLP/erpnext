@@ -13,12 +13,15 @@ from frappe.core.doctype.sms_settings.sms_settings import send_sms
 from erpnext.hr.doctype.employee.employee import is_holiday
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import set_revenue_sharing_distribution
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account,get_income_account
-from erpnext.healthcare.utils import validity_exists, service_item_and_practitioner_charge, sales_item_details_for_healthcare_doc, get_insurance_details
+from erpnext.healthcare.utils import validity_exists, service_item_and_practitioner_charge, sales_item_details_for_healthcare_doc, get_insurance_details, create_companion_contact
 
 class PatientAppointment(Document):
 	def on_update(self):
 		if self.status in ["Open", "Scheduled", "Pending"]:
 			update_status(self.name, self.status)
+		if self.patient_companion == True and self.companion_mobile:
+			companion = create_companion_contact(self.patient, self.companion_name, self.companion_mobile, self.companion_email, self.companion_id, self.companion_relation)
+			frappe.db.set_value("Patient Appointment", self.name, "companion", companion)
 		self.reload()
 
 	def validate(self):
