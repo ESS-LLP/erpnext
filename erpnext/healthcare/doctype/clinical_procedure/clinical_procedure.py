@@ -87,7 +87,8 @@ class ClinicalProcedure(Document):
 		if allow_start:
 			self.status = 'In Progress'
 			insert_clinical_procedure_to_medical_record(self)
-			update_status(self.appointment, "Closed")
+			if self.appointment:
+				update_status(self.appointment, "Closed")
 		else:
 			self.status = 'Draft'
 		self.save()
