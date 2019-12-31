@@ -112,6 +112,7 @@ class InpatientRecord(Document):
 @frappe.whitelist()
 def get_ip_billing_info(doc):
 	customer = frappe.db.get_value("Patient", doc.patient, 'customer')
+	from erpnext.accounts.utils import get_balance_on
 
 	ip_grand_total = frappe.get_all("Sales Invoice",
 		filters={
@@ -147,6 +148,7 @@ def get_ip_billing_info(doc):
 	info["total_billing"] = flt(billing_this_year) if billing_this_year else 0
 	info["currency"] = party_account_currency
 	info["total_unpaid"] = flt(total_unpaid) if total_unpaid else 0
+	info["party_balance"] = get_balance_on(party_type="Customer", party=customer)
 	return info
 
 def get_item_group_as_group(item_code):

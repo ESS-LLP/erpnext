@@ -129,8 +129,9 @@ frappe.ui.form.on('Inpatient Record', {
 					frm.dashboard.add_indicator(__('Total Billing: {0}', [format_currency(r.message.total_billing)]), 'blue');
 					frm.dashboard.add_indicator(__('Total Unpaid: {0}', [format_currency(r.message.total_unpaid)]),
 					r.message.total_unpaid>frm.doc.allowed_total_credit_coverage ? 'orange' : 'green');
+					frm.dashboard.add_indicator(__('Patient Balance: {0}', [format_currency(r.message.party_balance)]), 'orange');
 				}
-			})
+			});
 		}
 		frm.set_query("referring_encounter", function(){
 			return {
