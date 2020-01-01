@@ -332,6 +332,7 @@ def patient_leave_service_unit(inpatient_record, check_out, leave_from):
 			if inpatient_occupancy.left != 1 and inpatient_occupancy.service_unit == leave_from:
 				inpatient_occupancy.left = True
 				inpatient_occupancy.check_out = check_out
+				invoice_ip_occupancy_on_transfer(inpatient_occupancy, inpatient_record)
 				frappe.db.set_value("Healthcare Service Unit", inpatient_occupancy.service_unit, "status", get_check_out_stats())
 	inpatient_record.save(ignore_permissions = True)
 
@@ -533,3 +534,21 @@ def set_delivery_note_item(item, qty, s_wh, cost_center, doc, delivery_note, uom
 	child.rate = item_details.price_list_rate
 	child.price_list_rate = item_details.price_list_rate
 	child.amount = item_details.price_list_rate * child.qty
+
+def invoice_ip_occupancy_on_transfer(ipo, ip):
+	if frappe.db.get_value("Healthcare Settings", None, "auto_invoice_inpatient") == '1':
+		check_in_dt = ipo.check_in
+		if ipo.auto_invoiced and ipo.invoiced_to:
+			check_in_dt = ipo.invoiced_to
+		service_unit_type = frappe.get_doc("Healthcare Service Unit Type", frappe.db.get_value("Healthcare Service Unit", ipo.service_unit, "service_unit_type"))
+		if service_unit_type and service_unit_type.is_billable == 1:
+			sales_invoice = frappe.new_doc("Sales Invoice")
+			sales_invoice.patient = ip.patient
+			sales_invoice.patient_name = ip.patient_name
+			sales_invoice.customer = frappe.get_value("Patient", ip.patient, "customer")
+			sales_invoice.ref_practitioner = ip.primary_practitioner
+			sales_invoice.due_date = getdate()
+			sales_invoice.inpatient_record = ip.name
+			sales_invoice.company = ip.company
+			sales_invoice.debit_to = get_receivable_account(ip.company, ip.patient)
+			update_ip_occupancy_invoice(sales_invoice, ipo, service_unit_type, check_in_dt, ip)
