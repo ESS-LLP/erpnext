@@ -322,9 +322,9 @@ frappe.ui.form.on('Patient Appointment', {
 		}
 	},
 	onload:function(frm){
+		frm.disable_save();
 		if(frm.is_new()) {
 			frm.set_value("appointment_time", null);
-			frm.disable_save();
 			frappe.db.get_value("Healthcare Settings", "", "default_practitioner_source", function(r) {
 				if(r && r.default_practitioner_source){
 					frm.set_value("source", r.default_practitioner_source);
