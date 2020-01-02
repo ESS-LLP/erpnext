@@ -19,8 +19,8 @@ class PatientAppointment(Document):
 	def on_update(self):
 		today = datetime.date.today()
 		appointment_date = getdate(self.appointment_date)
-
-		if(self.status != "Cancelled"):
+		status_appointment_is_not_linked = ["Open", "Scheduled", "Pending"]
+		if self.status in status_appointment_is_not_linked:
 			# If appointment created for today set as open
 			if today == appointment_date:
 				update_status(self.name, "Open")
