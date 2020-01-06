@@ -17,17 +17,8 @@ from erpnext.healthcare.utils import validity_exists, service_item_and_practitio
 
 class PatientAppointment(Document):
 	def on_update(self):
-		today = datetime.date.today()
-		appointment_date = getdate(self.appointment_date)
-		status_appointment_is_not_linked = ["Open", "Scheduled", "Pending"]
-		if self.status in status_appointment_is_not_linked:
-			# If appointment created for today set as open
-			if today == appointment_date:
-				update_status(self.name, "Open")
-			elif today < appointment_date:
-				update_status(self.name, "Scheduled")
-			elif today > appointment_date:
-				update_status(self.name, "Pending")
+		if self.status in ["Open", "Scheduled", "Pending"]:
+			update_status(self.name, self.status)
 		self.reload()
 
 	def validate(self):
@@ -57,6 +48,17 @@ class PatientAppointment(Document):
 		appointment_action(self, "SMS")
 
 	def after_insert(self):
+		today = datetime.date.today()
+		appointment_date = getdate(self.appointment_date)
+		# If appointment created for today set as open
+		status = self.status
+		if today == appointment_date:
+			status = "Open"
+		elif today < appointment_date:
+			status = "Scheduled"
+		elif today > appointment_date:
+			status = "Pending"
+		frappe.db.set_value("Patient Appointment", self.name, "status", status)
 		if self.procedure_prescription:
 			frappe.db.set_value("Procedure Prescription", self.procedure_prescription, "appointment_booked", True)
 			if self.procedure_template:

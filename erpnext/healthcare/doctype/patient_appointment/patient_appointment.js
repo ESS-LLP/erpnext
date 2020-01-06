@@ -483,7 +483,17 @@ var check_and_set_availability = function(frm) {
 				frm.set_value('practitioner', d.get_value('practitioner'));
 				frm.set_value('department', d.get_value('department'));
 				frm.set_value('appointment_date', d.get_value('appointment_date'));
-				frm.set_value('appointment_type', d.get_value('appointment_type'))
+				frm.set_value('appointment_type', d.get_value('appointment_type'));
+				var today = frappe.datetime.nowdate();
+				if(frm.doc.appointment_date == today){
+					frm.set_value("status", "Open");
+				}
+				else if (frm.doc.appointment_date > today){
+					frm.set_value("status", "Scheduled");
+				}
+				else if (frm.doc.appointment_date < today){
+					frm.set_value("status", "Pending");
+				}
 				d.hide();
 				frm.enable_save();
 				frm.save();
