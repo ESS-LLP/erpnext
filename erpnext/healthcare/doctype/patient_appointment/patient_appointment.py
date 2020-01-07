@@ -51,14 +51,14 @@ class PatientAppointment(Document):
 		today = datetime.date.today()
 		appointment_date = getdate(self.appointment_date)
 		# If appointment created for today set as open
-		status = self.status
+		status = "Open"
 		if today == appointment_date:
 			status = "Open"
 		elif today < appointment_date:
 			status = "Scheduled"
 		elif today > appointment_date:
 			status = "Pending"
-		frappe.db.set_value("Patient Appointment", self.name, "status", status)
+		self.status = status
 		if self.procedure_prescription:
 			frappe.db.set_value("Procedure Prescription", self.procedure_prescription, "appointment_booked", True)
 			if self.procedure_template:
