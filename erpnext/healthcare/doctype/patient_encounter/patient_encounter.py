@@ -37,7 +37,8 @@ class PatientEncounter(Document):
 		delete_medical_record(self)
 
 	def on_submit(self):
-		update_status(self.appointment, "Closed")
+		if self.appointment:
+			update_status(self.appointment, "Closed")
 
 	def before_cancel(self):
 		self.validate_orders()
