@@ -433,7 +433,7 @@ def manage_invoice_submit_cancel(doc, method):
 				create_insurance_claim(frappe.get_doc("Insurance Assignment", key), jv_amount[key], doc)
 	if method=="on_submit" and frappe.db.get_value("Healthcare Settings", None, "create_test_on_si_submit") == '1':
 		create_multiple("Sales Invoice", doc.name)
-	manage_revenue_sharing(doc, method)	
+	manage_revenue_sharing(doc, method)
 
 def manage_revenue_sharing(doc, method):
 	if method == "on_submit":
@@ -1316,7 +1316,7 @@ def get_revenue_sharing_distribution(invoice_item):
 							for sharing_item in assignment_doc.revenue_sharing_items:
 								if sharing_item.item_group==item_group:
 									if sharing_item.type_of_sharing=="Fixed":
-										distribute_amount=direct_amount
+										distribute_amount=sharing_item.direct_amount
 									else:
 										distribute_amount=(item_amount * 0.01 * sharing_item.direct_percentage)
 									distribution = {
@@ -1346,7 +1346,7 @@ def get_revenue_sharing_distribution(invoice_item):
 							for sharing_item in assignment_doc.revenue_sharing_items:
 								if sharing_item.item_group==item_group:
 									if sharing_item.type_of_sharing=="Fixed":
-										distribute_amount=referral_amount
+										distribute_amount=sharing_item.referral_amount
 									else:
 										distribute_amount=(item_amount* 0.01 * sharing_item.referral_percentage)
 									distribution = {
