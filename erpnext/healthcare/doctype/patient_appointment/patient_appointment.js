@@ -447,6 +447,7 @@ var check_and_set_availability = function(frm) {
 	var selected_slot = null;
 	var service_unit = null;
 	var duration = null;
+	var practitioner_event = null;
 	show_availability();
 
 	function show_empty_state(practitioner, appointment_date) {
@@ -478,6 +479,7 @@ var check_and_set_availability = function(frm) {
 			primary_action: function() {
 				frm.set_value('appointment_time', selected_slot);
 				frm.set_value('service_unit', service_unit || '');
+				frm.set_value('practitioner_event', practitioner_event || '');
 				// frm.set_value('duration', duration);
 				frm.set_value('duration', d.get_value('duration'));
 				frm.set_value('practitioner', d.get_value('practitioner'));
@@ -645,6 +647,7 @@ var check_and_set_availability = function(frm) {
 												data-name=${start_str}
 												data-duration=${interval}
 												data-service-unit="${slot_details[i].service_unit || ''}"
+												data-event=""
 												flag-fixed-duration=${slot_details[i].fixed_duration || 0}
 												style="margin: 0 10px 10px 0; width: 72px; background-color:${background_color};" ${disabled}>
 												${start_str.substring(0, start_str.length - 3)}
@@ -701,6 +704,7 @@ var check_and_set_availability = function(frm) {
 													data-name=${start_str}
 													data-duration=${interval}
 													data-service-unit="${present_events[i].service_unit || ''}"
+													data-event="${present_events[i].event||''}"
 													flag-fixed-duration=${1}
 													style="margin: 0 10px 10px 0; width: 72px; background-color:${background_color};" ${disabled}>
 													${start_str.substring(0, start_str.length - 3)}
@@ -728,6 +732,7 @@ var check_and_set_availability = function(frm) {
 									selected_slot = $btn.attr('data-name');
 									service_unit = $btn.attr('data-service-unit')
 									duration = $btn.attr('data-duration')
+									practitioner_event = $btn.attr('data-event')
 									// enable dialog action
 									d.get_primary_btn().attr('disabled', null);
 									if($btn.attr('flag-fixed-duration') == 1){

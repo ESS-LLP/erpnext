@@ -377,7 +377,14 @@ def service_item_and_practitioner_charge(doc):
 		if not service_item:
 			service_item = get_healthcare_service_item("op_consulting_charge_item")
 
-	practitioner_charge = get_practitioner_charge(doc.practitioner, is_ip)
+	practitioner_event = False
+	appointment_type = False
+	if doc.doctype == "Patient Appointment":
+		practitioner_event = doc.practitioner_event
+		appointment_type = doc.appointment_type
+	elif doc.doctype == "Patient Encounter" and doc.appointment:
+		practitioner_event, appointment_type = frappe.db.get_values("Patient Appointment", doc.appointment, ["practitioner_event", "appointment_type"])[0]
+	practitioner_charge = get_practitioner_charge(doc.practitioner, is_ip, practitioner_event, appointment_type)
 
 	# service_item required if practitioner_charge is valid
 	if practitioner_charge and not service_item:
@@ -406,14 +413,19 @@ def doc_is_ip(doc):
 		is_ip = True
 	return is_ip
 
-def get_practitioner_charge(practitioner, is_ip):
+def get_practitioner_charge(practitioner, is_ip, practitioner_event=False, appointment_type=False):
+	practitioner_charge_field = "op_consulting_charge"
 	if is_ip:
-		practitioner_charge = frappe.db.get_value("Healthcare Practitioner", practitioner, "inpatient_visit_charge")
-	else:
-		practitioner_charge = frappe.db.get_value("Healthcare Practitioner", practitioner, "op_consulting_charge")
-	if practitioner_charge:
-		return practitioner_charge
-	return False
+		practitioner_charge_field = "inpatient_visit_charge"
+	practitioner_charge = False
+	if practitioner_event:
+		practitioner_charge = frappe.db.get_value("Practitioner Event", practitioner_event, practitioner_charge_field)
+	if not practitioner_charge:
+		practitioner_charge = frappe.db.get_value("Appointment Type", appointment_type, practitioner_charge_field)
+	if not practitioner_charge:
+		practitioner_charge = frappe.db.get_value("Healthcare Practitioner", practitioner, practitioner_charge_field)
+
+	return practitioner_charge if practitioner_charge else False
 
 def manage_invoice_submit_cancel(doc, method):
 	if doc.items:

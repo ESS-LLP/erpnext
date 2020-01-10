@@ -27,7 +27,11 @@ class PatientEncounter(Document):
 		insert_encounter_to_medical_record(self)
 		from erpnext.healthcare.utils import get_practitioner_charge
 		is_ip = True if self.inpatient_record else False
-		if not get_practitioner_charge(self.practitioner, is_ip):
+		practitioner_event = False
+		appointment_type = False
+		if self.appointment:
+			practitioner_event, appointment_type = frappe.db.get_values("Patient Appointment", self.appointment, ["practitioner_event", "appointment_type"])[0]
+		if not get_practitioner_charge(self.practitioner, is_ip, practitioner_event, appointment_type):
 			frappe.db.set_value("Patient Encounter", self.name, "invoiced", True)
 
 	def on_cancel(self):

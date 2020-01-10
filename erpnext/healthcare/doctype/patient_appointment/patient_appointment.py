@@ -71,7 +71,7 @@ class PatientAppointment(Document):
 			frappe.db.set_value("Radiology Procedure Prescription", self.radiology_procedure_prescription, "appointment_booked", True)
 		from erpnext.healthcare.utils import get_practitioner_charge
 		is_ip = True if self.inpatient_record else False
-		practitioner_charge = get_practitioner_charge(self.practitioner, is_ip)
+		practitioner_charge = get_practitioner_charge(self.practitioner, is_ip, self.practitioner_event, self.appointment_type)
 		# Check fee validity exists
 		appointment = self
 		validity_exist = validity_exists(appointment.practitioner, appointment.patient)
@@ -447,7 +447,7 @@ def get_availability_data(date, practitioner):
 				to_time = from_time + datetime.timedelta(seconds=present_event.duration*60)
 				event_available_slots.append({'from_time': from_time, 'to_time': to_time})
 				from_time = to_time
-			present_events_details.append({'slot_name': slot_name, "service_unit":present_event.service_unit,
+			present_events_details.append({'slot_name': slot_name, "service_unit":present_event.service_unit, 'event': present_event.name,
 			'avail_slot': event_available_slots, 'appointments': appointments, 'absent_events': absent_events})
 	else:
 		if not practitioner_obj.practitioner_schedules:
@@ -476,7 +476,7 @@ def appointment_cancel(appointment_id):
 	manage_healthcare_doc_cancel(appointment)
 	from erpnext.healthcare.utils import get_practitioner_charge
 	is_ip = True if appointment.inpatient_record else False
-	practitioner_charge = get_practitioner_charge(appointment.practitioner, is_ip)
+	practitioner_charge = get_practitioner_charge(appointment.practitioner, is_ip, appointment.practitioner_event, appointment.appointment_type)
 	# If invoiced --> fee_validity update with -1 visit
 	if appointment.invoiced and not exists_sales_invoice(appointment) and practitioner_charge and practitioner_charge > 0:
 		update_fee_validity(appointment)
