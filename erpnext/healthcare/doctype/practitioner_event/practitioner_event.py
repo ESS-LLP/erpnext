@@ -15,6 +15,7 @@ class PractitionerEvent(Document):
 			validate_duration(self)
 		validate_date(self)
 		validate_overlap(self)
+		self.to_date = self.from_date
 
 	def validate_repeat_on(self):
 		if self.repeat_on == "Every Day":
