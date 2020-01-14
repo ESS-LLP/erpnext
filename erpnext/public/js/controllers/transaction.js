@@ -400,8 +400,14 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 	item_code: function(doc, cdt, cdn) {
 		var me = this;
 		var item = frappe.get_doc(cdt, cdn);
+		var price_list=me.frm.doc.selling_price_list || me.frm.doc.buying_price_list;
 		var update_stock = 0, show_batch_dialog = 0;
 		if(['Sales Invoice'].includes(this.frm.doc.doctype)) {
+			if(frappe.boot.active_domains.includes("Healthcare")){
+				if(me.frm.doc.insurance && me.frm.doc.healthcare_insurance_pricelist){
+					price_list=me.frm.doc.healthcare_insurance_pricelist;
+				}
+			}
 			update_stock = cint(me.frm.doc.update_stock);
 			show_batch_dialog = update_stock;
 
@@ -413,7 +419,6 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 		if(!this.frm.from_barcode) {
 			item.barcode = null;
 		}
-
 		this.frm.from_barcode = false;
 		if(item.item_code || item.barcode || item.serial_no) {
 			if(!this.validate_company_and_party()) {
@@ -435,7 +440,7 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 							currency: me.frm.doc.currency,
 							update_stock: update_stock,
 							conversion_rate: me.frm.doc.conversion_rate,
-							price_list: me.frm.doc.selling_price_list || me.frm.doc.buying_price_list,
+							price_list: price_list,
 							price_list_currency: me.frm.doc.price_list_currency,
 							plc_conversion_rate: me.frm.doc.plc_conversion_rate,
 							company: me.frm.doc.company,

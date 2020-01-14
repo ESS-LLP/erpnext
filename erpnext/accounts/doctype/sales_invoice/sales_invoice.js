@@ -788,11 +788,37 @@ frappe.ui.form.on('Sales Invoice', {
 			}
 		}
 	},
+	insurance: function(frm){
+		if (frappe.boot.active_domains.includes("Healthcare")){
+			if(frm.doc.insurance){
+				frappe.call({
+					method: "erpnext.healthcare.utils.get_insurance_pricelist",
+					args: {
+						"insurance": frm.doc.insurance
+					},
+					callback:function(r) {
+						if(r && r.message){
+							frm.set_value("healthcare_insurance_pricelist",r.message[0]);
+							frm.set_value("insurance_company",r.message[1]);
+							frm.refresh_fields();
+						}
+					}
+				});
+			}
+			else{
+					frm.set_value("insurance_company", '');
+					frm.set_value("healthcare_insurance_pricelist", '');
+			}
+		}
+	},
 	refresh: function(frm) {
 		if (frappe.boot.active_domains.includes("Healthcare")){
 			frm.set_df_property("patient", "hidden", 0);
 			frm.set_df_property("patient_name", "hidden", 0);
 			frm.set_df_property("ref_practitioner", "hidden", 0);
+			frm.set_df_property("insurance", "hidden", 0);
+			frm.set_df_property("insurance_company", "hidden", 0);
+			frm.set_df_property("healthcare_insurance_pricelist", "hidden", 0);
 			if (cint(frm.doc.docstatus==0) && cur_frm.page.current_view_name!=="pos" && !frm.doc.is_return) {
 				frm.add_custom_button(__('Healthcare Services'), function() {
 					get_healthcare_services_to_invoice(frm);
@@ -801,11 +827,22 @@ frappe.ui.form.on('Sales Invoice', {
 					get_drugs_to_invoice(frm);
 				},"Get items from");
 			}
+			frm.set_query("insurance", function(){
+				return{
+					filters:{
+						"patient": frm.doc.patient,
+						"docstatus":1
+					}
+				};
+			});
 		}
 		else{
 			frm.set_df_property("patient", "hidden", 1);
 			frm.set_df_property("patient_name", "hidden", 1);
 			frm.set_df_property("ref_practitioner", "hidden", 1);
+			frm.set_df_property("insurance", "hidden", 1);
+			frm.set_df_property("insurance_company", "hidden", 1);
+			frm.set_df_property("healthcare_insurance_pricelist", "hidden", 1);
 		}
 	}
 })
@@ -882,6 +919,7 @@ var select_loyalty_program = function(frm, loyalty_programs) {
 var get_healthcare_services_to_invoice = function(frm) {
 	var me = this;
 	let selected_patient = '';
+	let selected_insurance = '';
 	var dialog = new frappe.ui.Dialog({
 		title: __("Get Items from Healthcare Services"),
 		fields:[
@@ -893,7 +931,21 @@ var get_healthcare_services_to_invoice = function(frm) {
 				reqd: true
 			},
 			{ fieldtype: 'Data', read_only:1, fieldname: 'patient_name', depends_on:'eval:doc.patient', label: 'Patient Name'},
-			{ fieldtype: 'Section Break'	},
+			{
+				fieldtype: 'Link',
+				options: 'Insurance Assignment',
+				label: 'Insurance Assignment',
+				fieldname: "insurance",
+				get_query: function () {
+					return {
+						filters: {
+							"patient" : dialog.get_value('patient'),
+							"docstatus" :1
+						}
+					};
+				}
+			},
+			{ fieldtype: 'Section Break' },
 			{ fieldtype: 'HTML', fieldname: 'results_area' }
 		]
 	});
@@ -912,17 +964,37 @@ var get_healthcare_services_to_invoice = function(frm) {
 			}
 		});
 		var patient = dialog.fields_dict.patient.input.value;
-		if(patient && patient!=selected_patient){
+		if(frm.doc.insurance && frm.doc.patient == patient){
+			selected_patient = patient;
+			dialog.set_values({
+				'insurance': frm.doc.insurance
+			});
+		}
+		else if(patient && patient!=selected_patient){
+			dialog.set_values({'insurance': ''});
+			selected_insurance = '';
 			selected_patient = patient;
 			var method = "erpnext.healthcare.utils.get_healthcare_services_to_invoice";
-			var args = {patient: patient};
+			var args = {patient: patient, insurance: ''};
 			var columns = {"item_code": "Service", "item_name": "Item Name", "reference_dn": "Reference Name", "reference_dt": "Reference Type"};
 			get_healthcare_items(frm, true, $results, $placeholder, method, args, columns);
 		}
 		else if(!patient){
 			selected_patient = '';
+			dialog.set_values({'insurance': ''});
+			selected_insurance = '';
 			$results.empty();
 			$results.append($placeholder);
+		}
+	}
+	dialog.fields_dict["insurance"].df.onchange = () => {
+		var patient = dialog.fields_dict.patient.input.value;
+		if(patient && dialog.get_value('insurance') != selected_insurance){
+			selected_insurance = dialog.get_value('insurance')
+			var method = "erpnext.healthcare.utils.get_healthcare_services_to_invoice";
+			var args = {patient: patient, insurance: dialog.get_value('insurance') };
+			var columns = {"item_code": "Service", "item_name": "Item Name", "reference_dn": "Reference Name", "reference_dt": "Reference Type"};
+			get_healthcare_items(frm, true, $results, $placeholder, method, args, columns);
 		}
 	}
 	$wrapper = dialog.fields_dict.results_area.$wrapper.append(`<div class="results"
@@ -977,7 +1049,6 @@ var make_list_row= function(columns, invoice_healthcare_services, result={}) {
 			}
 		</div>`;
 	});
-
 	let $row = $(`<div class="list-item">
 		<div class="list-item__content" style="flex: 0 0 10px;">
 			<input type="checkbox" class="list-row-check" ${result.checked ? 'checked' : ''}>
@@ -994,8 +1065,21 @@ var set_primary_action= function(frm, dialog, $results, invoice_healthcare_servi
 	dialog.set_primary_action(__('Add'), function() {
 		let checked_values = get_checked_values($results);
 		if(checked_values.length > 0){
+			frm.set_value("patient", dialog.fields_dict.patient.input.value);
+			frm.set_value("patient_name", dialog.get_value("patient_name"));
 			if(invoice_healthcare_services) {
-				frm.set_value("patient", dialog.fields_dict.patient.input.value);
+				frm.set_value("insurance", dialog.fields_dict.insurance.input.value);
+				if(!dialog.fields_dict.insurance.input.value){
+					frm.set_value("healthcare_insurance_pricelist", "");
+					frm.set_value("insurance_company", "");
+				}
+			}
+			else{
+				frappe.db.get_value("Patient Encounter", dialog.get_value('encounter'), 'insurance', function(r) {
+					if(r && r.insurance){
+						frm.set_value("insurance",r.insurance);
+					}
+				});
 			}
 			frm.set_value("items", []);
 			add_to_item_line(frm, checked_values, invoice_healthcare_services);

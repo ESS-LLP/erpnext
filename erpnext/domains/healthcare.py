@@ -63,7 +63,19 @@ data = {
 			{
 				'fieldname': 'total_doctors_charges', 'label': 'Total Doctors Charges', 'fieldtype': 'Currency',
 				'insert_after': 'practitioner_revenue_distributions', 'read_only':True
-			}
+			},
+			{
+				'fieldname': 'insurance', 'label': 'Insurance Assignment ', 'fieldtype': 'Link', 'options': 'Insurance Assignment',
+				'insert_after': 'ref_practitioner'
+			},
+			{
+				'fieldname': 'insurance_company', 'label': 'Insurance Company', 'fieldtype': 'Data',
+				'insert_after': 'insurance', 'read_only':True
+			},
+			{
+				'fieldname': 'healthcare_insurance_pricelist', 'label': 'Healthcare Insurance PriceList ', 'fieldtype': 'Link', 'options': 'Price List',
+				'insert_after': 'selling_price_list', 'read_only':True
+			},
 		],
 		'Sales Invoice Item': [
 			{
