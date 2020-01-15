@@ -81,13 +81,16 @@ def create_item(doc):
 	#insert item price
 	#get item price list to insert item price
 	if(doc.rate != 0.0):
-		price_list_name = frappe.db.get_value("Price List", {"selling": 1})
-		if(doc.rate):
-			make_item_price(item.name, price_list_name, doc.rate)
-			item.standard_rate = doc.rate
-		else:
-			make_item_price(item.name, price_list_name, 0.0)
-			item.standard_rate = 0.0
+		price_list_name = frappe.db.get_value("Selling Settings", None, "selling_price_list")
+		if not price_list_name:
+			price_list_name = frappe.db.get_value("Price List", {"selling": 1})
+		if price_list_name:
+			if(doc.rate):
+				make_item_price(item.name, price_list_name, doc.rate)
+				item.standard_rate = doc.rate
+			else:
+				make_item_price(item.name, price_list_name, 0.0)
+				item.standard_rate = 0.0
 	item.save(ignore_permissions = True)
 	#Set item to the Doc
 	frappe.db.set_value("Healthcare Service Unit Type", doc.name, "item", item.name)
