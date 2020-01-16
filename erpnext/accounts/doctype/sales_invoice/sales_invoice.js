@@ -1079,9 +1079,14 @@ var get_healthcare_items = function(frm, invoice_healthcare_services, $results, 
 		args: args,
 		callback: function(data) {
 			if(data.message){
-				$results.append(make_list_row(columns, invoice_healthcare_services));
-				for(let i=0; i<data.message.length; i++){
-					$results.append(make_list_row(columns, invoice_healthcare_services, data.message[i]));
+				var disabled = invoice_healthcare_services ? data.message[1]: false;
+				if(invoice_healthcare_services && disabled){
+					$results.append("<div align='center' style='color:red'>Services tagged with multiple Insurance Assignments, Can not be Invoiced togehter. You can select Insrance Assignment for apply filter</div>");
+				}
+				var items = invoice_healthcare_services ? data.message[0]: data.message
+				$results.append(make_list_row(columns, invoice_healthcare_services, {}, disabled));
+				for(let i=0; i<items.length; i++){
+					$results.append(make_list_row(columns, invoice_healthcare_services, items[i], disabled));
 				}
 			}else {
 				$results.append($placeholder);
@@ -1090,7 +1095,7 @@ var get_healthcare_items = function(frm, invoice_healthcare_services, $results, 
 	});
 }
 
-var make_list_row= function(columns, invoice_healthcare_services, result={}) {
+var make_list_row= function(columns, invoice_healthcare_services, result={}, disabled) {
 	var me = this;
 	// Make a head row by default (if result not passed)
 	let head = Object.keys(result).length === 0;
@@ -1108,7 +1113,7 @@ var make_list_row= function(columns, invoice_healthcare_services, result={}) {
 	});
 	let $row = $(`<div class="list-item">
 		<div class="list-item__content" style="flex: 0 0 10px;">
-			<input type="checkbox" class="list-row-check" ${result.checked ? 'checked' : ''}>
+			<input type="checkbox" class="list-row-check" ${result.checked ? 'checked' : ''} ${disabled?'disabled':''}>
 		</div>
 		${contents}
 	</div>`);
@@ -1181,11 +1186,15 @@ var get_drugs_to_invoice = function(frm) {
 			{ fieldtype: 'Link', options: 'Patient Encounter', label: 'Patient Encounter', fieldname: "encounter", reqd: true,
 				description:'Quantity will be calculated only for items which has "Nos" as UoM. You may change as required for each invoice item.',
 				get_query: function(doc) {
+					var filters =  {
+						patient: dialog.get_value("patient"),
+						docstatus: ["<", 2]
+					}
+					if(frm.doc.insurance){
+						filters['insurance'] = frm.doc.insurance;
+					}
 					return {
-						filters: {
-							patient: dialog.get_value("patient"),
-							docstatus: ["<", 2]
-						}
+						filters: filters
 					};
 				}
 			},
