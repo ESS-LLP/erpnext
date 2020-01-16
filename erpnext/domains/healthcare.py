@@ -97,6 +97,10 @@ data = {
 			{
 				'fieldname': 'insurance_approval_number', 'label': 'Insurance Approval Number', 'fieldtype': 'Data',
 				'insert_after': 'insurance_claim_amount', 'read_only':True
+			},
+			{
+				'fieldname': 'insurance_item', 'label': 'Insurance Item', 'fieldtype': 'Check',
+				'insert_after': 'insurance_approval_number', 'read_only':True
 			}
 		],
 		'Delivery Note': [

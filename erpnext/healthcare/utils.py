@@ -427,12 +427,17 @@ def manage_invoice_submit_cancel(doc, method):
 			if item.get("reference_dt") and item.get("reference_dn"):
 				if frappe.get_meta(item.reference_dt).has_field("invoiced"):
 					set_invoiced(item, method, doc.name)
-				if frappe.get_meta(item.reference_dt).has_field("insurance"):
+				if frappe.get_meta(item.reference_dt).has_field("insurance") and item.insurance_claim_coverage:
 					manage_insurance_invoice_on_submit(item.reference_dt, item.reference_dn, jv_amount,	item.item_code, item.amount)
 				elif item.reference_dt in  ['Lab Prescription', 'Procedure Prescription', 'Inpatient Occupancy', 'Drug Prescription']:
 					reference_obj = frappe.get_doc(item.reference_dt, item.reference_dn)
-					if frappe.get_meta(reference_obj.parenttype).has_field("insurance"):
-						manage_insurance_invoice_on_submit(reference_obj.parenttype, reference_obj.parent, jv_amount,	item.item_code, item.amount)
+					if frappe.get_meta(reference_obj.parenttype).has_field("insurance") and item.insurance_claim_coverage:
+						manage_insurance_invoice_on_submit(reference_obj.parenttype, reference_obj.parent, jv_amount, item.item_code, item.amount)
+			elif doc.insurance and item.insurance_item:
+				if doc.insurance in jv_amount:
+					jv_amount[doc.insurance] += item.amount
+				else:
+					jv_amount[doc.insurance] = item.amount
 		if jv_amount and method == "on_submit":
 			for key in jv_amount:
 				create_insurance_claim(frappe.get_doc("Insurance Assignment", key), jv_amount[key], doc)
@@ -1078,6 +1083,9 @@ def valid_insurance(insurance, posting_date):
 			return True
 	return False
 
+@frappe.whitelist()
+def get_insurance_details_for_si(insurance, service_item, patient):
+	return get_insurance_details(insurance, service_item, frappe.get_doc("Patient", patient))
 
 def get_insurance_details(insurance, service_item, patient):
 	rate = False
@@ -1146,7 +1154,7 @@ def create_insurance_claim(insurance, amount, doc):
 	insurance_claim.claim_status="Claim Created"
 	insurance_claim_item=[]
 	for item in doc.items:
-		if item.reference_dt:
+		if item.insurance_claim_coverage and item.reference_dt and item.insurance_item != 1:
 			if frappe.get_meta(item.reference_dt).has_field("insurance"):
 				reference_doc = frappe.get_doc(item.reference_dt, item.reference_dn)
 			elif item.reference_dt in  ['Lab Prescription', 'Procedure Prescription', 'Inpatient Occupancy', 'Drug Prescription']:
@@ -1157,27 +1165,32 @@ def create_insurance_claim(insurance, amount, doc):
 				insurance_remarks=''
 				if frappe.db.has_column(item.reference_dt, 'insurance_remarks'):
 					insurance_remarks = reference_doc.insurance_remarks
-				insurance_claim_item.append({
-								"patient": doc.patient,
-								"insurance_company": insurance.insurance_company,
-								"insurance_assignment": insurance.name,
-								"sales_invoice": doc.name,
-								"date_of_service": doc.posting_date,
-								"item_code": item.item_code,
-								"item_name": item.item_name,
-								"discount_percentage": item.discount_percentage,
-								"discount_amount": item.discount_amount,
-								"rate": item.rate,
-								"amount": item.amount,
-								"insurance_claim_coverage": item.insurance_claim_coverage,
-								"insurance_claim_amount": item.insurance_claim_amount,
-								"claim_status":"Claim Created",
-								"insurance_approval_number": item.insurance_approval_number,
-								"insurance_remarks": insurance_remarks if insurance_remarks else '',
-							})
+				insurance_claim_item.append(set_insurance_claim_item(item, doc, insurance, insurance_remarks))
+		elif item.insurance_claim_coverage and item.insurance_item == 1:
+			insurance_claim_item.append(set_insurance_claim_item(item, doc, insurance))
 	insurance_claim.set("insurance_claim_item", insurance_claim_item)
 	insurance_claim.save(ignore_permissions = True)
 	insurance_claim.submit()
+
+def set_insurance_claim_item(item, doc, insurance, remarks=None):
+	return {
+		"patient": doc.patient,
+		"insurance_company": insurance.insurance_company,
+		"insurance_assignment": insurance.name,
+		"sales_invoice": doc.name,
+		"date_of_service": doc.posting_date,
+		"item_code": item.item_code,
+		"item_name": item.item_name,
+		"discount_percentage": item.discount_percentage,
+		"discount_amount": item.discount_amount,
+		"rate": item.rate,
+		"amount": item.amount,
+		"insurance_claim_coverage": item.insurance_claim_coverage,
+		"insurance_claim_amount": item.insurance_claim_amount,
+		"claim_status":"Claim Created",
+		"insurance_approval_number": item.insurance_approval_number,
+		"insurance_remarks": remarks if remarks else '',
+	}
 
 def get_insurance_approval_number(doc):
 	approval_number=False

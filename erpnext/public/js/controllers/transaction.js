@@ -404,7 +404,7 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 		var update_stock = 0, show_batch_dialog = 0;
 		if(['Sales Invoice'].includes(this.frm.doc.doctype)) {
 			if(frappe.boot.active_domains.includes("Healthcare")){
-				if(me.frm.doc.insurance && me.frm.doc.healthcare_insurance_pricelist){
+				if(me.frm.doc.insurance && me.frm.doc.healthcare_insurance_pricelist && item.insurance_item){
 					price_list=me.frm.doc.healthcare_insurance_pricelist;
 				}
 			}
@@ -1123,6 +1123,14 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 
 	_get_args: function(item) {
 		var me = this;
+		var price_list = me.frm.doc.selling_price_list || me.frm.doc.buying_price_list;
+		if(['Sales Invoice'].includes(this.frm.doc.doctype)) {
+			if(frappe.boot.active_domains.includes("Healthcare")){
+				if(me.frm.doc.insurance && me.frm.doc.healthcare_insurance_pricelist && item.insurance_item){
+					price_list = me.frm.doc.healthcare_insurance_pricelist;
+				}
+			}
+		}
 		return {
 			"items": this._get_item_list(item),
 			"customer": me.frm.doc.customer || me.frm.doc.party_name,
@@ -1133,7 +1141,7 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 			"supplier_group": me.frm.doc.supplier_group,
 			"currency": me.frm.doc.currency,
 			"conversion_rate": me.frm.doc.conversion_rate,
-			"price_list": me.frm.doc.selling_price_list || me.frm.doc.buying_price_list,
+			"price_list": price_list,
 			"price_list_currency": me.frm.doc.price_list_currency,
 			"plc_conversion_rate": me.frm.doc.plc_conversion_rate,
 			"company": me.frm.doc.company,

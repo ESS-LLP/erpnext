@@ -871,6 +871,63 @@ frappe.ui.form.on('Sales Invoice Timesheet', {
 	}
 })
 
+// Healthcare
+frappe.ui.form.on('Sales Invoice Item', {
+	item_code: function(frm, cdt, cdn){
+		if (frappe.boot.active_domains.includes("Healthcare")){
+			set_insurance_item(frm, cdt, cdn);
+		}
+	},
+	price_list_rate: function(frm, cdt, cdn){
+		if (frappe.boot.active_domains.includes("Healthcare")){
+			set_insurance_details_for_insurance_item(frm, cdt, cdn);
+		}
+	}
+});
+
+var set_insurance_item = function(frm, cdt, cdn){
+	var d = locals[cdt][cdn];
+	if(d.item_code && frm.doc.healthcare_insurance_pricelist){
+		frappe.db.get_value("Item Price", {'price_list': frm.doc.healthcare_insurance_pricelist, 'item_code': d.item_code}, "name", function(r){
+			if(r && r.name){
+				frappe.model.set_value(cdt, cdn, "insurance_item", true);
+			}
+			else{
+				frappe.model.set_value(cdt, cdn, "insurance_item", false);
+			}
+		});
+	}
+	else{
+		frappe.model.set_value(cdt, cdn, "insurance_item", false);
+	}
+};
+
+var set_insurance_details_for_insurance_item = function(frm, cdt, cdn){
+	var d = locals[cdt][cdn];
+	if(frm.doc.insurance && d.item_code && d.insurance_item){
+		frappe.call({
+			method: "erpnext.healthcare.utils.get_insurance_details_for_si",
+			args:{'insurance': frm.doc.insurance, 'service_item': d.item_code, 'patient': frm.doc.patient},
+			callback: function(r){
+				if(r.message){
+					frappe.model.set_value(cdt, cdn, "discount_percentage", r.message.discount);
+					frappe.model.set_value(cdt, cdn, "insurance_claim_coverage", r.message.coverage);
+				}
+				else{
+					frappe.model.set_value(cdt, cdn, "discount_percentage", '');
+					frappe.model.set_value(cdt, cdn, "insurance_claim_coverage", '');
+					frappe.model.set_value(cdt, cdn, "insurance_claim_amount", '');
+				}
+			}
+		});
+	}
+	else{
+		frappe.model.set_value(cdt, cdn, "discount_percentage", '');
+		frappe.model.set_value(cdt, cdn, "insurance_claim_coverage", '');
+		frappe.model.set_value(cdt, cdn, "insurance_claim_amount", '');
+	}
+};
+
 var calculate_total_billing_amount =  function(frm) {
 	var doc = frm.doc;
 
