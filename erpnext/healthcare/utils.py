@@ -121,7 +121,7 @@ def get_healthcare_services_to_invoice(patient, insurance=None):
 							else:
 								item_to_invoice.append({'reference_dt': 'Patient Appointment', 'reference_dn': patient_appointment_obj.name, 'item_name':service_item_name,
 									'item_code': service_item, 'cost_center': cost_center if cost_center else '', 'rate': practitioner_charge, 'income_account': income_account})
-									multiple_assignments_prsent, prev_assignment = set_if_multiple_insurance_assignments_prsent(include_in_insurance, patient_appointment_obj, prev_assignment, multiple_assignments_prsent)
+								multiple_assignments_prsent, prev_assignment = set_if_multiple_insurance_assignments_prsent(include_in_insurance, patient_appointment_obj, prev_assignment, multiple_assignments_prsent)
 			encounters = frappe.get_list("Patient Encounter", filters)
 			if encounters:
 				for encounter in encounters:
@@ -211,7 +211,7 @@ def get_healthcare_services_to_invoice(patient, insurance=None):
 							'item_code': frappe.db.get_value("Lab Test Template", rx_obj.lab_test_code, "item"), 'cost_center': cost_center if cost_center else ''})
 							multiple_assignments_prsent, prev_assignment = set_if_multiple_insurance_assignments_prsent(include_in_insurance, encx_obj, prev_assignment, multiple_assignments_prsent)
 
-			procedures = frappe.get_list("Clinical Procedure", {'patient': patient.name, 'invoiced': False, 'docstatus': 1, 'status': 'Completed', 'insurance': insurance if insurance else ''})
+			procedures = frappe.get_list("Clinical Procedure", {'patient': patient.name, 'invoiced': False, 'docstatus': 1, 'status': 'Completed'})
 			if procedures:
 				for procedure in procedures:
 					cost_center = False
