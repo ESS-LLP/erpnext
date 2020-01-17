@@ -3,6 +3,11 @@
 
 frappe.ui.form.on('Insurance Assignment', {
 	refresh: function(frm) {
+		frm.set_query("plan_name", function () {
+			return {
+				filters: {"insurance_company": frm.doc.insurance_company}
+			};
+		});
 	},
 	insurance_company: function(frm){
 		if(frm.doc.insurance_company){
