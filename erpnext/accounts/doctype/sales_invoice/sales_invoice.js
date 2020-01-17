@@ -800,14 +800,26 @@ frappe.ui.form.on('Sales Invoice', {
 						if(r && r.message){
 							frm.set_value("healthcare_insurance_pricelist",r.message[0]);
 							frm.set_value("insurance_company",r.message[1]);
+							if(frm.doc.items){
+								frm.doc.items.forEach(function(item) {
+									if(!item.reference_dt && !item.reference_dn){
+										set_insurance_item(frm, item.doctype, item.name);
+									}
+								});
+							}
 							frm.refresh_fields();
 						}
 					}
 				});
 			}
 			else{
-					frm.set_value("insurance_company", '');
-					frm.set_value("healthcare_insurance_pricelist", '');
+				frm.set_value("insurance_company", '');
+				frm.set_value("healthcare_insurance_pricelist", '');
+				frm.doc.items.forEach(function(item) {
+					if(!item.reference_dt && !item.reference_dn){
+						set_insurance_item(frm, item.doctype, item.name);
+					}
+				});
 			}
 		}
 	},
@@ -880,6 +892,11 @@ frappe.ui.form.on('Sales Invoice Item', {
 	},
 	price_list_rate: function(frm, cdt, cdn){
 		if (frappe.boot.active_domains.includes("Healthcare")){
+			set_insurance_item(frm, cdt, cdn);
+		}
+	},
+	insurance_item: function(frm, cdt, cdn) {
+		if (frappe.boot.active_domains.includes("Healthcare")){
 			set_insurance_details_for_insurance_item(frm, cdt, cdn);
 		}
 	}
@@ -888,9 +905,10 @@ frappe.ui.form.on('Sales Invoice Item', {
 var set_insurance_item = function(frm, cdt, cdn){
 	var d = locals[cdt][cdn];
 	if(d.item_code && frm.doc.healthcare_insurance_pricelist){
-		frappe.db.get_value("Item Price", {'price_list': frm.doc.healthcare_insurance_pricelist, 'item_code': d.item_code}, "name", function(r){
+		frappe.db.get_value("Item Price", {'price_list': frm.doc.healthcare_insurance_pricelist, 'item_code': d.item_code}, ["name", "price_list_rate"], function(r){
 			if(r && r.name){
 				frappe.model.set_value(cdt, cdn, "insurance_item", true);
+				frappe.model.set_value(cdt, cdn, "price_list_rate", r.price_list_rate);
 			}
 			else{
 				frappe.model.set_value(cdt, cdn, "insurance_item", false);
@@ -922,6 +940,11 @@ var set_insurance_details_for_insurance_item = function(frm, cdt, cdn){
 		});
 	}
 	else{
+		frappe.db.get_value("Item Price", {'price_list': frm.doc.selling_price_list, 'item_code': d.item_code}, ["name", "price_list_rate"], function(r){
+			if(r && r.name){
+				frappe.model.set_value(cdt, cdn, "price_list_rate", r.price_list_rate);
+			}
+		});
 		frappe.model.set_value(cdt, cdn, "discount_percentage", '');
 		frappe.model.set_value(cdt, cdn, "insurance_claim_coverage", '');
 		frappe.model.set_value(cdt, cdn, "insurance_claim_amount", '');
