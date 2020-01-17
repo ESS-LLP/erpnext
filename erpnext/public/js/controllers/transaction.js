@@ -1126,7 +1126,7 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 		var price_list = me.frm.doc.selling_price_list || me.frm.doc.buying_price_list;
 		if(['Sales Invoice'].includes(this.frm.doc.doctype)) {
 			if(frappe.boot.active_domains.includes("Healthcare")){
-				if(me.frm.doc.insurance && me.frm.doc.healthcare_insurance_pricelist && item.insurance_item){
+				if(me.frm.doc.insurance && me.frm.doc.healthcare_insurance_pricelist && item ? item.insurance_item : false){
 					price_list = me.frm.doc.healthcare_insurance_pricelist;
 				}
 			}
