@@ -58,6 +58,14 @@ frappe.ui.form.on('Patient', {
 				btn_create_encounter(frm);
 			}, "Create");
 		}
+		frappe.call({
+			method: "get_billing_info",
+			doc: frm.doc,
+			callback: function(r) {
+				frm.dashboard.add_indicator(__('Total Billing: {0}', [format_currency(r.message.total_billing)]), 'blue');
+				frm.dashboard.add_indicator(__('Patient Balance: {0}', [format_currency(r.message.party_balance)]), 'orange');
+			}
+		});
 	},
 	onload: function (frm) {
 		if(!frm.doc.dob){
