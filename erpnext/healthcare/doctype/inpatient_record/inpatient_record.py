@@ -99,7 +99,8 @@ class InpatientRecord(Document):
 		return payment_entry.as_dict()
 
 	def get_billing_info(self):
-		return get_ip_billing_info(self)
+		from erpnext.healthcare.doctype.patient.patient import get_patient_billing_info
+		return get_patient_billing_info(frappe.get_doc("Patient", self.patient), True)
 
 	def get_details(self):
 		current_service_unit = ""
@@ -108,48 +109,6 @@ class InpatientRecord(Document):
 				if occupany.left != 1:
 					current_service_unit = occupany.service_unit
 		return frappe._dict({'current_service_unit': current_service_unit})
-
-@frappe.whitelist()
-def get_ip_billing_info(doc):
-	customer = frappe.db.get_value("Patient", doc.patient, 'customer')
-	from erpnext.accounts.utils import get_balance_on
-
-	ip_grand_total = frappe.get_all("Sales Invoice",
-		filters={
-			'docstatus': 1,
-			'customer': customer,
-			'inpatient_record': doc.name
-		},
-		fields=["patient", "sum(grand_total) as grand_total", "sum(base_grand_total) as base_grand_total"]
-	)
-
-	ip_grand_total_unpaid = frappe.get_all("Sales Invoice",
-		filters={
-			'docstatus': 1,
-			'customer': customer,
-			'inpatient_record': doc.name,
-			'status': ['not in', 'Paid']
-		},
-		fields=["patient", "sum(grand_total) as grand_total", "sum(base_grand_total) as base_grand_total"]
-	)
-
-	company_default_currency = frappe.db.get_value("Company", doc.company, 'default_currency')
-	from erpnext.accounts.party import get_party_account_currency
-	party_account_currency = get_party_account_currency("Customer", customer, doc.company)
-
-	if party_account_currency==company_default_currency:
-		billing_this_year = flt(ip_grand_total[0]["base_grand_total"])
-		total_unpaid = flt(ip_grand_total_unpaid[0]["base_grand_total"])
-	else:
-		billing_this_year = flt(ip_grand_total[0]["grand_total"])
-		total_unpaid = flt(ip_grand_total_unpaid[0]["grand_total"])
-
-	info = {}
-	info["total_billing"] = flt(billing_this_year) if billing_this_year else 0
-	info["currency"] = party_account_currency
-	info["total_unpaid"] = flt(total_unpaid) if total_unpaid else 0
-	info["party_balance"] = get_balance_on(party_type="Customer", party=customer)
-	return info
 
 def get_item_group_as_group(item_code):
 	item_group = frappe.get_value("Item", item_code, "item_group")

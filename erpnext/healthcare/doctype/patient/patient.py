@@ -113,8 +113,7 @@ class Patient(Document):
 			sales_invoice.save(ignore_permissions=True)
 			return {'invoice': sales_invoice.name}
 	def get_billing_info(self):
-		print("p")
-		return get_billing_info(self)
+		return get_patient_billing_info(self)
 
 def create_customer(doc):
 	customer_group = doc.customer_group
@@ -187,30 +186,40 @@ def get_patient_detail(patient):
 		details.update(vital_sign[0])
 	return details
 
-@frappe.whitelist()
-def get_billing_info(doc):
-	customer = frappe.db.get_value("Patient", doc.name, 'customer')
+def get_patient_billing_info(patient, ip_billing_info=False):
 	from erpnext.accounts.utils import get_balance_on
-	patient_grand_total = frappe.get_all("Sales Invoice",
-		filters={
-			'docstatus': 1,
-			'customer': customer
-		},
-		fields=["patient", "sum(grand_total) as grand_total", "sum(base_grand_total) as base_grand_total"]
-	)
-	company = frappe.defaults.get_user_default('company')
+	filters = {'docstatus': 1, 'customer': patient.customer}
+
+	company = False
+	if ip_billing_info and patient.inpatient_record:
+		filters['inpatient_record'] = patient.inpatient_record
+		company = frappe.db.get_value("Inpatient Record", patient.inpatient_record, "company")
+
+	fields = ["patient", "sum(grand_total) as grand_total", "sum(base_grand_total) as base_grand_total"]
+	patient_grand_total = frappe.get_all("Sales Invoice", filters=filters, fields=fields)
+
+	filters['status'] = ['not in', 'Paid']
+	fields = ["patient", "sum(outstanding_amount) as outstanding_amount"]
+	patient_total_unpaid = frappe.get_all("Sales Invoice", filters=filters, fields=fields)
+
+	if not company:
+		company = frappe.defaults.get_user_default('company')
 	if not company:
 		company = frappe.db.get_value("Global Defaults", None, "default_company")
+
 	company_default_currency = frappe.db.get_value("Company", company, 'default_currency')
 	from erpnext.accounts.party import get_party_account_currency
-	party_account_currency = get_party_account_currency("Customer", customer, company)
+	party_account_currency = get_party_account_currency("Customer", patient.customer, company)
 
 	if party_account_currency==company_default_currency:
 		billing_this_year = flt(patient_grand_total[0]["base_grand_total"])
 	else:
 		billing_this_year = flt(patient_grand_total[0]["grand_total"])
+	total_unpaid = flt(patient_total_unpaid[0]["outstanding_amount"])
+
 	info = {}
 	info["total_billing"] = flt(billing_this_year) if billing_this_year else 0
 	info["currency"] = party_account_currency
-	info["party_balance"] = get_balance_on(party_type="Customer", party=customer)
+	info["total_unpaid"] = flt(total_unpaid) if total_unpaid else 0
+	info["party_balance"] = get_balance_on(party_type="Customer", party=patient.customer)
 	return info
