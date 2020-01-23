@@ -108,6 +108,24 @@ frappe.ui.form.on('Patient Appointment', {
 				frappe.set_route("patient_history");
 			},__("View"));
 		}
+		if(!frm.doc.__islocal && (frm.doc.status == "In Progress" || frm.doc.status == "Closed")){
+			frm.add_custom_button(__('Lab Order'), function() {
+				frm.meta.default_print_format = "Appointment Lab Order";
+				frm.print_doc();
+			}, __("Print Order"));
+			frm.add_custom_button(__('Procedure Order'), function() {
+				frm.meta.default_print_format = "Appointment Procedure Order";
+				frm.print_doc();
+			}, __("Print Order"));
+			frm.add_custom_button(__('Drug Prescription'), function() {
+				frm.meta.default_print_format = "Appointment Drug Prescription";
+				frm.print_doc();
+			}, __("Print Order"));
+			frm.add_custom_button(__('Encounter'), function() {
+				frm.meta.default_print_format = "Appointment Encounter";
+				frm.print_doc();
+			}, __("Print Order"));
+		}
 		if(frm.doc.status == "Open"){
 			frm.add_custom_button(__('Cancel'), function() {
 				btn_update_status(frm, "Cancelled");

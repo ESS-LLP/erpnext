@@ -1,0 +1,23 @@
+{
+ "align_labels_right": 0,
+ "creation": "2020-01-23 13:23:42.515765",
+ "custom_format": 1,
+ "default_print_language": "en",
+ "disabled": 0,
+ "doc_type": "Patient Encounter",
+ "docstatus": 0,
+ "doctype": "Print Format",
+ "font": "Default",
+ "html": "<div >\n    {% if letter_head and not no_letterhead -%}\n    <div class=\"letter-head\">{{ letter_head }}</div>\n    <hr>\n    {% else %}\n    <div align=\"right\">\n      <h1>{{doc.name}}</h1>\n    </div>\n    {%- endif %}\n    <div class=\"row section-break\">\n        <div class=\"col-xs-6 column-break\">\n                {% if doc.appointment %}\n\t        <div class=\"row\">\n\t\t\t<div class=\"col-xs-4 text-left\">\n\t\t\t<label>Appointment</label>\n\t\t\t</div>\n\t\t\t<div class=\"col-xs-7  value\">\n\t\t\t<strong>: </strong>{{doc.appointment}}\n\t\t\t</div>\n\t\t</div>\n\t\t{%- endif -%}\n\n                <div class=\"row\">\n\t\t      <div class=\"col-xs-4 text-left\">\n\t\t\t <label>Patient</label>\n\t\t      </div>\n                     {% if doc.patient_name %}\n\t\t      <div class=\"col-xs-7  value\">\n\t\t\t  <strong>: </strong>{{doc.patient_name}}\n\t\t      </div>\n                     {% else %}\n                     <div class=\"col-xs-7  value\">\n\t\t\t <strong>: </strong>{{doc.patient}}\n\t\t     </div>\n                     {%- endif -%}\n\t\t</div>\n\t        <div class=\"row\">\n\t\t\t<div class=\"col-xs-4 text-left\">\n\t\t\t\t<label>Age</label>\n\t\t\t</div>\n\t\t\t<div class=\"col-xs-7  value\">\n\t\t\t     <strong>: </strong> {{doc.patient_age}}\n\t\t\t</div>\n\t\t</div>\n\n                <div class=\"row\">\n                        <div class=\"col-xs-4 text-left\">\n\t\t\t\t<label>Gender</label>\n\t\t\t</div>\n\t\t\t<div class=\"col-xs-7  value\">\n\t\t\t     <strong>: </strong> {{doc.patient_sex}}\n\t\t\t</div>\n                </div>\n\n        </div>\n        <div class=\"col-xs-6 column-break\">\n\n          <div class=\"row\">\n\t      <div class=\"col-xs-4 text-left\">\n\t\t    <label>Healthcare Practitioner</label>\n\t      </div>\n              {% if doc.healthcare_practitioner_name %}\n\t      <div class=\"col-xs-7  text-left value\">\n\t\t\t<strong>: </strong>{{doc.healthcare_practitioner_name}}\n\t      </div>\n\t\t\t\t{% else %}\n\t\t\t\t<div class=\"col-xs-7  value\">\n\t\t\t\t\t<strong>: </strong>{{doc.practitioner}}\n\t\t\t\t\t</div>\n              {%- endif -%}\n\t</div>\n\n          {% if doc.encounter_date %}\n\t  <div class=\"row\">\n\t\t<div class=\"col-xs-4 text-left\">\n\t\t<label>Date</label>\n\t\t</div>\n\t\t<div class=\"col-xs-7 text-left value\">\n\t\t<strong>: </strong>{{doc.encounter_date}}\n\t\t</div>\n          </div>\n\t  {%- endif -%}\n\t\t{% if doc.encounter_time %}\n\t  <div class=\"row\">\n\t\t<div class=\"col-xs-4 text-left\">\n\t\t<label>Time</label>\n\t\t</div>\n\t\t<div class=\"col-xs-7 text-left value\">\n\t\t<strong>: </strong>{{doc.encounter_time}}\n\t\t</div>\n    </div>\n\t  {%- endif -%}\n          {% if doc.visit_department %}\n\t  <div class=\"row\">\n\t\t<div class=\"col-xs-4 text-left\">\n\t\t<label>Department</label>\n\t\t</div>\n\t\t<div class=\"col-xs-7 text-left value\">\n\t\t<strong>: </strong>{{doc.visit_department}}\n\t\t</div>\n          </div>\n          {%- endif -%}\n        </div>\n\n   </div>\n\n</div>\n<div>\n\t<hr/>\n      {% if doc.procedure_prescription %}\n      {{ _(\"Procedure Orders\") }},\n      <table class=\"table\">\n        <tbody>\n            {%- for row in doc.procedure_prescription -%}\n            <tr>\n              <td style=\"width: 40%;border:none;\">\n                {%- if row.procedure_name -%}<b>{{ row.procedure_name }}</b>{%- endif -%}\n              </td>\n\t\t\t\t\t\t\t<td style=\"width: 20%;text-align: left;border:none;\">\n\t\t\t           <div style=\"border: 0px;\">\n                   {%- if row.date -%}{{ frappe.utils.formatdate(row.date) or '' }}{%- endif -%}\n                 </div>\n\t\t          </td>\n              <td style=\"width: 40%;text-align: left;border:none;\">\n\t\t\t           <div style=\"border: 0px;\">\n                   {%- if row.comments -%}{{ row.comments }}{%- endif -%}\n                 </div>\n\t\t          </td>\n             </tr>\n\n\t           {%- endfor -%}\n       </tbody>\n      </table>\n      {%- endif -%}\n</div>\n",
+ "idx": 0,
+ "line_breaks": 0,
+ "modified": "2020-01-23 13:36:34.384378",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Encounter Procedure Order",
+ "owner": "Administrator",
+ "print_format_builder": 0,
+ "print_format_type": "Server",
+ "show_section_headings": 0,
+ "standard": "Yes"
+}
