@@ -19,9 +19,16 @@ class PatientAppointment(Document):
 	def on_update(self):
 		if self.status in ["Open", "Scheduled", "Pending"]:
 			update_status(self.name, self.status)
-		if self.patient_companion == True and self.companion_mobile:
-			companion = create_companion_contact(self.patient, self.companion_name, self.companion_mobile, self.companion_email, self.companion_id, self.companion_relation)
-			frappe.db.set_value("Patient Appointment", self.name, "companion", companion)
+		if self.patient_companion and self.companion_mobile:
+			companion_details = {
+				'first_name': self.companion_name,
+				'mobile_no': self.companion_mobile,
+				'email_id': self.companion_email,
+				'companion_id': self.companion_id,
+				'companion_relation': self.companion_relation
+			}
+			companion = create_companion_contact(self.patient, companion_details)
+			frappe.db.set_value("Patient Appointment", self.name, "companion", companion.name)
 		self.reload()
 
 	def validate(self):

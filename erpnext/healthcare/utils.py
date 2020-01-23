@@ -1527,33 +1527,24 @@ def get_contact_details(mobile_no):
 			return ""
 
 @frappe.whitelist()
-def create_companion_contact(patient, companion_name, companion_mobile, companion_email=None, companion_id=None, companion_relation=None):
-	contact = frappe.db.exists("Contact",
-	{
-		'mobile_no': companion_mobile
-	})
-	if contact:
-		companion_contact=frappe.get_doc("Contact", contact)
-		companion_contact.first_name=companion_name
-		companion_contact.mobile_no=companion_mobile
-		companion_contact.email_id=companion_email
-		companion_contact.companion_id=companion_id
-		companion_contact.companion_relation=companion_relation
-		companion_contact.save(ignore_permissions=True)
-		return contact
+def create_companion_contact(patient, companion_details):
+	contact_exist = frappe.db.exists("Contact", {'mobile_no': companion_details['mobile_no']})
+	if contact_exist:
+		contact=frappe.get_doc("Contact", contact_exist)
 	else:
-		companion_contact=frappe.new_doc("Contact")
-		companion_contact.first_name=companion_name
-		companion_contact.mobile_no=companion_mobile
-		companion_contact.email_id=companion_email
-		companion_contact.companion_id=companion_id
-		companion_contact.companion_relation=companion_relation
-		companion_contact.patient_companion=True
+		contact=frappe.new_doc("Contact")
 		links=[]
 		links.append({
 			"link_doctype": "Patient",
 			"link_name": patient
 		})
-		companion_contact.set("links", links)
-		companion_contact.insert(ignore_permissions=True)
-		return companion_contact.name
+		contact.set("links", links)
+	contact = set_companion_details(contact, companion_details)
+	contact.save(ignore_permissions=True)
+	return contact
+
+def set_companion_details(contact, companion_details):
+	for key in companion_details:
+		contact.set(key, companion_details[key] if companion_details[key] else '')
+	contact.patient_companion=True
+	return contact
