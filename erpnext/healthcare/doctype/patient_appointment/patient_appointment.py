@@ -22,13 +22,12 @@ class PatientAppointment(Document):
 		if self.patient_companion and self.companion_mobile:
 			companion_details = {
 				'first_name': self.companion_name,
-				'mobile_no': self.companion_mobile,
-				'email_id': self.companion_email,
 				'companion_id': self.companion_id,
 				'companion_relation': self.companion_relation
 			}
-			companion = create_companion_contact(self.patient, companion_details)
-			frappe.db.set_value("Patient Appointment", self.name, "companion", companion.name)
+			companion = create_companion_contact(self.patient, companion_details, self.companion_mobile, self.companion_email)
+			if companion:
+				frappe.db.set_value("Patient Appointment", self.name, "companion", companion.name)
 		self.reload()
 
 	def validate(self):
