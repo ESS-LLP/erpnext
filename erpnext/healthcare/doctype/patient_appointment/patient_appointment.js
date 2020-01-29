@@ -656,6 +656,7 @@ var check_and_set_availability = function(frm) {
 											slot_html = slot_html + `<br/>` + slot_details[i].avail_slot.map(slot => {
 												var appointment_count=0;
 												let disabled = '';
+												let capacity = slot_details[i].service_unit_capacity||'';
 												let background_color = "#cef6d1";
 												let start_str = slot.from_time;
 												let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
@@ -705,14 +706,18 @@ var check_and_set_availability = function(frm) {
 														return false;
 													}
 												});
+												let count=''
+												if(slot_details[i].allow_overlap==1){
+													count="("+appointment_count+"/"+capacity+")"
+												}
 												return `<button class="btn btn-default"
 												data-name=${start_str}
 												data-duration=${interval}
 												data-service-unit="${slot_details[i].service_unit || ''}"
 												data-event=""
 												flag-fixed-duration=${slot_details[i].fixed_duration || 0}
-												style="margin: 0 10px 10px 0; width: 72px; background-color:${background_color};" ${disabled}>
-												${start_str.substring(0, start_str.length - 3)}
+												style="margin: 0 10px 10px 0; width: 92px; background-color:${background_color};" ${disabled}>
+												${start_str.substring(0, start_str.length - 3)} ${count}
 												</button>`;
 											}).join("");
 											slot_html = slot_html + `<br/>`;
@@ -736,6 +741,7 @@ var check_and_set_availability = function(frm) {
 												let disabled = '';
 												let background_color = "#cef6d1";
 												let start_str = slot.from_time;
+												let capacity = present_events[i].service_unit_capacity
 												let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
 												let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
 												let interval = (slot_to_time - slot_start_time)/60000 | 0;
@@ -776,14 +782,18 @@ var check_and_set_availability = function(frm) {
 														return false;
 													}
 												});
+												let count=''
+												if(present_events[i].allow_overlap==1){
+													count="("+appointment_count+"/"+capacity+")"
+												}
 												return `<button class="btn btn-default"
 													data-name=${start_str}
 													data-duration=${interval}
 													data-service-unit="${present_events[i].service_unit || ''}"
 													data-event="${present_events[i].event||''}"
 													flag-fixed-duration=${1}
-													style="margin: 0 10px 10px 0; width: 72px; background-color:${background_color};" ${disabled}>
-													${start_str.substring(0, start_str.length - 3)}
+													style="margin: 0 10px 10px 0; width: 92px; background-color:${background_color};" ${disabled}>
+													${start_str.substring(0, start_str.length - 3)} ${count}
 												</button>`;
 											}).join("");
 											slot_html = slot_html + `<br/>`;
