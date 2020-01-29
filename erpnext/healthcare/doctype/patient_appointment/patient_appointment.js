@@ -654,6 +654,7 @@ var check_and_set_availability = function(frm) {
 											have_atleast_one_schedule_for_service_unit = true;
 											slot_html = slot_html + `<label>${slot_details[i].slot_name}</label>`;
 											slot_html = slot_html + `<br/>` + slot_details[i].avail_slot.map(slot => {
+												var appointment_count=0;
 												let disabled = '';
 												let background_color = "#cef6d1";
 												let start_str = slot.from_time;
@@ -672,11 +673,24 @@ var check_and_set_availability = function(frm) {
 														}
 													}
 													// Check for overlaps considering appointment duration
-													if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
-														// There is an overlap
-														disabled = 'disabled="disabled"';
-														background_color = "#d2d2ff";
-														return false;
+													if(slot_details[i].allow_overlap != 1){
+														if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
+															// There is an overlap
+															disabled = 'disabled="disabled"';
+															background_color = "#d2d2ff";
+															return false;
+														}
+													}
+													else{
+														if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
+															appointment_count++
+														}
+														if(appointment_count>=slot_details[i].service_unit_capacity){
+															// There is an overlap
+															disabled = 'disabled="disabled"';
+															background_color = "#d2d2ff";
+															return false;
+														}
 													}
 												});
 												//iterate in all absent events and disable the slots
@@ -718,6 +732,7 @@ var check_and_set_availability = function(frm) {
 											have_atleast_one_schedule_for_service_unit = true;
 											slot_html = slot_html + `<label>${present_events[i].slot_name}</label>`;
 											slot_html = slot_html + `<br/>` + present_events[i].avail_slot.map(slot => {
+												var appointment_count=0;
 												let disabled = '';
 												let background_color = "#cef6d1";
 												let start_str = slot.from_time;
@@ -729,11 +744,24 @@ var check_and_set_availability = function(frm) {
 													let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
 													let end_time = booked_moment.clone().add(booked.duration, 'minutes');
 													// Check for overlaps considering appointment duration
-													if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
-														// There is an overlap
-														disabled = 'disabled="disabled"';
-														background_color = "#d2d2ff";
-														return false;
+													if(present_events[i].allow_overlap != 1){
+														if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
+															// There is an overlap
+															disabled = 'disabled="disabled"';
+															background_color = "#d2d2ff";
+															return false;
+														}
+													}
+													else{
+														if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
+															appointment_count++
+														}
+														if(appointment_count>=present_events[i].service_unit_capacity){
+															// There is an overlap
+															disabled = 'disabled="disabled"';
+															background_color = "#d2d2ff";
+															return false;
+														}
 													}
 												});
 												//iterate in all absent events and disable the slots

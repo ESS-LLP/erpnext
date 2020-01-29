@@ -17,6 +17,15 @@ frappe.ui.form.on('Practitioner Event', {
 			frm.set_value("to_date", frm.doc.from_date);
 		}
 	},
+	service_unit: function(frm){
+		if(frm.doc.service_unit){
+			frappe.db.get_value('Healthcare Service Unit', {name: frm.doc.service_unit}, 'total_service_unit_capacity', (r) => {
+				if(r.total_service_unit_capacity){
+					frm.set_value("total_service_unit_capacity", r.total_service_unit_capacity);
+				}
+			});
+		}
+	},
 	appointment_type: function(frm) {
 		if(frm.doc.appointment_type){
 			frappe.db.get_value('Appointment Type', {name: frm.doc.appointment_type}, ['default_duration', 'color'], (r) => {
