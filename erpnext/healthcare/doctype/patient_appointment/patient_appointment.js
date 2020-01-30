@@ -457,6 +457,9 @@ frappe.ui.form.on('Patient Appointment', {
 				}
 			}
 		});
+		if(frm.doc.companion_mobile){
+			frm.set_df_property("companion_name","reqd", 1);
+		}
 	},
 
 });
@@ -1066,8 +1069,6 @@ frappe.ui.form.on("Patient Appointment", "patient", function(frm) {
 				frappe.model.set_value(frm.doctype,frm.docname, "patient_age", age);
 			}
 		});
-		frm.set_df_property("patient_companion", "hidden", 0);
-			frm.refresh_fields();
 	}
 });
 

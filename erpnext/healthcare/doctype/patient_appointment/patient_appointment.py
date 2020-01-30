@@ -19,7 +19,7 @@ class PatientAppointment(Document):
 	def on_update(self):
 		if self.status in ["Open", "Scheduled", "Pending"]:
 			update_status(self.name, self.status)
-		if self.patient_companion and self.companion_mobile:
+		if self.companion_mobile and self.companion_name:
 			companion_details = {
 				'first_name': self.companion_name,
 				'companion_id': self.companion_id,
@@ -51,12 +51,11 @@ class PatientAppointment(Document):
 						"appointment_time":self.appointment_time,  "end_time":end_time.time(), "service_unit":self.service_unit})
 			allow_overlap=frappe.get_value('Healthcare Service Unit', self.service_unit, 'overlap_appointments')
 			if allow_overlap:
-				print(self.practitioner_event)
 				if self.practitioner_event:
 					service_unit_capacity= frappe.get_value('Practitioner Event', self.practitioner_event, 'total_service_unit_capacity')
 				else:
 					service_unit_capacity= frappe.get_value('Healthcare Service Unit', self.service_unit, 'total_service_unit_capacity')
-				if len(overlaps)>=int(service_unit_capacity):
+				if service_unit_capacity and  len(overlaps)>=int(service_unit_capacity):
 					frappe.throw(_(""" Not Allowed, Maximum capacity reached Service unit {0}""").format(self.service_unit))
 				else:
 					overlaps = False
