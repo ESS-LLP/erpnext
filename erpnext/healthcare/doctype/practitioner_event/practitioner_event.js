@@ -26,14 +26,42 @@ frappe.ui.form.on('Practitioner Event', {
 			});
 		}
 	},
+	event_type: function(frm) {
+		if(frm.doc.event_type){
+			frappe.db.get_value('Practitioner Event Type', {name: frm.doc.event_type}, ['event_name','present','appointment_type','color', 'duration'], (r) =>{
+				if(r.event_name){
+					frm.set_value("event", r.event_name);
+					frm.set_df_property("event", "read_only", 1);
+				}
+				if(r.present){
+					frm.set_value("present", r.present);
+					frm.set_df_property("present", "read_only", 1);
+				}
+				if(r.appointment_type){
+					frm.set_value("appointment_type", r.appointment_type);
+					frm.set_df_property("appointment_type", "read_only", 1);
+				}
+				if(r.color){
+					frm.set_value("color", r.color);
+					frm.set_df_property("color", "read_only", 1);
+				}
+				if(r.default_duration){
+					frm.set_value("duration", r.default_duration);
+					frm.set_df_property("duration", "read_only", 1);
+				}
+			});
+		}
+	},
 	appointment_type: function(frm) {
 		if(frm.doc.appointment_type){
 			frappe.db.get_value('Appointment Type', {name: frm.doc.appointment_type}, ['default_duration', 'color'], (r) => {
 				if(r.color){
 					frm.set_value("color", r.color);
+					frm.set_df_property("color", "read_only", 1);
 				}
 				if(r.default_duration){
 					frm.set_value("duration", r.default_duration);
+					frm.set_df_property("duration", "read_only", 1);
 				}
 			});
 		}
