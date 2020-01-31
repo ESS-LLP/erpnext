@@ -22,9 +22,21 @@ frappe.ui.form.on('Practitioner Event', {
 			frappe.db.get_value('Healthcare Service Unit', {name: frm.doc.service_unit}, 'total_service_unit_capacity', (r) => {
 				if(r.total_service_unit_capacity){
 					frm.set_value("total_service_unit_capacity", r.total_service_unit_capacity);
+					var desp_str='Maximum Capacity '+ r.total_service_unit_capacity
+					frm.set_df_property("total_service_unit_capacity", "description", desp_str);
 				}
 			});
 		}
+	},
+	total_service_unit_capacity: function(frm){
+		frappe.db.get_value('Healthcare Service Unit', {name: frm.doc.service_unit}, 'total_service_unit_capacity', (r) => {
+			if(r.total_service_unit_capacity){
+				if (r.total_service_unit_capacity<frm.doc.total_service_unit_capacity){
+					frappe.show_alert({message:__("Not Allowed"), indicator:'red'});
+					frm.get_field("total_service_unit_capacity").$input.select();
+				}
+			}
+		});
 	},
 	event_type: function(frm) {
 		if(frm.doc.event_type){
