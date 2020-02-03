@@ -51,7 +51,7 @@ def validate_overlap(doc):
 def validate_service_unit_capacity(doc):
 	if doc.service_unit:
 		service_unit_capacity= frappe.get_value('Healthcare Service Unit', doc.service_unit, 'total_service_unit_capacity')
-		if(int(doc.total_service_unit_capacity)>int(service_unit_capacity)):
+		if doc.total_service_unit_capacity and service_unit_capacity and (int(doc.total_service_unit_capacity)>int(service_unit_capacity)):
 			frappe.throw(_("Not Allowed - Maximum Capacity {0}").format(service_unit_capacity))
 
 
