@@ -441,24 +441,26 @@ frappe.ui.form.on('Patient Appointment', {
 		}
 	},
 	companion_mobile: function(frm) {
-		frappe.call({
-			method: "erpnext.healthcare.utils.get_contact_details",
-			args: {
-					'mobile_no': frm.doc.companion_mobile
-			},
-			callback: function(r) {
-				console.log(r.message.name);
-				if(r && r.message){
-					frm.set_value("companion_name",r.message.first_name);
-					frm.set_value("companion_email",r.message.email_id);
-					frm.set_value("companion_id",r.message.companion_id);
-					frm.set_value("companion_relation",r.message.companion_relation);
-					frm.set_value("companion", r.message.name)
-				}
-			}
-		});
 		if(frm.doc.companion_mobile){
+			frappe.call({
+				method: "erpnext.healthcare.utils.get_contact_details",
+				args: {
+					'mobile_no': frm.doc.companion_mobile
+				},
+				callback: function(r) {
+					if(r && r.message){
+						frm.set_value("companion_name",r.message.first_name);
+						frm.set_value("companion_email",r.message.email_id);
+						frm.set_value("companion_id",r.message.companion_id);
+						frm.set_value("companion_relation",r.message.companion_relation);
+						frm.set_value("companion", r.message.name)
+					}
+				}
+			});
 			frm.set_df_property("companion_name","reqd", 1);
+		}
+		else{
+			frm.set_df_property("companion_name","reqd", 0);
 		}
 	},
 
