@@ -378,6 +378,8 @@ def get_availability_data(date, practitioner):
 
 				if available_slots:
 					appointments = []
+					allow_overlap = 0
+					service_unit_capacity =0
 
 					if schedule.service_unit:
 						slot_name  = schedule.schedule+" - "+schedule.service_unit
@@ -408,13 +410,15 @@ def get_availability_data(date, practitioner):
 
 					slot_details.append({"slot_name":slot_name, "service_unit":schedule.service_unit,
 						"avail_slot":available_slots, 'appointments': appointments, 'absent_events': absent_events,
-						'fixed_duration': schedule.always_use_slot_duration_as_appointment_duration, 'appointment_type': schedule.appointment_type, 'allow_overlap': allow_overlap, 'service_unit_capacity':service_unit_capacity})
+						'fixed_duration': schedule.always_use_slot_duration_as_appointment_duration,
+						'appointment_type': schedule.appointment_type, 'allow_overlap': allow_overlap,
+						'service_unit_capacity':service_unit_capacity})
 
 	# Present events
 	present_events = frappe.db.sql("""
 		select
-			name, event, from_time, to_time, from_date, to_date, duration, service_unit, repeat_this_event, repeat_on, repeat_till,total_service_unit_capacity,
-			monday, tuesday, wednesday, thursday, friday, saturday, sunday
+			name, event, from_time, to_time, from_date, to_date, duration, service_unit, repeat_this_event, repeat_on,
+			repeat_till,total_service_unit_capacity, monday, tuesday, wednesday, thursday, friday, saturday, sunday
 		from
 			`tabPractitioner Event`
 		where
@@ -443,6 +447,8 @@ def get_availability_data(date, practitioner):
 			from_time = present_event.from_time
 			slot_name = present_event.event
 			appointments = []
+			allow_overlap = 0
+			service_unit_capacity = 0
 
 			if present_event.service_unit:
 				slot_name  = slot_name+" - "+present_event.service_unit
@@ -475,7 +481,8 @@ def get_availability_data(date, practitioner):
 				event_available_slots.append({'from_time': from_time, 'to_time': to_time})
 				from_time = to_time
 			present_events_details.append({'slot_name': slot_name, "service_unit":present_event.service_unit, 'event': present_event.name,
-			'avail_slot': event_available_slots, 'appointments': appointments, 'absent_events': absent_events, 'allow_overlap': allow_overlap, 'service_unit_capacity':service_unit_capacity})
+			'avail_slot': event_available_slots, 'appointments': appointments, 'absent_events': absent_events,
+			'allow_overlap': allow_overlap, 'service_unit_capacity':service_unit_capacity})
 	else:
 		if not practitioner_obj.practitioner_schedules:
 			frappe.throw(_("{0} does not have a Healthcare Practitioner Schedule. Add it in Healthcare Practitioner master".format(practitioner)))
