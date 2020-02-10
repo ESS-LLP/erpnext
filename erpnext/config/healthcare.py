@@ -35,6 +35,12 @@ def get_data():
 					"label": _("Appointment Analytics"),
 				},
 				{
+					"type": "report",
+					"name": "Utilization Report",
+					"is_query_report": True,
+					"label": _("Utilization Report"),
+				},
+				{
 					"type": "doctype",
 					"name": "Clinical Procedure",
 					"label": _("Clinical Procedure"),
