@@ -188,6 +188,11 @@ frappe.ui.form.on('Patient Appointment', {
 				btn_update_status(frm, "Cancelled");
 			});
 		}
+		if(frm.doc.invoiced){
+			frm.set_df_property("insurance", "read_only", 1);
+			frm.set_df_property("insurance_approval_number", "read_only", 1);
+			frm.set_df_property("insurance_remarks", "read_only", 1);
+		}
 		frm.set_df_property("get_procedure_from_encounter", "read_only", frm.doc.__islocal ? 0 : 1);
 		frm.set_df_property("get_radiology_from_encounter", "read_only", frm.doc.__islocal ? 0 : 1);
 		frm.set_df_property("procedure_template", "read_only", frm.doc.__islocal ? 0 : 1);
