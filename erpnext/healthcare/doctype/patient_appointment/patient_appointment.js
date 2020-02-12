@@ -82,6 +82,7 @@ frappe.ui.form.on('Patient Appointment', {
 			return{
 				filters:{
 					"patient": frm.doc.patient,
+					"end_date":[">=", frm.doc.__islocal ? frappe.datetime.nowdate() : frm.doc.appointment_date],
 					"docstatus":1
 				}
 			};
