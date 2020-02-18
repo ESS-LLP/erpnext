@@ -610,10 +610,8 @@ var check_and_set_availability = function(frm) {
 				selected_appointment_date = d.get_value('appointment_date');
 				var today = frappe.datetime.nowdate();
 				if(today > selected_appointment_date){
-					frappe.msgprint(__("you cannot book appointments for past date"));
-					d.set_values({
-						"appointment_date": ""
-					});
+					frappe.msgprint(__("You cannot book appointments for past date"));
+					fd.available_slots.html(__("You cannot book appointments for past date").bold());
 				}
 				else
 				{
