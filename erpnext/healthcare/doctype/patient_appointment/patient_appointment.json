@@ -901,7 +901,7 @@
    "report_hide": 0,
    "reqd": 0,
    "search_index": 1,
-   "set_only_once": 1,
+   "set_only_once": 0,
    "translatable": 0,
    "unique": 0
   },
@@ -2333,7 +2333,7 @@
  "issingle": 0,
  "istable": 0,
  "max_attachments": 0,
- "modified": "2020-01-30 11:50:18.225922",
+ "modified": "2020-02-20 11:30:47.723508",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Appointment",
