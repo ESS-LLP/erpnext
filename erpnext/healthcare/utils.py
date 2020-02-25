@@ -23,7 +23,7 @@ def get_healthcare_services_to_invoice(patient, insurance=None):
 		filters = {'patient': patient.name, 'invoiced': False, 'docstatus': 1}
 		if patient.customer:
 			item_to_invoice = []
-			patient_appointments = frappe.get_list("Patient Appointment", {'patient': patient.name, 'invoiced': False}, order_by="appointment_date")
+			patient_appointments = frappe.get_list("Patient Appointment", {'patient': patient.name, 'invoiced': False, 'status': ['!=','Cancelled']}, order_by="appointment_date")
 			if patient_appointments:
 				fee_validity_details = []
 				valid_days = frappe.db.get_value("Healthcare Settings", None, "valid_days")
