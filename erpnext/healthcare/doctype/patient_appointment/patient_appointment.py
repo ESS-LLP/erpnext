@@ -544,8 +544,12 @@ def set_pending_appointments():
 
 def confirm_sms(doc):
 	if frappe.db.get_value("Healthcare Settings", None, "app_con") == '1':
-		message = frappe.db.get_value("Healthcare Settings", None, "app_con_msg")
-		send_message(doc, message)
+		send_confirmation = True
+		if getdate(datetime.date.today()) == getdate(doc.appointment_date) and frappe.db.get_value("Healthcare Settings", None, "no_con") == '1':
+			send_confirmation = False
+		if send_confirmation:
+			message = frappe.db.get_value("Healthcare Settings", None, "app_con_msg")
+			send_message(doc, message)
 
 @frappe.whitelist()
 def create_encounter(appointment):
