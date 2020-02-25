@@ -936,12 +936,12 @@ var set_insurance_details_for_insurance_item = function(frm, cdt, cdn){
 		});
 	}
 	else{
+		// TODO: Trigger item_code set item default values
 		frappe.db.get_value("Item Price", {'price_list': frm.doc.selling_price_list, 'item_code': d.item_code}, ["name", "price_list_rate"], function(r){
 			if(r && r.name){
 				frappe.model.set_value(cdt, cdn, "price_list_rate", r.price_list_rate);
 			}
 		});
-		frappe.model.set_value(cdt, cdn, "discount_percentage", '');
 		frappe.model.set_value(cdt, cdn, "insurance_claim_coverage", '');
 		frappe.model.set_value(cdt, cdn, "insurance_claim_amount", '');
 	}
