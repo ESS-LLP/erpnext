@@ -894,11 +894,6 @@ frappe.ui.form.on('Sales Invoice Item', {
 		if (frappe.boot.active_domains.includes("Healthcare")){
 			set_insurance_item(frm, cdt, cdn);
 		}
-	},
-	insurance_item: function(frm, cdt, cdn) {
-		if (frappe.boot.active_domains.includes("Healthcare")){
-			set_insurance_details_for_insurance_item(frm, cdt, cdn);
-		}
 	}
 });
 
@@ -918,6 +913,7 @@ var set_insurance_item = function(frm, cdt, cdn){
 	else{
 		frappe.model.set_value(cdt, cdn, "insurance_item", false);
 	}
+	set_insurance_details_for_insurance_item(frm, cdt, cdn);
 };
 
 var set_insurance_details_for_insurance_item = function(frm, cdt, cdn){
