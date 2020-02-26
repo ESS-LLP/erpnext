@@ -6,10 +6,10 @@ from erpnext.domains.healthcare import data
 def execute():
 	frappe.reload_doc('accounts', 'doctype', 'sales_invoice')
 	frappe.reload_doc('accounts', 'doctype', 'sales_invoice_item')
-	frappe.reload_doc('healthcare', 'doctype', 'insurance_assignment')
 
 	if "Healthcare" not in frappe.get_active_domains():
 		return
+	frappe.reload_doc('healthcare', 'doctype', 'insurance_assignment')
 
 	if data['custom_fields']:
 		create_custom_fields(data['custom_fields'])
