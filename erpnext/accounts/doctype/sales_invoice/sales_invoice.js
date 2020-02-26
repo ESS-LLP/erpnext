@@ -825,6 +825,24 @@ frappe.ui.form.on('Sales Invoice', {
 	},
 	refresh: function(frm) {
 		if (frappe.boot.active_domains.includes("Healthcare")){
+			frm.set_query("reference_dt", "items", function(){
+				return{
+					filters:{
+						"module": "Healthcare",
+						"istable": 0,
+						"issingle": 0
+					}
+				};
+			});
+			frm.set_query("reference_dn", "items", function(){
+				return{
+					filters:{
+						"patient": frm.doc.patient,
+						"insurance": frm.doc.insurance,
+						"invoiced": 0
+					}
+				};
+			});
 			frm.set_df_property("patient", "hidden", 0);
 			frm.set_df_property("patient_name", "hidden", 0);
 			frm.set_df_property("ref_practitioner", "hidden", 0);
