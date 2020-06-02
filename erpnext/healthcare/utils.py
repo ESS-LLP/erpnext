@@ -624,3 +624,16 @@ def render_doc_as_html(doctype, docname, exclude_fields = []):
 		doc_html = "<div class='small'><div class='col-md-12 text-right'><a class='btn btn-default btn-xs' href='#Form/%s/%s'></a></div>" %(doctype, docname) + doc_html + '</div>'
 
 	return {'html': doc_html}
+
+@frappe.whitelist()
+def exists_appointment(appointment_date, practitioner, patient, not_in_status=["Cancelled"]):
+	exist_appointment = frappe.db.get_list("Patient Appointment",
+		{
+			"practitioner": practitioner,
+			"appointment_date": getdate(appointment_date),
+			"patient": patient,
+			"status": ["not in", not_in_status]
+		}, ["name"])
+	if exist_appointment:
+		return exist_appointment[0]['name']
+	return False
