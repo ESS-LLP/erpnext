@@ -15,6 +15,8 @@ class LabTestTemplate(Document):
 
 	def validate(self):
 		self.enable_disable_item()
+		if self.is_billable and (not self.lab_test_rate or self.lab_test_rate <= 0.0):
+			frappe.throw(_("Standard Selling Rate should be greater than zero."))
 
 	def on_update(self):
 		# if change_in_item update Item and Price List

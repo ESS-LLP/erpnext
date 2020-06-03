@@ -18,15 +18,21 @@
   "email",
   "mobile",
   "practitioner",
+  "healthcare_practitioner_name",
   "c_b",
   "inpatient_record",
   "company",
   "department",
+  "service_unit",
+  "reference_dt",
+  "reference_dn",
   "status",
   "submitted_date",
   "approved_date",
   "sample",
   "result_date",
+  "expected_result_date",
+  "expected_result_time",
   "employee",
   "employee_name",
   "employee_designation",
@@ -39,6 +45,7 @@
   "lab_test_group",
   "sb_normal",
   "normal_test_items",
+  "lab_test_html",
   "sb_special",
   "special_test_items",
   "sb_sensitivity",
@@ -424,6 +431,49 @@
    "print_hide": 1,
    "read_only": 1,
    "report_hide": 1
+  },
+  {
+   "fetch_from": "practitioner.practitioner_name",
+   "fieldname": "healthcare_practitioner_name",
+   "fieldtype": "Data",
+   "label": "Healthcare Practitioner Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "service_unit",
+   "fieldtype": "Link",
+   "label": "Healthcare Service Unit",
+   "options": "Healthcare Service Unit"
+  },
+  {
+   "fieldname": "reference_dt",
+   "fieldtype": "Link",
+   "label": "Reference DocType",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reference_dn",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference Docname",
+   "options": "reference_dt",
+   "read_only": 1
+  },
+  {
+   "fieldname": "expected_result_date",
+   "fieldtype": "Date",
+   "label": "Expected Result Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "expected_result_time",
+   "fieldtype": "Time",
+   "label": "Expected Result Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lab_test_html",
+   "fieldtype": "HTML"
   }
  ],
  "is_submittable": 1,

@@ -22,7 +22,12 @@
   "section_break_normal",
   "lab_test_uom",
   "lab_test_normal_range",
+  "lab_test_normal_range_female",
+  "type",
+  "options",
   "column_break_10",
+  "type",
+  "options",
   "section_break_compound",
   "normal_test_templates",
   "section_break_special",
@@ -237,6 +242,24 @@
    "fieldtype": "Text",
    "ignore_xss_filter": 1,
    "label": "Collection Details"
+  },
+  {
+   "fieldname": "lab_test_normal_range_female",
+   "fieldtype": "Long Text",
+   "label": "Normal Range Female"
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "\nSelect\nData"
+  },
+  {
+   "depends_on": "eval:doc.type==\"Select\"",
+   "description": "Enter list of Options, each on a new line.",
+   "fieldname": "options",
+   "fieldtype": "Small Text",
+   "label": "Options"
   }
  ],
  "links": [],
