@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{item}",
+ "autoname": "format:{medication_name}",
  "creation": "2020-03-24 15:56:36.583587",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -11,11 +11,23 @@
   "medication_name",
   "generic_name",
   "medication_class",
+  "generic_ok",
   "column_break_4",
+  "status",
   "strength",
   "strength_uom",
   "abbr",
+  "item_and_price_section",
   "item",
+  "item_code",
+  "item_group",
+  "description",
+  "column_break_14",
+  "disabled",
+  "is_billable",
+  "rate",
+  "maintain_stock",
+  "opening_stock",
   "defaults_section",
   "default_dosage_form",
   "default_prescription_dosage",
@@ -23,12 +35,6 @@
   "default_prescription_duration",
   "default_interval",
   "default_interval_uom",
-  "section_break_11",
-  "generic_ok",
-  "column_break_18",
-  "status",
-  "section_break_20",
-  "reference_url",
   "drug_interactions_section",
   "bypass_medication_class_interaction_check",
   "medication_class_interaction",
@@ -37,7 +43,10 @@
   "allergy_interaction",
   "allowed_diagnostic_codes_section",
   "bypass_medical_coding_check",
-  "codification_table"
+  "codification_table",
+  "section_break_36",
+  "reference_url",
+  "change_in_item"
  ],
  "fields": [
   {
@@ -48,7 +57,8 @@
   {
    "fieldname": "medication_name",
    "fieldtype": "Data",
-   "label": "Medication Name"
+   "label": "Medication Name",
+   "reqd": 1
   },
   {
    "fieldname": "generic_name",
@@ -59,7 +69,8 @@
    "fieldname": "medication_class",
    "fieldtype": "Link",
    "label": "Medication Class",
-   "options": "Medication Class"
+   "options": "Medication Class",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_4",
@@ -88,7 +99,8 @@
    "fieldname": "item",
    "fieldtype": "Link",
    "label": "Item",
-   "options": "Item"
+   "options": "Item",
+   "read_only": 1
   },
   {
    "fieldname": "defaults_section",
@@ -129,28 +141,16 @@
    "options": "Hour\nDay"
   },
   {
-   "fieldname": "section_break_11",
-   "fieldtype": "Section Break"
-  },
-  {
    "default": "0",
    "fieldname": "generic_ok",
    "fieldtype": "Check",
    "label": "Generic OK"
   },
   {
-   "fieldname": "column_break_18",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
    "options": "Active\nInactive"
-  },
-  {
-   "fieldname": "section_break_20",
-   "fieldtype": "Section Break"
   },
   {
    "fieldname": "reference_url",
@@ -210,10 +210,84 @@
    "fieldtype": "Table",
    "label": "Codification Table",
    "options": "Codification Table"
+  },
+  {
+   "fieldname": "item_and_price_section",
+   "fieldtype": "Section Break",
+   "label": "Item and Price"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Data",
+   "label": "Item Code",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Group",
+   "options": "Item Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_billable",
+   "fieldtype": "Check",
+   "label": "Is Billable"
+  },
+  {
+   "depends_on": "is_billable",
+   "fieldname": "rate",
+   "fieldtype": "Float",
+   "label": "Rate",
+   "mandatory_depends_on": "is_billable"
+  },
+  {
+   "default": "0",
+   "fieldname": "change_in_item",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "in_filter": 1,
+   "label": "Change In Item",
+   "no_copy": 1,
+   "print_hide": 1,
+   "report_hide": 1
+  },
+  {
+   "fieldname": "section_break_36",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "maintain_stock",
+   "fieldtype": "Check",
+   "label": "Maintain Stock"
+  },
+  {
+   "fieldname": "opening_stock",
+   "fieldtype": "Float",
+   "label": "Opening Stock"
   }
  ],
  "links": [],
- "modified": "2020-07-10 21:35:12.845310",
+ "modified": "2020-08-18 12:56:16.022461",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Medication",
@@ -228,6 +302,18 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Healthcare Administrator",
    "share": 1,
    "write": 1
   }
