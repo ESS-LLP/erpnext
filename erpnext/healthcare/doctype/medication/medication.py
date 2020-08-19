@@ -32,6 +32,7 @@ class Medication(Document):
 			item_doc.item_name = self.medication_name
 			item_doc.item_group = self.item_group
 			item_doc.description = self.description
+			item_doc.stock_uom = self.stock_uom
 			item_doc.disabled = 0
 			item_doc.save(ignore_permissions=True)
 
@@ -51,7 +52,7 @@ def create_item_from_medication(doc):
 	if doc.is_billable and not doc.disabled:
 		disabled = 0
 
-	uom = frappe.db.exists('UOM', 'Unit') or frappe.db.get_single_value('Stock Settings', 'stock_uom')
+	uom = doc.stock_uom or frappe.db.get_single_value('Stock Settings', 'stock_uom')
 	item = frappe.get_doc({
 		'doctype': 'Item',
 		'item_code': doc.medication_name,
