@@ -11,9 +11,9 @@
   "medication_name",
   "generic_name",
   "medication_class",
-  "generic_ok",
+  "is_generic",
   "column_break_4",
-  "status",
+  "disabled",
   "strength",
   "strength_uom",
   "abbr",
@@ -22,12 +22,10 @@
   "item_code",
   "item_group",
   "description",
+  "stock_uom",
   "column_break_14",
-  "disabled",
   "is_billable",
   "rate",
-  "maintain_stock",
-  "opening_stock",
   "defaults_section",
   "default_dosage_form",
   "default_prescription_dosage",
@@ -52,18 +50,21 @@
   {
    "fieldname": "national_drug_code",
    "fieldtype": "Data",
-   "label": "National Drug Code"
+   "label": "National Drug Code",
+   "no_copy": 1
   },
   {
    "fieldname": "medication_name",
    "fieldtype": "Data",
    "label": "Medication Name",
+   "no_copy": 1,
    "reqd": 1
   },
   {
    "fieldname": "generic_name",
    "fieldtype": "Data",
-   "label": "Generic Name"
+   "label": "Generic Name",
+   "no_copy": 1
   },
   {
    "fieldname": "medication_class",
@@ -80,6 +81,7 @@
    "fieldname": "strength",
    "fieldtype": "Float",
    "label": "Strength",
+   "no_copy": 1,
    "precision": "2",
    "set_only_once": 1
   },
@@ -99,6 +101,7 @@
    "fieldname": "item",
    "fieldtype": "Link",
    "label": "Item",
+   "no_copy": 1,
    "options": "Item",
    "read_only": 1
   },
@@ -139,18 +142,6 @@
    "fieldtype": "Select",
    "label": "Default Interval UOM",
    "options": "Hour\nDay"
-  },
-  {
-   "default": "0",
-   "fieldname": "generic_ok",
-   "fieldtype": "Check",
-   "label": "Generic OK"
-  },
-  {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "Active\nInactive"
   },
   {
    "fieldname": "reference_url",
@@ -220,6 +211,7 @@
    "fieldname": "item_code",
    "fieldtype": "Data",
    "label": "Item Code",
+   "no_copy": 1,
    "reqd": 1
   },
   {
@@ -227,6 +219,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Item Group",
+   "no_copy": 1,
    "options": "Item Group",
    "reqd": 1
   },
@@ -234,6 +227,7 @@
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description",
+   "no_copy": 1,
    "reqd": 1
   },
   {
@@ -247,12 +241,14 @@
    "label": "Disabled"
   },
   {
+   "allow_in_quick_entry": 1,
    "default": "0",
    "fieldname": "is_billable",
    "fieldtype": "Check",
    "label": "Is Billable"
   },
   {
+   "allow_in_quick_entry": 1,
    "depends_on": "is_billable",
    "fieldname": "rate",
    "fieldtype": "Float",
@@ -275,19 +271,22 @@
    "fieldtype": "Section Break"
   },
   {
-   "default": "1",
-   "fieldname": "maintain_stock",
-   "fieldtype": "Check",
-   "label": "Maintain Stock"
+   "fieldname": "stock_uom",
+   "fieldtype": "Link",
+   "label": "Stock UOM",
+   "no_copy": 1,
+   "options": "UOM",
+   "reqd": 1
   },
   {
-   "fieldname": "opening_stock",
-   "fieldtype": "Float",
-   "label": "Opening Stock"
+   "default": "0",
+   "fieldname": "is_generic",
+   "fieldtype": "Check",
+   "label": "Is Generic"
   }
  ],
  "links": [],
- "modified": "2020-08-18 12:56:16.022461",
+ "modified": "2020-08-19 12:37:31.556074",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Medication",
