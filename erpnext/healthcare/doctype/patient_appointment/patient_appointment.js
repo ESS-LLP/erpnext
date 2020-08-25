@@ -14,6 +14,9 @@ frappe.ui.form.on('Patient Appointment', {
 			frm.set_value('appointment_time', null);
 			frm.disable_save();
 		}
+		if(frm.doc.source){
+			set_source_referring_practitioner(frm)
+		}
 	},
 
 	refresh: function(frm) {
@@ -37,6 +40,23 @@ frappe.ui.form.on('Patient Appointment', {
 					'company': frm.doc.company
 				}
 			};
+		});
+
+		frm.set_query('referring_practitioner', function() {
+			if(frm.doc.source == 'External Referral'){
+				return {
+					filters: {
+						'healthcare_practitioner_type': 'External'
+					}
+				};
+			}
+			else{
+				return {
+					filters: {
+						'healthcare_practitioner_type': 'Internal'
+					}
+				};
+			}
 		});
 
 		if (frm.is_new()) {
@@ -190,6 +210,12 @@ frappe.ui.form.on('Patient Appointment', {
 					}
 				}
 			});
+		}
+	},
+
+	source: function(frm){
+		if(frm.doc.source){
+			set_source_referring_practitioner(frm);
 		}
 	}
 });
@@ -428,22 +454,32 @@ let show_procedure_templates = function(frm, result){
 		<div class="col-xs-2">\
 		<a data-name="%(name)s" data-procedure-template="%(procedure_template)s"\
 		data-encounter="%(encounter)s" data-practitioner="%(practitioner)s"\
-		data-date="%(date)s"  data-department="%(department)s">\
-		<button class="btn btn-default btn-xs">Add\
+		data-date="%(date)s" data-department="%(department)s" data-source="%(source)s"\
+		data-referring-practitioner="%(referring_practitioner)s"> <button class="btn btn-default btn-xs">Add\
 		</button></a></div></div><div class="col-xs-12"><hr/><div/>', {name:y[0], procedure_template: y[1],
 				encounter:y[2], consulting_practitioner:y[3], encounter_date:y[4],
-				practitioner:y[5]? y[5]:'', date: y[6]? y[6]:'', department: y[7]? y[7]:''})).appendTo(html_field);
+				practitioner:y[5]? y[5]:'', date: y[6]? y[6]:'', department: y[7]? y[7]:'',  source: y[8]? y[8]:'',
+				referring_practitioner: y[9]? y[9]:''})).appendTo(html_field);
 		row.find("a").click(function() {
 			frm.doc.procedure_template = $(this).attr('data-procedure-template');
 			frm.doc.procedure_prescription = $(this).attr('data-name');
 			frm.doc.practitioner = $(this).attr('data-practitioner');
 			frm.doc.appointment_date = $(this).attr('data-date');
 			frm.doc.department = $(this).attr('data-department');
-			refresh_field('procedure_template');
-			refresh_field('procedure_prescription');
-			refresh_field('appointment_date');
-			refresh_field('practitioner');
-			refresh_field('department');
+			frm.doc.source = $(this).attr('data-source');
+			frm.set_df_property('source', 'read_only', 1);
+			frm.doc.referring_practitioner = $(this).attr('data-referring-practitioner');
+			if(frm.doc.referring_practitioner){
+				frm.set_df_property('referring_practitioner', 'hidden', 0);
+				frm.set_df_property('referring_practitioner', 'read_only', 1);
+			}
+			frm.refresh_field('procedure_template');
+			frm.refresh_field('procedure_prescription');
+			frm.refresh_field('appointment_date');
+			frm.refresh_field('practitioner');
+			frm.refresh_field('department');
+			frm.refresh_field('source');
+			frm.refresh_field('referring_practitioner');
 			d.hide();
 			return false;
 		});
@@ -472,21 +508,31 @@ let show_therapy_types = function(frm, result) {
 		<div class="col-xs-2">\
 		<a data-therapy="%(therapy)s" data-therapy-plan="%(therapy_plan)s" data-name="%(name)s"\
 		data-encounter="%(encounter)s" data-practitioner="%(practitioner)s"\
-		data-date="%(date)s"  data-department="%(department)s">\
-		<button class="btn btn-default btn-xs">Add\
+
+		data-date="%(date)s"  data-department="%(department)s" data-source="%(source)s"\
+		data-referring-practitioner="%(referring_practitioner)s"> <button class="btn btn-default btn-xs">Add\
 		</button></a></div></div><div class="col-xs-12"><hr/><div/>', {therapy:y[0],
 		name: y[1], encounter:y[2], practitioner:y[3], date:y[4],
-		department:y[6]? y[6]:'', therapy_plan:y[5]})).appendTo(html_field);
+		department:y[6]? y[6]:'', therapy_plan:y[5],   source: y[7]? y[7]:'', referring_practitioner: y[8]? y[8]:''})).appendTo(html_field);
 
 		row.find("a").click(function() {
 			frm.doc.therapy_type = $(this).attr("data-therapy");
 			frm.doc.practitioner = $(this).attr("data-practitioner");
 			frm.doc.department = $(this).attr("data-department");
 			frm.doc.therapy_plan = $(this).attr("data-therapy-plan");
+			frm.doc.source = $(this).attr('data-source');
+			frm.set_df_property('source', 'read_only', 1);
+			frm.doc.referring_practitioner = $(this).attr('data-referring-practitioner');
+			if(frm.doc.referring_practitioner){
+				frm.set_df_property('referring_practitioner', 'hidden', 0);
+				frm.set_df_property('referring_practitioner', 'read_only', 1);
+			}
 			frm.refresh_field("therapy_type");
 			frm.refresh_field("practitioner");
 			frm.refresh_field("department");
 			frm.refresh_field("therapy-plan");
+			frm.refresh_field('source');
+			frm.refresh_field('referring_practitioner');
 			frappe.db.get_value('Therapy Type', frm.doc.therapy_type, 'default_duration', (r) => {
 				if (r.default_duration) {
 					frm.set_value('duration', r.default_duration)
@@ -585,4 +631,46 @@ let calculate_age = function(birth) {
 	age.setTime(ageMS);
 	let years =  age.getFullYear() - 1970;
 	return  years + ' Year(s) ' + age.getMonth() + ' Month(s) ' + age.getDate() + ' Day(s)';
+};
+
+let set_source_referring_practitioner = function (frm) {
+	if(frm.doc.source == 'Direct'){
+		frm.set_value('referring_practitioner', '');
+		frm.set_df_property('referring_practitioner', 'hidden', 1);
+		frm.set_df_property('referring_practitioner', 'reqd', 0);
+	}
+	else if(frm.doc.source == 'External Referral' || frm.doc.source == 'Referral') {
+		if(frm.doc.practitioner){
+			frm.set_df_property('referring_practitioner', 'hidden', 0);
+			if(frm.doc.source == 'External Referral'){
+				frappe.db.get_value('Healthcare Practitioner', frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+					if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type == 'External'){
+						frm.set_value('referring_practitioner', frm.doc.practitioner);
+					}
+					else{
+						frm.set_value('referring_practitioner', '');
+					}
+				});
+				frm.set_df_property('referring_practitioner', 'read_only', 0);
+			}
+			else{
+				frappe.db.get_value('Healthcare Practitioner', frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+					if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type == 'Internal'){
+						frm.set_value('referring_practitioner', frm.doc.practitioner);
+						frm.set_df_property('referring_practitioner', 'read_only', 1);
+					}
+					else{
+						frm.set_value('referring_practitioner', '');
+						frm.set_df_property('referring_practitioner', 'read_only', 0);
+					}
+				});
+			}
+			frm.set_df_property('referring_practitioner', 'reqd', 1);
+		}
+		else{
+			frm.set_df_property('referring_practitioner', 'read_only', 0);
+			frm.set_df_property('referring_practitioner', 'hidden', 0);
+			frm.set_df_property('referring_practitioner', 'reqd', 1);
+		}
+	}
 };

@@ -22,6 +22,10 @@
   "scheduled_date",
   "admitted_datetime",
   "expected_discharge",
+  "sb_source",
+  "source",
+  "column_break_19",
+  "referring_practitioner",
   "references",
   "admission_encounter",
   "admission_practitioner",
@@ -408,10 +412,34 @@
    "fieldtype": "Date",
    "label": "Discharge Date",
    "read_only": 1
+  },
+  {
+   "fieldname": "sb_source",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Direct\nReferral\nExternal Referral",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_19",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "referring_practitioner",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "ignore_user_permissions": 1,
+   "label": "Referring Practitioner",
+   "options": "Healthcare Practitioner"
   }
  ],
  "links": [],
- "modified": "2020-05-21 02:26:22.144575",
+ "modified": "2020-06-25 22:45:22.657964",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Inpatient Record",

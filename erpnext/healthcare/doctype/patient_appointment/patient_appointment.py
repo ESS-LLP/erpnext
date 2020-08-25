@@ -448,7 +448,7 @@ def get_procedure_prescribed(patient):
 		"""
 			SELECT
 				pp.name, pp.procedure, pp.parent, ct.practitioner,
-				ct.encounter_date, pp.practitioner, pp.date, pp.department
+				ct.encounter_date, pp.practitioner, pp.date, pp.department, ct.source, ct.referring_practitioner
 			FROM
 				`tabPatient Encounter` ct, `tabProcedure Prescription` pp
 			WHERE
@@ -465,7 +465,7 @@ def get_prescribed_therapies(patient):
 		"""
 			SELECT
 				t.therapy_type, t.name, t.parent, e.practitioner,
-				e.encounter_date, e.therapy_plan, e.medical_department
+				e.encounter_date, e.therapy_plan, e.medical_department, e.source, e.referring_practitioner
 			FROM
 				`tabPatient Encounter` e, `tabTherapy Plan Detail` t
 			WHERE

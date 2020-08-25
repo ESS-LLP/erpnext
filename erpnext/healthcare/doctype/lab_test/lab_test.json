@@ -43,6 +43,10 @@
   "employee_designation",
   "user",
   "sample",
+  "sb_source",
+  "source",
+  "column_break_37",
+  "referring_practitioner",
   "sb_normal",
   "lab_test_html",
   "normal_test_items",
@@ -551,11 +555,36 @@
    "fieldtype": "Table",
    "options": "Organism Test Result",
    "print_hide": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Direct\nReferral\nExternal Referral",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_37",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "referring_practitioner",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "ignore_user_permissions": 1,
+   "label": "Referring Practitioner",
+   "options": "Healthcare Practitioner"
+  },
+  {
+   "fieldname": "sb_source",
+   "fieldtype": "Section Break",
+   "label": "Source"
   }
  ],
+ "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-07-30 18:18:38.516215",
+ "modified": "2020-08-25 14:17:38.753208",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Lab Test",
