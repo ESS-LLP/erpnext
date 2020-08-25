@@ -11,6 +11,9 @@
  "field_order": [
   "basic_details_section",
   "naming_series",
+  "healthcare_practitioner_type",
+  "employee",
+  "supplier",
   "first_name",
   "middle_name",
   "last_name",
@@ -23,7 +26,6 @@
   "residence_phone",
   "office_phone",
   "employee_and_user_details_section",
-  "employee",
   "department",
   "designation",
   "column_break_17",
@@ -250,7 +252,7 @@
   {
    "fieldname": "employee_and_user_details_section",
    "fieldtype": "Section Break",
-   "label": "Employee and User Details"
+   "label": "User Details"
   },
   {
    "fieldname": "column_break_17",
@@ -276,11 +278,23 @@
    "fieldname": "address_and_contacts_section",
    "fieldtype": "Section Break",
    "label": "Address and Contacts"
+  },
+  {
+   "fieldname": "healthcare_practitioner_type",
+   "fieldtype": "Select",
+   "label": "Healthcare Practitioner Type",
+   "options": "Internal\nExternal"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2020-04-06 13:44:24.759623",
+ "modified": "2020-06-25 16:03:26.902749",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Practitioner",
