@@ -32,8 +32,20 @@ frappe.ui.form.on('Healthcare Practitioner', {
 			};
 		});
 
+		frm.set_query('supplier',  function(){
+			return {
+				filters: {
+					'supplier_type': 'Individual'
+				}
+			};
+		});
+
+		manage_internal_external_practitioner(frm);
 		set_query_service_item(frm, 'inpatient_visit_charge_item');
 		set_query_service_item(frm, 'op_consulting_charge_item');
+	},
+	healthcare_practitioner_type: function(frm) {
+		manage_internal_external_practitioner(frm);
 	}
 });
 
@@ -109,6 +121,37 @@ frappe.ui.form.on('Healthcare Practitioner', 'employee', function(frm) {
 	}
 });
 
+frappe.ui.form.on('Healthcare Practitioner', 'supplier', function(frm) {
+	if (frm.doc.supplier){
+		frappe.call({
+			'method': 'frappe.client.get',
+			args: {
+				doctype: 'Supplier',
+				name: frm.doc.supplier
+			},
+			callback: function (data) {
+				if (!frm.doc.first_name)
+					frappe.model.set_value(frm.doctype,frm.docname, 'first_name', data.message.supplier_name);
+			}
+		});
+	}
+});
+
+var manage_internal_external_practitioner = function(frm) {
+	frm.set_df_property('employee', 'hidden', 1);
+	frm.set_df_property('supplier', 'reqd', 0);
+	frm.set_df_property('supplier', 'hidden', 1);
+	if(frm.doc.healthcare_practitioner_type){
+		if(frm.doc.healthcare_practitioner_type == 'Internal'){
+			frm.set_df_property('employee', 'hidden', 0);
+		}
+		else if(frm.doc.healthcare_practitioner_type == 'External'){
+			frm.set_df_property('supplier', 'hidden', 0);
+			frm.set_df_property('supplier', 'reqd', 1);
+		}
+	}
+}
+
 frappe.tour['Healthcare Practitioner'] = [
 	{
 		fieldname: 'employee',
@@ -142,4 +185,3 @@ frappe.tour['Healthcare Practitioner'] = [
 		description: __('If this Healthcare Practitioner also works for the In-Patient Department, set the inpatient visit charge for this Practitioner.')
 	}
 ];
-
