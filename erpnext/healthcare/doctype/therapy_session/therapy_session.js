@@ -21,6 +21,12 @@ frappe.ui.form.on('Therapy Session', {
 		});
 	},
 
+	onload: function(frm) {
+		if(frm.doc.source){
+			set_source_referring_practitioner(frm)
+		}
+	},
+
 	refresh: function(frm) {
 		if (frm.doc.therapy_plan) {
 			frm.trigger('filter_therapy_types');
@@ -51,6 +57,23 @@ frappe.ui.form.on('Therapy Session', {
 				}
 			});
 		}
+
+		frm.set_query('referring_practitioner', function() {
+			if(frm.doc.source == 'External Referral'){
+				return {
+					filters: {
+						'healthcare_practitioner_type': 'External'
+					}
+				};
+			}
+			else{
+				return {
+					filters: {
+						'healthcare_practitioner_type': 'Internal'
+					}
+				};
+			}
+		});
 	},
 
 	therapy_plan: function(frm) {
@@ -125,7 +148,8 @@ frappe.ui.form.on('Therapy Session', {
 						'start_time': data.message.appointment_time,
 						'service_unit': data.message.service_unit,
 						'company': data.message.company,
-						'duration': data.message.duration
+						'duration': data.message.duration,
+						'source' :data.message.source
 					};
 					frm.set_value(values);
 				}
@@ -158,5 +182,53 @@ frappe.ui.form.on('Therapy Session', {
 				}
 			});
 		}
+	},
+
+	source: function(frm){
+		if(frm.doc.source){
+			set_source_referring_practitioner(frm);
+		}
 	}
 });
+
+let set_source_referring_practitioner = function (frm) {
+	if(frm.doc.source == 'Direct'){
+		frm.set_value('referring_practitioner', '');
+		frm.set_df_property('referring_practitioner', 'hidden', 1);
+		frm.set_df_property('referring_practitioner', 'reqd', 0);
+	}
+	else if(frm.doc.source == 'External Referral' || frm.doc.source == 'Referral') {
+		if(frm.doc.practitioner){
+			frm.set_df_property('referring_practitioner', 'hidden', 0);
+			if(frm.doc.source == 'External Referral'){
+				frappe.db.get_value('Healthcare Practitioner', frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+					if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type == 'External'){
+						frm.set_value('referring_practitioner', frm.doc.practitioner);
+					}
+					else{
+						frm.set_value('referring_practitioner', '');
+					}
+				});
+				frm.set_df_property('referring_practitioner', 'read_only', 0);
+			}
+			else{
+				frappe.db.get_value('Healthcare Practitioner', frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+					if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type == 'Internal'){
+						frm.set_value('referring_practitioner', frm.doc.practitioner);
+						frm.set_df_property('referring_practitioner', 'read_only', 1);
+					}
+					else{
+						frm.set_value('referring_practitioner', '');
+						frm.set_df_property('referring_practitioner', 'read_only', 0);
+					}
+				});
+			}
+			frm.set_df_property('referring_practitioner', 'reqd', 1);
+		}
+		else{
+			frm.set_df_property('referring_practitioner', 'read_only', 0);
+			frm.set_df_property('referring_practitioner', 'hidden', 0);
+			frm.set_df_property('referring_practitioner', 'reqd', 1);
+		}
+	}
+};

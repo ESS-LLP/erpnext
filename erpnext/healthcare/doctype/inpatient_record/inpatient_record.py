@@ -110,6 +110,12 @@ def schedule_inpatient(args):
 		inpatient_record.therapy_plan = encounter.therapy_plan
 		set_ip_child_records(inpatient_record, 'therapies', encounter.therapies)
 
+	if encounter and encounter.source: # Source
+		inpatient_record.source = encounter.source
+
+	if encounter and encounter.referring_practitioner: #  Referring Practitioner
+		inpatient_record.referring_practitioner = encounter.referring_practitioner
+
 	inpatient_record.status = 'Admission Scheduled'
 	inpatient_record.save(ignore_permissions = True)
 

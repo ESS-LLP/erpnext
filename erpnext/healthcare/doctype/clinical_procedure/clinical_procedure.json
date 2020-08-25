@@ -31,6 +31,10 @@
   "start_date",
   "start_time",
   "sample",
+  "sb_source",
+  "source",
+  "column_break_26",
+  "referring_practitioner",
   "consumables_section",
   "consume_stock",
   "warehouse",
@@ -299,6 +303,30 @@
    "label": "Medical Code",
    "options": "Medical Code",
    "read_only": 1
+  },
+  {
+   "fieldname": "sb_source",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Direct\nReferral\nExternal Referral",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_26",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "referring_practitioner",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "ignore_user_permissions": 1,
+   "label": "Referring Practitioner",
+   "options": "Healthcare Practitioner"
   }
  ],
  "is_submittable": 1,
