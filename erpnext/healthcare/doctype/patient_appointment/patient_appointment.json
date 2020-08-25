@@ -36,6 +36,10 @@
   "appointment_date",
   "appointment_time",
   "appointment_datetime",
+  "sb_source",
+  "source",
+  "column_break_30",
+  "referring_practitioner",
   "section_break_16",
   "mode_of_payment",
   "billing_item",
@@ -44,10 +48,8 @@
   "paid_amount",
   "ref_sales_invoice",
   "section_break_3",
-  "referring_practitioner",
-  "reminded",
-  "column_break_36",
-  "notes"
+  "notes",
+  "reminded"
  ],
  "fields": [
   {
@@ -270,6 +272,7 @@
   {
    "fieldname": "referring_practitioner",
    "fieldtype": "Link",
+   "hidden": 1,
    "ignore_user_permissions": 1,
    "label": "Referring Practitioner",
    "options": "Healthcare Practitioner"
@@ -327,10 +330,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "column_break_36",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "title",
    "fieldtype": "Data",
    "hidden": 1,
@@ -345,6 +344,22 @@
    "fieldtype": "Data",
    "label": "Practitioner Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "sb_source",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Direct\nReferral\nExternal Referral",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_30",
+   "fieldtype": "Column Break"
   }
  ],
  "links": [],

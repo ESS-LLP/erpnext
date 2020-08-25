@@ -396,7 +396,9 @@ def get_lab_test_prescribed(patient):
 				lp.invoiced,
 				pe.practitioner,
 				pe.practitioner_name,
-				pe.encounter_date
+				pe.encounter_date,
+				pe.source,
+				pe.referring_practitioner
 			from
 				`tabPatient Encounter` pe, `tabLab Prescription` lp
 			where

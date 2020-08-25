@@ -22,9 +22,33 @@ frappe.ui.form.on('Lab Test', {
 			{ fieldname: 'result_value', columns: 7 }
 		];
 	},
-	refresh: function (frm) {
+
+	onload:function (frm) {
+		if(frm.doc.source){
+			set_source_referring_practitioner(frm)
+		}
+	},
+
+	refresh: function(frm) {
 		refresh_field('normal_test_items');
 		refresh_field('descriptive_test_items');
+		frm.set_query('referring_practitioner', function() {
+			if(frm.doc.source == 'External Referral'){
+				return {
+					filters: {
+						'healthcare_practitioner_type': 'External'
+					}
+				};
+			}
+			else{
+				return {
+					filters: {
+						'healthcare_practitioner_type': 'Internal'
+					}
+				};
+			}
+		});
+
 		if (frm.doc.__islocal) {
 			frm.add_custom_button(__('Get from Patient Encounter'), function () {
 				get_lab_test_prescribed(frm);
@@ -56,8 +80,14 @@ frappe.ui.form.on('Lab Test', {
 				});
 			});
 		}
+	},
 
+	source: function(frm){
+		if(frm.doc.source){
+			set_source_referring_practitioner(frm);
+		}
 	}
+
 });
 
 frappe.ui.form.on('Lab Test', 'patient', function (frm) {
@@ -148,10 +178,11 @@ var show_lab_tests = function (frm, lab_test_list) {
 				<div class="col-xs-1">\
 					<a data-name="%(name)s" data-lab-test="%(lab_test)s"\
 					data-encounter="%(encounter)s" data-practitioner="%(practitioner)s"\
-					data-invoiced="%(invoiced)s" href="#"><button class="btn btn-default btn-xs">Get</button></a>\
+					data-invoiced="%(invoiced)s" data-source="%(source)s"\
+					data-referring-practitioner="%(referring_practitioner)s" href="#"><button class="btn btn-default btn-xs">Get</button></a>\
 				</div>\
 			</div><hr>',
-			{ name: y[0], lab_test: y[1], encounter: y[2], invoiced: y[3], practitioner: y[4], practitioner_name: y[5], date: y[6] })
+			{name: y[0], lab_test: y[1], encounter: y[2], invoiced: y[3], practitioner: y[4], practitioner_name: y[5], date: y[6], source: y[7], referring_practitioner: y[8]})
 		).appendTo(html_field);
 
 		row.find("a").click(function () {
@@ -165,8 +196,18 @@ var show_lab_tests = function (frm, lab_test_list) {
 			if ($(this).attr('data-invoiced') === 1) {
 				frm.doc.invoiced = 1;
 			}
-			refresh_field('invoiced');
-			refresh_field('template');
+			frm.doc.source = $(this).attr('data-source');
+			frm.set_df_property('source', 'read_only', 1);
+			frm.doc.referring_practitioner = $(this).attr('data-referring-practitioner');
+			if(frm.doc.referring_practitioner){
+				frm.set_df_property('referring_practitioner', 'hidden', 0);
+				frm.set_df_property('referring_practitioner', 'read_only', 1);
+			}
+			frm.refresh_field('invoiced');
+			frm.refresh_field('template');
+			frm.refresh_field('source');
+			frm.refresh_field('referring_practitioner');
+
 			d.hide();
 			return false;
 		});
@@ -259,4 +300,46 @@ var calculate_age = function (dob) {
 	age.setTime(ageMS);
 	var years = age.getFullYear() - 1970;
 	return years + ' Year(s) ' + age.getMonth() + ' Month(s) ' + age.getDate() + ' Day(s)';
+};
+
+let set_source_referring_practitioner = function (frm) {
+	if(frm.doc.source == 'Direct'){
+		frm.set_value('referring_practitioner', '');
+		frm.set_df_property('referring_practitioner', 'hidden', 1);
+		frm.set_df_property('referring_practitioner', 'reqd', 0);
+	}
+	else if(frm.doc.source == 'External Referral' || frm.doc.source == 'Referral') {
+		if(frm.doc.practitioner){
+			frm.set_df_property('referring_practitioner', 'hidden', 0);
+			if(frm.doc.source == 'External Referral'){
+				frappe.db.get_value('Healthcare Practitioner', frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+					if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type == 'External'){
+						frm.set_value('referring_practitioner', frm.doc.practitioner);
+					}
+					else{
+						frm.set_value('referring_practitioner', '');
+					}
+				});
+				frm.set_df_property('referring_practitioner', 'read_only', 0);
+			}
+			else{
+				frappe.db.get_value('Healthcare Practitioner', frm.doc.practitioner, 'healthcare_practitioner_type', function(r) {
+					if(r && r.healthcare_practitioner_type && r.healthcare_practitioner_type == 'Internal'){
+						frm.set_value('referring_practitioner', frm.doc.practitioner);
+						frm.set_df_property('referring_practitioner', 'read_only', 1);
+					}
+					else{
+						frm.set_value('referring_practitioner', '');
+						frm.set_df_property('referring_practitioner', 'read_only', 0);
+					}
+				});
+			}
+			frm.set_df_property('referring_practitioner', 'reqd', 1);
+		}
+		else{
+			frm.set_df_property('referring_practitioner', 'read_only', 0);
+			frm.set_df_property('referring_practitioner', 'hidden', 0);
+			frm.set_df_property('referring_practitioner', 'reqd', 1);
+		}
+	}
 };
