@@ -43,5 +43,10 @@ frappe.ui.form.on('Healthcare Service Unit', {
 		else {
 			frm.set_df_property('service_unit_type', 'reqd', 1);
 		}
+	},
+	overlap_appointments: function(frm) {
+		if(frm.doc.overlap_appointments == 0){
+			frm.set_value('total_service_unit_capacity', '');
+		}
 	}
 });
