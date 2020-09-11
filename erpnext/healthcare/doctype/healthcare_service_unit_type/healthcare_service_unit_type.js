@@ -37,7 +37,24 @@ frappe.ui.form.on('Healthcare Service Unit Type', {
 		if (!frm.doc.__islocal) {
 			frm.doc.change_in_item = 1;
 		}
+	},
+	is_modality: function (frm) {
+		if (frm.doc.is_modality == 1) {
+			frm.set_value('overlap_appointments', false);
+			frm.set_value('allow_procedures', false);
+		}
+	},
+	overlap_appointments: function (frm) {
+		if (frm.doc.overlap_appointments == 1) {
+			frm.set_value('is_modality', false);
+		}
+	},
+	allow_procedures: function (frm) {
+		if (frm.doc.allow_procedures == 1) {
+			frm.set_value('is_modality', false);
+		}
 	}
+
 });
 
 let set_item_details = function(frm) {
