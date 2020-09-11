@@ -303,7 +303,8 @@ let check_and_set_availability = function(frm) {
 						for (let i = 0; i < slot_details.length; i++) {
 							slot_html = slot_html + `<label>${slot_details[i].slot_name}</label>`;
 							slot_html = slot_html + `<br/>` + slot_details[i].avail_slot.map(slot => {
-								let disabled = '';
+								let appointment_count = 0;
+								let disabled = false;
 								let start_str = slot.from_time;
 								let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
 								let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
@@ -315,23 +316,40 @@ let check_and_set_availability = function(frm) {
 									// Deal with 0 duration appointments
 									if (booked_moment.isSame(slot_start_time) || booked_moment.isBetween(slot_start_time, slot_to_time)) {
 										if(booked.duration == 0){
-											disabled = 'disabled="disabled"';
+											disabled = true;
 											return false;
 										}
 									}
 									// Check for overlaps considering appointment duration
-									if (slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)) {
-										// There is an overlap
-										disabled = 'disabled="disabled"';
-										return false;
+									if(slot_details[i].allow_overlap != 1){
+										if (slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)) {
+											// There is an overlap
+											disabled = true;
+											return false;
+										}
+									}
+									else{
+										if(slot_start_time.isBefore(end_time) && slot_to_time.isAfter(booked_moment)){
+											appointment_count++
+										}
+										if(appointment_count>=slot_details[i].service_unit_capacity){
+											// There is an overlap
+											disabled = true;
+											return false;
+										}
 									}
 								});
+								let count=''
+								if(slot_details[i].allow_overlap==1 && slot_details[i].service_unit_capacity>1){
+									count=" - "+(slot_details[i].service_unit_capacity - appointment_count)
+									// document.getElementById("count").style.fontSize = "xx-large";
+								}
 								return `<button class="btn btn-default"
 									data-name=${start_str}
 									data-duration=${interval}
 									data-service-unit="${slot_details[i].service_unit || ''}"
-									style="margin: 0 10px 10px 0; width: 72px;" ${disabled}>
-									${start_str.substring(0, start_str.length - 3)}
+									style="margin: 0 10px 10px 0; width: 72px;" ${ disabled ? 'disabled="disabled"' : "" }>
+									${start_str.substring(0, start_str.length - 3)} ${count}
 								</button>`;
 							}).join("");
 							slot_html = slot_html + `<br/>`;
@@ -342,7 +360,7 @@ let check_and_set_availability = function(frm) {
 							.addClass('text-center')
 							.html(slot_html);
 
-						// blue button when clicked
+						// primtary button when clicked
 						$wrapper.on('click', 'button', function() {
 							let $btn = $(this);
 							$wrapper.find('button').removeClass('btn-primary');

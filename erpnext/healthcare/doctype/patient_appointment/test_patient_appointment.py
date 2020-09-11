@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 import unittest
 import frappe
+from frappe import _
 from erpnext.healthcare.doctype.patient_appointment.patient_appointment import update_status, make_encounter
 from frappe.utils import nowdate, add_days
 from frappe.utils.make_random import get_random
@@ -13,6 +14,8 @@ class TestPatientAppointment(unittest.TestCase):
 		frappe.db.sql("""delete from `tabPatient Appointment`""")
 		frappe.db.sql("""delete from `tabFee Validity`""")
 		frappe.db.sql("""delete from `tabPatient Encounter`""")
+		frappe.db.sql("""delete from `tabHealthcare Service Unit Type`""")
+		frappe.db.sql("""delete from `tabHealthcare Service Unit`""")
 
 	def test_status(self):
 		patient, medical_department, practitioner = create_healthcare_docs()
@@ -74,11 +77,31 @@ class TestPatientAppointment(unittest.TestCase):
 		sales_invoice_name = frappe.db.get_value('Sales Invoice Item', {'reference_dn': appointment.name}, 'parent')
 		self.assertEqual(frappe.db.get_value('Sales Invoice', sales_invoice_name, 'status'), 'Cancelled')
 
+	def test_appointment_overlap(self):
+		patient, medical_department, practitioner = create_healthcare_docs()
+		service_unit_type = create_service_unit_type()
+		overlap_service_unit_type = create_overlap_service_unit_type()
+		service_unit = create_service_unit(service_unit_type)
+		overlap_service_unit = create_overlap_service_unit(overlap_service_unit_type)
+		from erpnext.healthcare.doctype.patient_appointment.patient_appointment import Maximumcapacityerror, Overlappingerror
+		for y in range(2, 5):
+			try:
+				patient_2 = create_patient_n(y)
+				appointment = create_appointments(patient_2, practitioner, nowdate(), overlap_service_unit)
+			except:
+				self.assertRaises(Maximumcapacityerror)
+		for x in range(0, 1):
+			try:
+				patient_1 = create_patient_n(x)
+				appointment = create_appointments(patient_1, practitioner, nowdate(), service_unit)
+			except:
+				self.assertRaises(Overlappingerror)
 
 def create_healthcare_docs():
 	patient = create_patient()
 	practitioner = frappe.db.exists('Healthcare Practitioner', '_Test Healthcare Practitioner')
 	medical_department = frappe.db.exists('Medical Department', '_Test Medical Department')
+
 
 	if not medical_department:
 		medical_department = frappe.new_doc('Medical Department')
@@ -163,3 +186,69 @@ def create_clinical_procedure_template():
 	template.rate = 50000
 	template.save()
 	return template
+
+def create_service_unit_type():
+	service_unit_type = frappe.db.exists('Healthcare Service Unit Type', '_Test service_unit_type')
+	if not service_unit_type:
+		service_unit_type = frappe.new_doc('Healthcare Service Unit Type')
+		service_unit_type.service_unit_type = '_Test service_unit_type'
+		service_unit_type.allow_appointments = 1
+		service_unit_type.save(ignore_permissions=True)
+		service_unit_type = service_unit_type.name
+		return service_unit_type
+
+def create_overlap_service_unit_type():
+	overlap_service_unit_type = frappe.db.exists('Healthcare Service Unit Type', '_Test overlap_service_unit_type')
+	if not overlap_service_unit_type:
+		overlap_service_unit_type = frappe.new_doc('Healthcare Service Unit Type')
+		overlap_service_unit_type.service_unit_type = '_Test overlap_service_unit_type'
+		overlap_service_unit_type.allow_appointments = 1
+		overlap_service_unit_type.overlap_appointments = 1
+		overlap_service_unit_type.save(ignore_permissions=True)
+		overlap_service_unit_type = overlap_service_unit_type.name
+	return overlap_service_unit_type
+
+
+def create_service_unit(service_unit_type):
+	service_unit = frappe.db.exists('Healthcare Service Unit', '_Test service_unit')
+	if not service_unit:
+		service_unit = frappe.new_doc('Healthcare Service Unit')
+		service_unit.healthcare_service_unit_name= '_Test service_unit'
+		service_unit.service_unit_type = service_unit_type
+		service_unit.save(ignore_permissions=True)
+		service_unit = service_unit.name
+	return service_unit
+
+def create_overlap_service_unit(overlap_service_unit_type):
+	overlap_service_unit = frappe.db.exists('Healthcare Service Unit', '_Test overlap_service_unit')
+	if not overlap_service_unit:
+		overlap_service_unit = frappe.new_doc('Healthcare Service Unit')
+		overlap_service_unit.healthcare_service_unit_name= '_Test overlap_service_unit'
+		overlap_service_unit.total_service_unit_capacity = 3
+		overlap_service_unit.service_unit_type = overlap_service_unit_type
+		overlap_service_unit.save(ignore_permissions=True)
+		overlap_service_unit = overlap_service_unit.name
+	return overlap_service_unit
+
+def create_patient_n(x):
+	x = str(x)
+	patient = frappe.db.exists('Patient', '_Test Patient'+ x)
+	if not patient:
+		patient = frappe.new_doc('Patient')
+		patient.first_name = '_Test Patient'+ x
+		patient.sex = 'Female'
+		patient.save(ignore_permissions=True)
+		patient = patient.name
+	return patient
+
+def create_appointments(patient, practitioner, appointment_date, service_unit):
+	appointment = frappe.new_doc('Patient Appointment')
+	appointment.patient = patient
+	appointment.practitioner = practitioner
+	appointment.department = '_Test Medical Department'
+	appointment.appointment_date = appointment_date
+	appointment.company = '_Test Company'
+	appointment.service_unit = service_unit
+	appointment.duration = 30
+	appointment.save(ignore_permissions=True)
+	return appointment
