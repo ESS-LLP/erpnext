@@ -8,22 +8,24 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, cstr, getdate
 import dateutil
+from frappe.contacts.address_and_contact import load_address_and_contact, delete_contact_and_address
 from frappe.model.naming import set_name_by_naming_series
 from frappe.utils.nestedset import get_root_of
 from erpnext import get_default_currency
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_receivable_account, get_income_account, send_registration_sms
 
 class Patient(Document):
+	def onload(self):
+		"""Load address and contacts in `__onload`"""
+		load_address_and_contact(self)
+
 	def validate(self):
 		self.set_full_name()
-		self.add_as_website_user()
 
 	def before_insert(self):
 		self.set_missing_customer_details()
 
 	def after_insert(self):
-		self.add_as_website_user()
-		self.reload()
 		if frappe.db.get_single_value('Healthcare Settings', 'link_customer_to_patient') and not self.customer:
 			create_customer(self)
 		if frappe.db.get_single_value('Healthcare Settings', 'collect_registration_fee'):
@@ -49,6 +51,11 @@ class Patient(Document):
 		else:
 			if frappe.db.get_single_value('Healthcare Settings', 'link_customer_to_patient'):
 				create_customer(self)
+		if self.email and self.invite_user:
+			self.add_as_website_user()
+			self.reload()
+			self.update_web_site_user_contact()
+		update_contacts(self)
 
 	def set_full_name(self):
 		if self.last_name:
@@ -83,6 +90,8 @@ class Patient(Document):
 					'user_type': 'Website User'
 				})
 				user.flags.ignore_permissions = True
+				user.enabled = True
+				user.send_welcome_email = True
 				user.add_roles('Patient')
 
 	def autoname(self):
@@ -123,6 +132,18 @@ class Patient(Document):
 			send_registration_sms(self)
 
 			return {'invoice': sales_invoice.name}
+
+	def update_web_site_user_contact(self):
+		user=frappe.db.exists ('User', self.email)
+		if user:
+			contact_name = frappe.db.exists('Contact', {'user': user})
+			if contact_name:
+				contact = frappe.get_doc('Contact', contact_name)
+				if contact:
+					contact.is_primary_contact= True
+					contact.append('links', dict(link_doctype='Customer', link_name=self.customer))
+					contact.append('links', dict(link_doctype='Patient', link_name=self.name))
+					contact.save(ignore_permissions=True)
 
 def create_customer(doc):
 	customer = frappe.get_doc({
@@ -184,3 +205,64 @@ def get_timeline_data(doctype, name):
 			patient=%s
 			and `communication_date` > date_sub(curdate(), interval 1 year)
 		GROUP BY communication_date''', name))
+
+def update_contacts(doc):
+	# contact
+	existing_contacts = frappe.get_all('Dynamic Link', filters={
+						"parenttype":"Contact",
+						"link_doctype":"Patient",
+						"link_name":doc.name
+					}, fields=["parent as name"])
+	if not existing_contacts and doc.mobile:
+		make_contact(doc)
+
+	if existing_contacts:
+		for contact_name in existing_contacts:
+			contact = frappe.get_doc('Contact', contact_name.get('name'))
+			contact.is_primary_contact= True
+			if doc.get('email_id'):
+				contact.add_email(doc.get('email_id'), is_primary=True)
+			if doc.get('phone'):
+				if len(contact.phone_nos) > 0:
+					primary_phone = [phone.phone for phone in contact.phone_nos if phone.get('is_primary_phone')]
+					if primary_phone and  primary_phone[0] != doc.get('phone'):
+						update_primary_phone(contact, 'is_primary_phone')
+						contact.add_phone(doc.get('phone'), is_primary_phone=True)
+					else:
+						contact.add_phone(doc.get('phone'), is_primary_phone=True)
+				else:
+					contact.add_phone(doc.get('phone'), is_primary_phone=True)
+			if doc.get('mobile'):
+				if len(contact.phone_nos) > 0:
+					primary_phone = [phone.phone for phone in contact.phone_nos if phone.get('is_primary_mobile_no')]
+					if primary_phone and primary_phone[0] != doc.get('mobile'):
+						update_primary_phone(contact, 'is_primary_mobile_no')
+						contact.add_phone(doc.get('mobile'), is_primary_mobile_no=True)
+					else:
+						contact.add_phone(doc.get('mobile'), is_primary_mobile_no=True)
+				else:
+					contact.add_phone(doc.get('mobile'), is_primary_mobile_no=True)
+			if not contact.has_link('Customer', doc.customer):
+				contact.append('links', dict(link_doctype='Customer', link_name=doc.customer))
+			contact.save()
+
+def make_contact(doc):
+	contact = frappe.get_doc({
+		'doctype': 'Contact',
+		'first_name': doc.get('name'),
+		'is_primary_contact': True,
+	})
+	contact.append('links', dict(link_doctype='Customer', link_name=doc.customer))
+	contact.append('links', dict(link_doctype='Patient', link_name=doc.name))
+	if doc.get('email_id'):
+		contact.add_email(doc.get('email_id'), is_primary=True)
+	if doc.get('mobile'):
+		contact.add_phone(doc.get('mobile'), is_primary_mobile_no=True)
+	contact.insert()
+
+def update_primary_phone(doc, field_name):
+	if doc.phone_nos and len(doc.phone_nos) > 1:
+		name = [phone.name for phone in doc.phone_nos if phone.get(field_name)]
+		if name:
+			frappe.db.set_value('Contact Phone', name[0], field_name, 'False')
+			doc.reload()
