@@ -15,7 +15,17 @@
   "comments",
   "appointment_booked",
   "procedure_created",
-  "invoiced"
+  "invoiced",
+  "order_details_section",
+  "intent",
+  "sequence",
+  "as_needed",
+  "patient_instruction",
+  "column_break_23",
+  "replaces",
+  "priority",
+  "body_part",
+  "note"
  ],
  "fields": [
   {
@@ -82,11 +92,65 @@
    "label": "Invoiced",
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "replaces",
+   "fieldtype": "Link",
+   "label": "Replaces",
+   "options": "Healthcare Service Order"
+  },
+  {
+   "fieldname": "order_details_section",
+   "fieldtype": "Section Break",
+   "label": "Order Details"
+  },
+  {
+   "fieldname": "intent",
+   "fieldtype": "Select",
+   "label": "Intent",
+   "options": "\nProposal\nPlan\nDirective\nOrder\nOriginal Order\nReflex Order\nFiller Order\nInstance Order\nOption"
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "label": "Sequence in Order Group"
+  },
+  {
+   "default": "0",
+   "fieldname": "as_needed",
+   "fieldtype": "Check",
+   "label": "As Needed"
+  },
+  {
+   "fieldname": "patient_instruction",
+   "fieldtype": "Small Text",
+   "label": "Patient Instruction"
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Link",
+   "label": "Priority",
+   "options": "Healthcare Service Order Priority"
+  },
+  {
+   "fieldname": "body_part",
+   "fieldtype": "Link",
+   "label": "Body Part",
+   "options": "Body Part"
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2020-02-26 15:42:33.988081",
+ "modified": "2020-09-18 18:25:39.447174",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Procedure Prescription",

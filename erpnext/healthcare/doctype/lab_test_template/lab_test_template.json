@@ -14,11 +14,15 @@
   "lab_test_code",
   "lab_test_group",
   "department",
+  "healthcare_service_order_category",
+  "patient_care_type",
+  "staff_role",
   "column_break_3",
   "disabled",
   "lab_test_template_type",
   "is_billable",
   "lab_test_rate",
+  "healthcare_service_unit_type",
   "section_break_description",
   "lab_test_description",
   "section_break_normal",
@@ -316,10 +320,37 @@
   {
    "fieldname": "column_break_33",
    "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "healthcare_service_order_category.patient_care_type",
+   "fieldname": "patient_care_type",
+   "fieldtype": "Link",
+   "label": "Patient Care Type",
+   "options": "Patient Care Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "staff_role",
+   "fieldtype": "Link",
+   "label": "Staff Role",
+   "options": "Role"
+  },
+  {
+   "fieldname": "healthcare_service_unit_type",
+   "fieldtype": "Link",
+   "label": "Healthcare Service Unit Type",
+   "options": "Healthcare Service Unit Type"
+  },
+  {
+   "fieldname": "healthcare_service_order_category",
+   "fieldtype": "Link",
+   "label": "Healthcare Service Order Category",
+   "options": "Healthcare Service Order Category",
+   "reqd": 1
   }
  ],
  "links": [],
- "modified": "2020-07-30 14:32:40.449818",
+ "modified": "2020-09-18 18:29:22.170218",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Lab Test Template",

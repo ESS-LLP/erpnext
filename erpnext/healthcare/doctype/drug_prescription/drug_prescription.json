@@ -18,7 +18,20 @@
   "usage_interval",
   "interval",
   "interval_uom",
-  "update_schedule"
+  "update_schedule",
+  "order_details_section",
+  "intent",
+  "quantity",
+  "sequence",
+  "expected_date",
+  "as_needed",
+  "patient_instruction",
+  "column_break_25",
+  "replaces",
+  "priority",
+  "occurrence",
+  "occurence_period",
+  "note"
  ],
  "fields": [
   {
@@ -95,7 +108,7 @@
    "report_hide": 1
   },
   {
-   "depends_on": "use_interval",
+   "depends_on": "usage_interval",
    "fieldname": "interval_uom",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -108,6 +121,74 @@
    "fieldtype": "Check",
    "hidden": 1,
    "label": "Dosage by Time Interval"
+  },
+  {
+   "fieldname": "replaces",
+   "fieldtype": "Link",
+   "label": "Replaces",
+   "options": "Healthcare Service Order"
+  },
+  {
+   "fieldname": "order_details_section",
+   "fieldtype": "Section Break",
+   "label": "Order Details"
+  },
+  {
+   "fieldname": "intent",
+   "fieldtype": "Select",
+   "label": "Intent",
+   "options": "Proposal\nPlan\nDirective\nOrder\nOriginal Order\nReflex Order\nFiller Order\nInstance Order\nOption"
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Int",
+   "label": "Quantity"
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "label": "Sequence in Order Group"
+  },
+  {
+   "fieldname": "expected_date",
+   "fieldtype": "Date",
+   "label": "Expected Date"
+  },
+  {
+   "default": "0",
+   "fieldname": "as_needed",
+   "fieldtype": "Check",
+   "label": "As Needed"
+  },
+  {
+   "fieldname": "patient_instruction",
+   "fieldtype": "Small Text",
+   "label": "Patient Instruction"
+  },
+  {
+   "fieldname": "column_break_25",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Link",
+   "label": "Priority",
+   "options": "Healthcare Service Order Priority"
+  },
+  {
+   "fieldname": "occurrence",
+   "fieldtype": "Datetime",
+   "label": "Occurrence"
+  },
+  {
+   "fieldname": "occurence_period",
+   "fieldtype": "Duration",
+   "label": "Occurence Period"
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note"
   }
  ],
  "istable": 1,
