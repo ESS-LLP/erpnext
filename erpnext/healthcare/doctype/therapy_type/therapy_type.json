@@ -22,6 +22,9 @@
   "item_group",
   "column_break_12",
   "description",
+  "healthcare_service_order_category",
+  "patient_care_type",
+  "staff_role",
   "medical_coding_section",
   "medical_code_standard",
   "medical_code",
@@ -183,10 +186,31 @@
    "fieldtype": "Link",
    "label": "Medical Code",
    "options": "Medical Code"
+  },
+  {
+   "fetch_from": "healthcare_service_order_category.patient_care_type",
+   "fieldname": "patient_care_type",
+   "fieldtype": "Link",
+   "label": "Patient Care Type",
+   "options": "Patient Care Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "staff_role",
+   "fieldtype": "Link",
+   "label": "Staff Role",
+   "options": "Role"
+  },
+  {
+   "fieldname": "healthcare_service_order_category",
+   "fieldtype": "Link",
+   "label": "Healthcare Service Order Category",
+   "options": "Healthcare Service Order Category",
+   "reqd": 1
   }
  ],
  "links": [],
- "modified": "2020-06-29 14:18:50.669951",
+ "modified": "2020-09-18 18:32:35.726527",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Therapy Type",

@@ -20,6 +20,10 @@
   "rate",
   "medical_department",
   "modality_type",
+  "healthcare_service_unit_type",
+  "healthcare_service_order_category",
+  "patient_care_type",
+  "staff_role",
   "accession_number",
   "medical_coding_section",
   "medical_code_standard",
@@ -136,11 +140,37 @@
    "fieldname": "medical_coding_section",
    "fieldtype": "Section Break",
    "label": "Medical Coding"
+  },
+  {
+   "fieldname": "healthcare_service_order_category",
+   "fieldtype": "Link",
+   "label": "Healthcare Service Order Category",
+   "options": "Healthcare Service Order Category",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "healthcare_service_order_category.patient_care_type",
+   "fieldname": "patient_care_type",
+   "fieldtype": "Link",
+   "label": "Patient Care Type",
+   "options": "Patient Care Type"
+  },
+  {
+   "fieldname": "staff_role",
+   "fieldtype": "Link",
+   "label": "Staff Role",
+   "options": "Role"
+  },
+  {
+   "fieldname": "healthcare_service_unit_type",
+   "fieldtype": "Link",
+   "label": "Healthcare Service Unit Type",
+   "options": "Healthcare Service Unit Type"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-09-18 15:54:37.919128",
+ "modified": "2020-09-18 18:38:33.328373",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Radiology Examination Template",
