@@ -1,0 +1,166 @@
+{
+ "actions": [],
+ "autoname": "field:procedure_name",
+ "creation": "2020-08-07 12:25:32.803368",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_1",
+  "disabled",
+  "section_break_3",
+  "procedure_name",
+  "abbr",
+  "item_code",
+  "item",
+  "item_group",
+  "description",
+  "column_break_9",
+  "is_billable",
+  "rate",
+  "medical_department",
+  "modality_type",
+  "accession_number",
+  "medical_coding_section",
+  "medical_code_standard",
+  "medical_code"
+ ],
+ "fields": [
+  {
+   "fieldname": "procedure_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Procedure Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "abbr",
+   "fieldtype": "Data",
+   "label": "Abbr",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Data",
+   "label": "Item Code",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "medical_department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Medical Department",
+   "options": "Medical Department",
+   "reqd": 1
+  },
+  {
+   "fieldname": "modality_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Modality Type",
+   "options": "Modality Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "medical_code_standard",
+   "fieldtype": "Link",
+   "label": "Medical Code Standard",
+   "options": "Medical Code Standard"
+  },
+  {
+   "depends_on": "medical_code_standard",
+   "fieldname": "medical_code",
+   "fieldtype": "Link",
+   "label": "Medical Code",
+   "options": "Medical Code"
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_billable",
+   "fieldtype": "Check",
+   "label": "Is Billable"
+  },
+  {
+   "depends_on": "eval:doc.is_billable == 1",
+   "fieldname": "rate",
+   "fieldtype": "Float",
+   "label": "Rate",
+   "mandatory_depends_on": "eval:doc.is_billable == 1"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "accession_number",
+   "fieldtype": "Data",
+   "label": "Accession Number"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "medical_coding_section",
+   "fieldtype": "Section Break",
+   "label": "Medical Coding"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2020-09-18 15:54:37.919128",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Radiology Examination Template",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
