@@ -32,17 +32,26 @@ frappe.ui.form.on('Patient', {
 			},'View');
 		}
 
-		if (!frm.doc.__islocal && (frappe.user.has_role('Nursing User') || frappe.user.has_role('Physician'))) {
-			frm.add_custom_button(__('Vital Signs'), function () {
-				create_vital_signs(frm);
-			}, 'Create');
-			frm.add_custom_button(__('Medical Record'), function () {
-				create_medical_record(frm);
-			}, 'Create');
-			frm.add_custom_button(__('Patient Encounter'), function () {
-				create_encounter(frm);
-			}, 'Create');
-			frm.toggle_enable(['customer'], 0); // ToDo, allow change only if no transactions booked or better, add merge option
+		frappe.dynamic_link = {doc: frm.doc, fieldname: 'name', doctype: 'Patient'}
+		frm.toggle_display(['address_html','contact_html'], !frm.doc.__islocal);
+
+		if (!frm.is_new()) {
+			if((frappe.user.has_role('Nursing User') || frappe.user.has_role('Physician'))){
+				frm.add_custom_button(__('Vital Signs'), function () {
+					create_vital_signs(frm);
+				}, 'Create');
+				frm.add_custom_button(__('Medical Record'), function () {
+					create_medical_record(frm);
+				}, 'Create');
+				frm.add_custom_button(__('Patient Encounter'), function () {
+					create_encounter(frm);
+				}, 'Create');
+				frm.toggle_enable(['customer'], 0); // ToDo, allow change only if no transactions booked or better, add merge option
+			}
+			frappe.contacts.render_address_and_contact(frm);
+		}
+		else{
+			frappe.contacts.clear_address_and_contact(frm);
 		}
 	},
 	onload: function (frm) {
