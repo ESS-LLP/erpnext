@@ -1,0 +1,487 @@
+{
+ "actions": [],
+ "allow_copy": 1,
+ "autoname": "naming_series:",
+ "beta": 1,
+ "creation": "2020-09-09 15:30:33.141582",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "company",
+  "healthcare_service_order_category",
+  "patient_care_type",
+  "status",
+  "column_break_4",
+  "order_date",
+  "ordered_by",
+  "order_group",
+  "replaces",
+  "patient_demographics_section",
+  "patient",
+  "patient_name",
+  "gender",
+  "birth_date",
+  "age",
+  "column_break_16",
+  "blodd_group",
+  "marital_status",
+  "occupation",
+  "email",
+  "mobile",
+  "order_section",
+  "order_doctype",
+  "order",
+  "billing_item",
+  "invoiced",
+  "order_description",
+  "column_break_14",
+  "intent",
+  "priority",
+  "reason",
+  "reason_reference_doctype",
+  "reason_reference",
+  "order_detail_section",
+  "quantity",
+  "sequence",
+  "expected_date",
+  "as_needed",
+  "occurrence",
+  "occurence_period",
+  "body_part",
+  "column_break_91",
+  "staff_role",
+  "healthcare_service_unit_type",
+  "note",
+  "patient_instruction",
+  "medical_code_section",
+  "medical_code_standard",
+  "column_break_24",
+  "medical_code",
+  "origin_section",
+  "order_reference_doctype",
+  "column_break_9",
+  "order_reference_name"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "HSO-"
+  },
+  {
+   "fieldname": "ordered_by",
+   "fieldtype": "Link",
+   "label": "Ordered by (Practitioner)",
+   "options": "Healthcare Practitioner"
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "label": "Sequence in Order Group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "order_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Order Date",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "origin_section",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "Order Group Reference",
+   "read_only": 1
+  },
+  {
+   "fieldname": "order_group",
+   "fieldtype": "Link",
+   "label": "Order Group (Encounter)",
+   "options": "Patient Encounter"
+  },
+  {
+   "fieldname": "order_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Order Detail"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "order_doctype",
+   "fieldtype": "Link",
+   "label": "Order DocType",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "order_reference_doctype",
+   "fieldtype": "Link",
+   "label": "Order Reference DocType",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "order_reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Order Reference Name",
+   "options": "order_reference_doctype"
+  },
+  {
+   "fieldname": "column_break_91",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expected_date",
+   "fieldtype": "Date",
+   "label": "Expected Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "staff_role",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Staff Role",
+   "options": "Role",
+   "read_only": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "order",
+   "fieldtype": "Dynamic Link",
+   "label": "Order",
+   "options": "order_doctype"
+  },
+  {
+   "fetch_from": "healthcare_service_order_category.patient_care_type",
+   "fetch_if_empty": 1,
+   "fieldname": "patient_care_type",
+   "fieldtype": "Link",
+   "label": "Patient Care Type",
+   "options": "Patient Care Type"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nActive\nOn Hold\nRevoked\nCompleted\nReplaced\nError\nUnknown"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "intent",
+   "fieldtype": "Select",
+   "in_preview": 1,
+   "label": "Intent",
+   "options": "\nProposal\nPlan\nDirective\nOrder\nOriginal Order\nReflex Order\nFiller Order\nInstance Order\nOption"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "priority",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Priority",
+   "options": "Healthcare Service Order Priority"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "medical_code_section",
+   "fieldtype": "Section Break",
+   "label": "Medical Code"
+  },
+  {
+   "fieldname": "medical_code_standard",
+   "fieldtype": "Link",
+   "label": "Medical Code Standard",
+   "options": "Medical Code Standard"
+  },
+  {
+   "fieldname": "column_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "medical_code",
+   "fieldtype": "Link",
+   "label": "Medical Code",
+   "options": "Medical Code"
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Int",
+   "label": "Quantity",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "as_needed",
+   "fieldtype": "Check",
+   "label": "As Needed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "occurrence",
+   "fieldtype": "Datetime",
+   "label": "Occurrence",
+   "read_only": 1
+  },
+  {
+   "fieldname": "occurence_period",
+   "fieldtype": "Duration",
+   "label": "Occurence Period",
+   "read_only": 1
+  },
+  {
+   "fieldname": "healthcare_service_unit_type",
+   "fieldtype": "Link",
+   "label": "Healthcare Service Unit Type",
+   "options": "Healthcare Service Unit Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Link",
+   "label": "Reason",
+   "options": "Healthcare Service Order Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "body_part",
+   "fieldtype": "Link",
+   "label": "Body Part",
+   "options": "Body Part",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reason_reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reason Reference DocType",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reason_reference",
+   "fieldtype": "Dynamic Link",
+   "label": "Reason Reference",
+   "options": "reason_reference_doctype",
+   "read_only": 1
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "patient_instruction",
+   "fieldtype": "Small Text",
+   "label": "Patient Instruction",
+   "read_only": 1
+  },
+  {
+   "fieldname": "order_section",
+   "fieldtype": "Section Break",
+   "label": "Order and Reason"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "order_description",
+   "fieldtype": "Small Text",
+   "label": "Order Description"
+  },
+  {
+   "fieldname": "replaces",
+   "fieldtype": "Link",
+   "label": "Replaces",
+   "options": "Healthcare Service Order",
+   "read_only": 1
+  },
+  {
+   "fieldname": "patient",
+   "fieldtype": "Link",
+   "label": "Patient",
+   "options": "Patient"
+  },
+  {
+   "fetch_from": "patient.patient_name",
+   "fieldname": "patient_name",
+   "fieldtype": "Data",
+   "label": "Patient Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "patient.sex",
+   "fieldname": "gender",
+   "fieldtype": "Link",
+   "label": "Gender",
+   "options": "Gender",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "patient.dob",
+   "fieldname": "birth_date",
+   "fieldtype": "Date",
+   "label": "Birth Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "age",
+   "fieldtype": "Int",
+   "label": "Age",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "patient.blood_group",
+   "fieldname": "blodd_group",
+   "fieldtype": "Select",
+   "label": "Blodd Group",
+   "options": "\nA Positive\nA Negative\nAB Positive\nAB Negative\nB Positive\nB Negative\nO Positive\nO Negative",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "patient.marital_status",
+   "fieldname": "marital_status",
+   "fieldtype": "Select",
+   "label": "Marital Status",
+   "options": "\nSingle\nMarried\nDivorced\nWidow",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "patient.occupation",
+   "fieldname": "occupation",
+   "fieldtype": "Data",
+   "label": "Occupation",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "patient.email",
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "patient.mobile",
+   "fieldname": "mobile",
+   "fieldtype": "Data",
+   "label": "Mobile",
+   "options": "Phone",
+   "read_only": 1
+  },
+  {
+   "fieldname": "patient_demographics_section",
+   "fieldtype": "Section Break",
+   "label": "Patient Demographics"
+  },
+  {
+   "fetch_from": "order.item",
+   "fieldname": "billing_item",
+   "fieldtype": "Link",
+   "label": "Billing Item",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "healthcare_service_order_category",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Healthcare Service Order Category",
+   "options": "Healthcare Service Order Category",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "invoiced",
+   "fieldtype": "Check",
+   "label": "Invoiced",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2020-09-18 11:18:02.389596",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Healthcare Service Order",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Physician",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Nursing User",
+   "share": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Healthcare Administrator",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "restrict_to_domain": "Healthcare",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "order",
+ "track_changes": 1,
+ "track_seen": 1
+}
