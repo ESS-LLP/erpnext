@@ -29,7 +29,12 @@
   "report_preference",
   "mobile",
   "email",
+  "invite_user",
   "phone",
+  "address_contacts",
+  "address_html",
+  "column_break_22",
+  "contact_html",
   "customer_details_section",
   "customer",
   "customer_group",
@@ -389,13 +394,43 @@
    "fieldtype": "Link",
    "label": "Print Language",
    "options": "Language"
+  },
+  {
+   "depends_on": "eval:!doc.__islocal",
+   "fieldname": "address_contacts",
+   "fieldtype": "Section Break",
+   "label": "Address and Contact",
+   "options": "fa fa-map-marker"
+  },
+  {
+   "fieldname": "address_html",
+   "fieldtype": "HTML",
+   "label": "Address HTML",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contact_html",
+   "fieldtype": "HTML",
+   "label": "Contact HTML",
+   "read_only": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "default": "1",
+   "fieldname": "invite_user",
+   "fieldtype": "Check",
+   "label": "Invite As  User"
   }
  ],
  "icon": "fa fa-user",
  "image_field": "image",
  "links": [],
  "max_attachments": 50,
- "modified": "2020-04-25 17:24:32.146415",
+ "modified": "2020-08-13 17:18:46.953974",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient",
