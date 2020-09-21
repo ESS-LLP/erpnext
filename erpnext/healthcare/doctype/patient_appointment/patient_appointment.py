@@ -101,6 +101,8 @@ class PatientAppointment(Document):
 				comments = frappe.db.get_value('Procedure Prescription', self.procedure_prescription, 'comments')
 				if comments:
 					frappe.db.set_value('Patient Appointment', self.name, 'notes', comments)
+		elif self.radiology_procedure_prescription:
+			frappe.db.set_value("Radiology Procedure Prescription", self.radiology_procedure_prescription, "appointment_booked", True)
 
 	def update_fee_validity(self):
 		fee_validity = manage_fee_validity(self)
