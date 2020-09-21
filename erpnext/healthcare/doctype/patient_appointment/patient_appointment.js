@@ -2,14 +2,14 @@
 // For license information, please see license.txt
 frappe.provide('erpnext.queries');
 frappe.ui.form.on('Patient Appointment', {
-	setup: function(frm) {
+	setup: function (frm) {
 		frm.custom_make_buttons = {
 			'Vital Signs': 'Vital Signs',
 			'Patient Encounter': 'Patient Encounter'
 		};
 	},
 
-	onload: function(frm) {
+	onload: function (frm) {
 		if (frm.is_new()) {
 			frm.set_value('appointment_time', null);
 			frm.disable_save();
@@ -19,25 +19,32 @@ frappe.ui.form.on('Patient Appointment', {
 		}
 	},
 
-	refresh: function(frm) {
+	refresh: function (frm) {
 		frm.set_query('patient', function () {
 			return {
-				filters: {'status': 'Active'}
+				filters: { 'status': 'Active' }
 			};
 		});
-		frm.set_query('practitioner', function() {
+		frm.set_query('practitioner', function () {
 			return {
 				filters: {
 					'department': frm.doc.department
 				}
 			};
 		});
-		frm.set_query('service_unit', function(){
+		frm.set_query('service_unit', function () {
 			return {
 				filters: {
 					'is_group': false,
 					'allow_appointments': true,
-					'company': frm.doc.company
+					'company': frm.doc.company,
+				}
+			};
+		});
+		frm.set_query('radiology_examination_template', function () {
+			return {
+				filters: {
+					'modality_type': frm.doc.modality_type || ''
 				}
 			};
 		});
@@ -60,7 +67,7 @@ frappe.ui.form.on('Patient Appointment', {
 		});
 
 		if (frm.is_new()) {
-			frm.page.set_primary_action(__('Check Availability'), function() {
+			frm.page.set_primary_action(__('Check Availability'), function () {
 				if (!frm.doc.patient) {
 					frappe.msgprint({
 						title: __('Not Allowed'),
@@ -70,8 +77,8 @@ frappe.ui.form.on('Patient Appointment', {
 				} else {
 					frappe.call({
 						method: 'erpnext.healthcare.doctype.patient_appointment.patient_appointment.check_payment_fields_reqd',
-						args: {'patient': frm.doc.patient},
-						callback: function(data) {
+						args: { 'patient': frm.doc.patient },
+						callback: function (data) {
 							if (data.message == true) {
 								if (frm.doc.mode_of_payment && frm.doc.paid_amount) {
 									check_and_set_availability(frm);
@@ -102,36 +109,40 @@ frappe.ui.form.on('Patient Appointment', {
 		}
 
 		if (frm.doc.patient) {
-			frm.add_custom_button(__('Patient History'), function() {
-				frappe.route_options = {'patient': frm.doc.patient};
+			frm.add_custom_button(__('Patient History'), function () {
+				frappe.route_options = { 'patient': frm.doc.patient };
 				frappe.set_route('patient_history');
 			}, __('View'));
 		}
 
 		if (frm.doc.status == 'Open' || (frm.doc.status == 'Scheduled' && !frm.doc.__islocal)) {
-			frm.add_custom_button(__('Cancel'), function() {
+			frm.add_custom_button(__('Cancel'), function () {
 				update_status(frm, 'Cancelled');
 			});
-			frm.add_custom_button(__('Reschedule'), function() {
+			frm.add_custom_button(__('Reschedule'), function () {
 				check_and_set_availability(frm);
 			});
 
 			if (frm.doc.procedure_template) {
-				frm.add_custom_button(__('Clinical Procedure'), function(){
+				frm.add_custom_button(__('Clinical Procedure'), function () {
 					frappe.model.open_mapped_doc({
 						method: 'erpnext.healthcare.doctype.clinical_procedure.clinical_procedure.make_procedure',
 						frm: frm,
 					});
 				}, __('Create'));
 			} else if (frm.doc.therapy_type) {
-				frm.add_custom_button(__('Therapy Session'),function(){
+				frm.add_custom_button(__('Therapy Session'), function () {
 					frappe.model.open_mapped_doc({
 						method: 'erpnext.healthcare.doctype.therapy_session.therapy_session.create_therapy_session',
 						frm: frm,
 					})
 				}, 'Create');
+			} else if (frm.doc.radiology_examination_template) {
+				frm.add_custom_button(__('Radiology Examination'), function () {
+					create_radiology_exam(frm);
+				}, 'Create');
 			} else {
-				frm.add_custom_button(__('Patient Encounter'), function() {
+				frm.add_custom_button(__('Patient Encounter'), function () {
 					frappe.model.open_mapped_doc({
 						method: 'erpnext.healthcare.doctype.patient_appointment.patient_appointment.make_encounter',
 						frm: frm,
@@ -139,13 +150,13 @@ frappe.ui.form.on('Patient Appointment', {
 				}, __('Create'));
 			}
 
-			frm.add_custom_button(__('Vital Signs'), function() {
+			frm.add_custom_button(__('Vital Signs'), function () {
 				create_vital_signs(frm);
 			}, __('Create'));
 		}
 	},
 
-	patient: function(frm) {
+	patient: function (frm) {
 		if (frm.doc.patient) {
 			frm.trigger('toggle_payment_fields');
 		} else {
@@ -156,7 +167,7 @@ frappe.ui.form.on('Patient Appointment', {
 		}
 	},
 
-	therapy_type: function(frm) {
+	therapy_type: function (frm) {
 		if (frm.doc.therapy_type) {
 			frappe.db.get_value('Therapy Type', frm.doc.therapy_type, 'default_duration', (r) => {
 				if (r.default_duration) {
@@ -166,15 +177,34 @@ frappe.ui.form.on('Patient Appointment', {
 		}
 	},
 
-	get_procedure_from_encounter: function(frm) {
+	service_unit: function (frm) {
+		if (!frm.doc.service_unit) {
+			frm.set_value('modality_type', '');
+		}
+	},
+
+	get_procedure_from_encounter: function (frm) {
 		get_prescribed_procedure(frm);
 	},
 
-	toggle_payment_fields: function(frm) {
+	get_ordered_radiology_procedures: function (frm) {
+		get_radiology_prescribed(frm);
+	},
+
+	radiology_examination_template: function (frm) {
+		if (frm.doc.radiology_examination_template) {
+			frm.set_df_property('service_unit', 'reqd', true);
+		}
+		else {
+			frm.set_df_property('service_unit', 'reqd', false);
+		}
+	},
+
+	toggle_payment_fields: function (frm) {
 		frappe.call({
 			method: 'erpnext.healthcare.doctype.patient_appointment.patient_appointment.check_payment_fields_reqd',
-			args: {'patient': frm.doc.patient},
-			callback: function(data) {
+			args: { 'patient': frm.doc.patient },
+			callback: function (data) {
 				if (data.message.fee_validity) {
 					// if fee validity exists and automated appointment invoicing is enabled,
 					// show payment fields as non-mandatory
@@ -187,18 +217,18 @@ frappe.ui.form.on('Patient Appointment', {
 					frm.toggle_display('mode_of_payment', data.message ? 1 : 0);
 					frm.toggle_display('paid_amount', data.message ? 1 : 0);
 					frm.toggle_reqd('mode_of_payment', data.message ? 1 : 0);
-					frm.toggle_reqd('paid_amount', data.message ? 1 :0);
+					frm.toggle_reqd('paid_amount', data.message ? 1 : 0);
 				}
 			}
 		});
 	},
 
-	get_prescribed_therapies: function(frm) {
+	get_prescribed_therapies: function (frm) {
 		if (frm.doc.patient) {
 			frappe.call({
 				method: "erpnext.healthcare.doctype.patient_appointment.patient_appointment.get_prescribed_therapies",
-				args: {patient: frm.doc.patient},
-				callback: function(r) {
+				args: { patient: frm.doc.patient },
+				callback: function (r) {
 					if (r.message) {
 						show_therapy_types(frm, r.message);
 					} else {
@@ -220,7 +250,7 @@ frappe.ui.form.on('Patient Appointment', {
 	}
 });
 
-let check_and_set_availability = function(frm) {
+let check_and_set_availability = function (frm) {
 	let selected_slot = null;
 	let service_unit = null;
 	let duration = null;
@@ -240,17 +270,17 @@ let check_and_set_availability = function(frm) {
 		let d = new frappe.ui.Dialog({
 			title: __('Available slots'),
 			fields: [
-				{ fieldtype: 'Link', options: 'Medical Department', reqd: 1, fieldname: 'department', label: 'Medical Department'},
-				{ fieldtype: 'Column Break'},
-				{ fieldtype: 'Link', options: 'Healthcare Practitioner', reqd: 1, fieldname: 'practitioner', label: 'Healthcare Practitioner'},
-				{ fieldtype: 'Column Break'},
-				{ fieldtype: 'Date', reqd: 1, fieldname: 'appointment_date', label: 'Date'},
-				{ fieldtype: 'Section Break'},
-				{ fieldtype: 'HTML', fieldname: 'available_slots'}
+				{ fieldtype: 'Link', options: 'Medical Department', reqd: 1, fieldname: 'department', label: 'Medical Department' },
+				{ fieldtype: 'Column Break' },
+				{ fieldtype: 'Link', options: 'Healthcare Practitioner', reqd: 1, fieldname: 'practitioner', label: 'Healthcare Practitioner' },
+				{ fieldtype: 'Column Break' },
+				{ fieldtype: 'Date', reqd: 1, fieldname: 'appointment_date', label: 'Date' },
+				{ fieldtype: 'Section Break' },
+				{ fieldtype: 'HTML', fieldname: 'available_slots' }
 
 			],
 			primary_action_label: __('Book'),
-			primary_action: function() {
+			primary_action: function () {
 				frm.set_value('appointment_time', selected_slot);
 				if (!frm.doc.duration) {
 					frm.set_value('duration', duration);
@@ -280,7 +310,7 @@ let check_and_set_availability = function(frm) {
 			});
 			let department = d.get_value('department');
 			if (department) {
-				d.fields_dict.practitioner.get_query = function() {
+				d.fields_dict.practitioner.get_query = function () {
 					return {
 						filters: {
 							'department': department
@@ -334,9 +364,9 @@ let check_and_set_availability = function(frm) {
 								let start_str = slot.from_time;
 								let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
 								let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
-								let interval = (slot_to_time - slot_start_time)/60000 | 0;
+								let interval = (slot_to_time - slot_start_time) / 60000 | 0;
 								// iterate in all booked appointments, update the start time and duration
-								slot_details[i].appointments.forEach(function(booked) {
+								slot_details[i].appointments.forEach(function (booked) {
 									let booked_moment = moment(booked.appointment_time, 'HH:mm:ss');
 									let end_time = booked_moment.clone().add(booked.duration, 'minutes');
 									// Deal with 0 duration appointments
@@ -412,12 +442,12 @@ let check_and_set_availability = function(frm) {
 	}
 };
 
-let get_prescribed_procedure = function(frm) {
+let get_prescribed_procedure = function (frm) {
 	if (frm.doc.patient) {
 		frappe.call({
 			method: 'erpnext.healthcare.doctype.patient_appointment.patient_appointment.get_procedure_prescribed',
-			args: {patient: frm.doc.patient},
-			callback: function(r) {
+			args: { patient: frm.doc.patient },
+			callback: function (r) {
 				if (r.message && r.message.length) {
 					show_procedure_templates(frm, r.message);
 				} else {
@@ -436,7 +466,7 @@ let get_prescribed_procedure = function(frm) {
 	}
 };
 
-let show_procedure_templates = function(frm, result){
+let show_procedure_templates = function (frm, result) {
 	let d = new frappe.ui.Dialog({
 		title: __('Prescribed Procedures'),
 		fields: [
@@ -447,7 +477,7 @@ let show_procedure_templates = function(frm, result){
 	});
 	let html_field = d.fields_dict.procedure_template.$wrapper;
 	html_field.empty();
-	$.each(result, function(x, y) {
+	$.each(result, function (x, y) {
 		let row = $(repl('<div class="col-xs-12" style="padding-top:12px; text-align:center;" >\
 		<div class="col-xs-5"> %(encounter)s <br> %(consulting_practitioner)s <br> %(encounter_date)s </div>\
 		<div class="col-xs-5"> %(procedure_template)s <br>%(practitioner)s  <br> %(date)s</div>\
@@ -486,12 +516,12 @@ let show_procedure_templates = function(frm, result){
 	});
 	if (!result) {
 		let msg = __('There are no procedure prescribed for ') + frm.doc.patient;
-		$(repl('<div class="col-xs-12" style="padding-top:20px;" >%(msg)s</div></div>', {msg: msg})).appendTo(html_field);
+		$(repl('<div class="col-xs-12" style="padding-top:20px;" >%(msg)s</div></div>', { msg: msg })).appendTo(html_field);
 	}
 	d.show();
 };
 
-let show_therapy_types = function(frm, result) {
+let show_therapy_types = function (frm, result) {
 	var d = new frappe.ui.Dialog({
 		title: __('Prescribed Therapies'),
 		fields: [
@@ -501,21 +531,20 @@ let show_therapy_types = function(frm, result) {
 		]
 	});
 	var html_field = d.fields_dict.therapy_type.$wrapper;
-	$.each(result, function(x, y){
+	$.each(result, function (x, y) {
 		var row = $(repl('<div class="col-xs-12" style="padding-top:12px; text-align:center;" >\
 		<div class="col-xs-5"> %(encounter)s <br> %(practitioner)s <br> %(date)s </div>\
 		<div class="col-xs-5"> %(therapy)s </div>\
 		<div class="col-xs-2">\
 		<a data-therapy="%(therapy)s" data-therapy-plan="%(therapy_plan)s" data-name="%(name)s"\
 		data-encounter="%(encounter)s" data-practitioner="%(practitioner)s"\
-
 		data-date="%(date)s"  data-department="%(department)s" data-source="%(source)s"\
 		data-referring-practitioner="%(referring_practitioner)s"> <button class="btn btn-default btn-xs">Add\
 		</button></a></div></div><div class="col-xs-12"><hr/><div/>', {therapy:y[0],
 		name: y[1], encounter:y[2], practitioner:y[3], date:y[4],
 		department:y[6]? y[6]:'', therapy_plan:y[5],   source: y[7]? y[7]:'', referring_practitioner: y[8]? y[8]:''})).appendTo(html_field);
 
-		row.find("a").click(function() {
+		row.find("a").click(function () {
 			frm.doc.therapy_type = $(this).attr("data-therapy");
 			frm.doc.practitioner = $(this).attr("data-practitioner");
 			frm.doc.department = $(this).attr("data-department");
@@ -545,7 +574,7 @@ let show_therapy_types = function(frm, result) {
 	d.show();
 };
 
-let create_vital_signs = function(frm) {
+let create_vital_signs = function (frm) {
 	if (!frm.doc.patient) {
 		frappe.throw(__('Please select patient'));
 	}
@@ -557,14 +586,28 @@ let create_vital_signs = function(frm) {
 	frappe.new_doc('Vital Signs');
 };
 
-let update_status = function(frm, status){
+let create_radiology_exam = function (frm) {
+	var doc = frm.doc;
+	frappe.call({
+		method: "erpnext.healthcare.doctype.radiology_examination.radiology_examination.create_radiology_examination",
+		args: { appointment: doc.name },
+		callback: function (data) {
+			if (!data.exc) {
+				var doclist = frappe.model.sync(data.message);
+				frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+			}
+		}
+	});
+};
+
+let update_status = function (frm, status) {
 	let doc = frm.doc;
 	frappe.confirm(__('Are you sure you want to cancel this appointment?'),
-		function() {
+		function () {
 			frappe.call({
 				method: 'erpnext.healthcare.doctype.patient_appointment.patient_appointment.update_status',
-				args: {appointment_id: doc.name, status:status},
-				callback: function(data) {
+				args: { appointment_id: doc.name, status: status },
+				callback: function (data) {
 					if (!data.exc) {
 						frm.reload_doc();
 					}
@@ -574,7 +617,7 @@ let update_status = function(frm, status){
 	);
 };
 
-frappe.ui.form.on('Patient Appointment', 'practitioner', function(frm) {
+frappe.ui.form.on('Patient Appointment', 'practitioner', function (frm) {
 	if (frm.doc.practitioner) {
 		frappe.call({
 			method: 'frappe.client.get',
@@ -591,7 +634,7 @@ frappe.ui.form.on('Patient Appointment', 'practitioner', function(frm) {
 	}
 });
 
-frappe.ui.form.on('Patient Appointment', 'patient', function(frm) {
+frappe.ui.form.on('Patient Appointment', 'patient', function (frm) {
 	if (frm.doc.patient) {
 		frappe.call({
 			method: 'frappe.client.get',
@@ -604,13 +647,13 @@ frappe.ui.form.on('Patient Appointment', 'patient', function(frm) {
 				if (data.message.dob) {
 					age = calculate_age(data.message.dob);
 				}
-				frappe.model.set_value(frm.doctype,frm.docname, 'patient_age', age);
+				frappe.model.set_value(frm.doctype, frm.docname, 'patient_age', age);
 			}
 		});
 	}
 });
 
-frappe.ui.form.on('Patient Appointment', 'appointment_type', function(frm) {
+frappe.ui.form.on('Patient Appointment', 'appointment_type', function (frm) {
 	if (frm.doc.appointment_type) {
 		frappe.call({
 			method: 'frappe.client.get',
@@ -618,19 +661,94 @@ frappe.ui.form.on('Patient Appointment', 'appointment_type', function(frm) {
 				doctype: 'Appointment Type',
 				name: frm.doc.appointment_type
 			},
-			callback: function(data) {
-				frappe.model.set_value(frm.doctype,frm.docname, 'duration',data.message.default_duration);
+			callback: function (data) {
+				frappe.model.set_value(frm.doctype, frm.docname, 'duration', data.message.default_duration);
 			}
 		});
 	}
 });
 
-let calculate_age = function(birth) {
+let calculate_age = function (birth) {
 	let ageMS = Date.parse(Date()) - Date.parse(birth);
 	let age = new Date();
 	age.setTime(ageMS);
-	let years =  age.getFullYear() - 1970;
-	return  years + ' Year(s) ' + age.getMonth() + ' Month(s) ' + age.getDate() + ' Day(s)';
+	let years = age.getFullYear() - 1970;
+	return years + ' Year(s) ' + age.getMonth() + ' Month(s) ' + age.getDate() + ' Day(s)';
+};
+
+let get_radiology_prescribed = function (frm) {
+	if (frm.doc.patient) {
+		frappe.call({
+			method: 'erpnext.healthcare.doctype.radiology_examination.radiology_examination.get_radiology_procedure_prescribed',
+			args: { patient: frm.doc.patient },
+			callback: function (r) {
+				show_radiology_procedure(frm, r.message);
+			}
+		});
+	}
+	else {
+		frappe.msgprint('Please select Patient to get prescribed procedure');
+	}
+};
+
+let show_radiology_procedure = function (frm, result) {
+	var d = new frappe.ui.Dialog({
+		title: __('Radiology Procedure Prescriptions'),
+		fields: [
+			{
+				fieldtype: 'HTML', fieldname: 'radiology_prescribed'
+			}
+		]
+	});
+	var html_field = d.fields_dict.radiology_prescribed.$wrapper;
+	html_field.empty();
+	$.each(result, function (x, y) {
+		var row = $(repl('<div class="col-xs-12" style="padding-top:12px; text-align:center;" >\
+		<div class="col-xs-2"> %(radiology_procedure)s </div>\
+		<div class="col-xs-2"> %(encounter)s </div>\
+		<div class="col-xs-3"> %(date)s </div>\
+		<div class="col-xs-1">\
+		<a data-name="%(name)s" data-radiology-procedure="%(radiology_procedure)s"\
+		data-encounter="%(encounter)s"\
+		data-invoiced="%(invoiced)s" data-source="%(source)s"\
+		data-referring-practitioner="%(referring_practitioner)s" data-comments="%(comments)s" href="#">\
+		<button class="btn btn-default btn-xs">Get Radiology\
+		</button></a></div></div>', { name: y[0], radiology_procedure: y[1], encounter: y[2], invoiced: y[3], date: y[4],
+			source:y[5], referring_practitioner:y[6],comments: y[9]})).appendTo(html_field);
+		row.find('a').click(function () {
+			frm.set_value('radiology_examination_template', $(this).attr('data-radiology-procedure'));
+			frm.set_value('radiology_procedure_prescription', $(this).attr('data-name'));
+			// frm.set_df_property('radiology_procedure', 'read_only', 1);
+			frm.set_df_property('patient', 'read_only', 1);
+			frm.doc.invoiced = 0;
+			if ($(this).attr('data-invoiced') == 1) {
+				frm.doc.invoiced = 1;
+			}
+			if ($(this).attr('data-comments')) {
+				frm.set_value('notes', $(this).attr('data-comments'));
+			}
+			frm.set_value('source', $(this).attr('data-source'));
+			frm.set_value('referring_practitioner', $(this).attr('data-referring-practitioner'));
+			frappe.db.get_value('Radiology Examination Template', frm.doc.radiology_examination_template, 'modality_type', function (r) {
+				if (r && r.modality_type) {
+					frm.set_value('modality_type', r.modality_type);
+				}
+				else {
+					frm.set_value('modality_type', '');
+				}
+			});
+			refresh_field('radiology_procedure_prescription');
+			refresh_field('invoiced');
+			refresh_field('radiology_examination_template');
+			d.hide();
+			return false;
+		});
+	});
+	if (result == '') {
+		var msg = 'There are no Radiology prescribed for ' + frm.doc.patient;
+		$(repl('<div class="col-xs-12" style="padding-top:20px;" >%(msg)s</div></div>', { msg: msg })).appendTo(html_field);
+	}
+	d.show();
 };
 
 let set_source_referring_practitioner = function (frm) {

@@ -625,6 +625,7 @@ def render_doc_as_html(doctype, docname, exclude_fields = []):
 
 	return {'html': doc_html}
 
+
 def update_address_link(address, method):
 	# Healthcare Service Invoice.
 	domain_settings = frappe.get_doc('Domain Settings')
@@ -640,3 +641,128 @@ def update_address_link(address, method):
 			if not address.has_link('Customer', customer):
 				address.append('links', dict(link_doctype = 'Customer', link_name = customer))
 				address.save()
+
+def create_item_from_doc(doc, item_name):
+	if(doc.is_billable == 1):
+		disabled = 0
+	else:
+		disabled = 1
+	#insert item
+	item =  frappe.get_doc({
+	'doctype': 'Item',
+	'item_code': doc.item_code,
+	'item_name': item_name,
+	'item_group': doc.item_group,
+	'description': doc.description,
+	'is_sales_item': 1,
+	'is_service_item': 1,
+	'is_purchase_item': 0,
+	'is_stock_item': 0,
+	'show_in_website': 0,
+	'is_pro_applicable': 0,
+	'disabled': disabled,
+	'stock_uom': 'Unit'
+	}).insert(ignore_permissions=True)
+
+	#insert item price
+	#get item price list to insert item price
+	if(doc.rate != 0.0):
+		price_list_name = frappe.db.get_value('Selling Settings', None, 'selling_price_list')
+		if not price_list_name:
+			price_list_name = frappe.db.get_value('Price List', {'selling': 1})
+		if price_list_name:
+			if(doc.rate):
+				make_item_price(item.name, price_list_name, doc.rate)
+			else:
+				make_item_price(item.name, price_list_name, 0.0)
+	#Set item to the template
+	frappe.db.set_value(doc.doctype, doc.name, 'item', item.name)
+
+	doc.reload() #refresh the doc after insert.
+
+def make_item_price(item, price_list_name, item_price):
+	frappe.get_doc({
+		'doctype': 'Item Price',
+		'price_list': price_list_name,
+		'item_code': item,
+		'price_list_rate': item_price
+	}).insert(ignore_permissions=True)
+
+def update_item_from_doc(doc, item_name):
+	if(doc.is_billable == 1 and doc.item):
+		updating_item(doc, item_name)
+		if(doc.rate != 0.0):
+			updating_rate(doc, item_name)
+	elif(doc.is_billable == 0 and doc.item):
+		frappe.db.set_value('Item', doc.item, 'disabled', 1)
+
+def updating_item(doc, item_name):
+	frappe.db.sql(
+		'''
+			UPDATE
+				`tabItem`
+			SET
+				item_name=%s, item_group=%s, disabled=0,
+				description=%s, modified=NOW()
+			WHERE
+				 item_code=%s''',
+			(item_name, doc.item_group , doc.description, doc.item))
+
+def updating_rate(doc, item_name):
+	frappe.db.sql(
+		'''
+			UPDATE
+				`tabItem Price`
+			SET
+				item_name=%s, price_list_rate=%s, modified=NOW()
+			WHERE
+				item_code=%s''',
+			(item_name, doc.rate, doc.item))
+
+def on_trash_doc_having_item_reference(doc):
+	if(doc.item):
+		try:
+			frappe.delete_doc('Item',doc.item)
+		except Exception:
+			frappe.throw(_('Not permitted. Please disable the {0}').format(doc.doctype))
+
+@frappe.whitelist()
+def manage_healthcare_doc_cancel(doc):
+	if frappe.get_meta(doc.doctype).has_field("invoiced"):
+		if doc.invoiced and get_sales_invoice_for_healthcare_doc(doc.doctype, doc.name):
+			frappe.throw(_("Can not cancel invoiced {0}").format(doc.doctype))
+	check_if_healthcare_doc_is_linked(doc, "Cancel")
+	delete_medical_record(doc.doctype, doc.name)
+
+def check_if_healthcare_doc_is_linked(doc, method):
+	item_linked = {}
+	exclude_docs = ['Patient Medical Record']
+	from frappe.desk.form.linked_with import get_linked_doctypes, get_linked_docs
+	linked_docs = get_linked_docs(doc.doctype, doc.name, linkinfo=get_linked_doctypes(doc.doctype))
+	for linked_doc in linked_docs:
+		if linked_doc not in exclude_docs:
+			for linked_doc_obj in linked_docs[linked_doc]:
+				if method == "Cancel" and linked_doc_obj.docstatus < 2:
+					if linked_doc in item_linked:
+						item_linked[linked_doc].append(linked_doc_obj.name)
+					else:
+						item_linked[linked_doc] = [linked_doc_obj.name]
+	if item_linked:
+		msg = ""
+		for doctype in item_linked:
+			msg += doctype+"("
+			for docname in item_linked[doctype]:
+				msg += '<a href="#Form/{0}/{1}">{1}</a>, '.format(doctype, docname)
+			msg  = msg[:-2]
+			msg += "), "
+		msg  = msg[:-2]
+		frappe.throw(_('Cannot delete or cancel because {0} {1} is linked with {2}')
+			.format(doc.doctype, doc.name, msg), frappe.LinkExistsError)
+
+def delete_medical_record(reference_doc, reference_name):
+	query = """
+		delete from
+			`tabPatient Medical Record`
+		where
+			reference_doctype = %s and reference_name = %s"""
+	frappe.db.sql(query, (reference_doc, reference_name))

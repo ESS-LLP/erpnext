@@ -20,9 +20,14 @@
   "column_break_1",
   "company",
   "service_unit",
+  "modality_type",
+  "modality",
   "procedure_template",
   "get_procedure_from_encounter",
   "procedure_prescription",
+  "radiology_examination_template",
+  "radiology_procedure_prescription",
+  "get_ordered_radiology_procedures",
   "therapy_type",
   "get_prescribed_therapies",
   "therapy_plan",
@@ -104,7 +109,7 @@
    "search_index": 1
   },
   {
-   "depends_on": "eval:doc.patient;",
+   "depends_on": "eval:doc.patient && !doc.radiology_examination_template && !doc.modality_type",
    "fieldname": "procedure_template",
    "fieldtype": "Link",
    "label": "Clinical Procedure Template",
@@ -112,7 +117,7 @@
    "set_only_once": 1
   },
   {
-   "depends_on": "eval:doc.__islocal && doc.patient",
+   "depends_on": "eval:doc.__islocal && doc.patient && !doc.radiology_examination_template && !doc.modality_type",
    "fieldname": "get_procedure_from_encounter",
    "fieldtype": "Button",
    "label": "Get Prescribed Clinical Procedures"
@@ -287,7 +292,7 @@
    "report_hide": 1
   },
   {
-   "depends_on": "eval:doc.patient;",
+   "depends_on": "eval:doc.patient && !doc.modality_type && !doc.radiology_examination_template;",
    "fieldname": "therapy_type",
    "fieldtype": "Link",
    "label": "Therapy",
@@ -295,7 +300,7 @@
    "set_only_once": 1
   },
   {
-   "depends_on": "eval:doc.patient && doc.__islocal;",
+   "depends_on": "eval:doc.patient && doc.__islocal && !doc.modality_type && !doc.radiology_examination_template;",
    "fieldname": "get_prescribed_therapies",
    "fieldtype": "Button",
    "label": "Get Prescribed Therapies"
@@ -360,10 +365,50 @@
   {
    "fieldname": "column_break_30",
    "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval: !doc.procedure_template && doc.patient",
+   "fieldname": "radiology_examination_template",
+   "fieldtype": "Link",
+   "label": "Radiology Examination Template",
+   "options": "Radiology Examination Template"
+  },
+  {
+   "fieldname": "radiology_procedure_prescription",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Radiology Procedure Prescription",
+   "options": "Radiology Procedure Prescription",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: !doc.procedure_template && doc.__islocal && doc.patient",
+   "fieldname": "get_ordered_radiology_procedures",
+   "fieldtype": "Button",
+   "label": "Get Ordered Radiology Procedures"
+  },
+  {
+   "depends_on": "eval: !doc.procedure_template && doc.patient",
+   "fetch_from": "service_unit.modality_type",
+   "fetch_if_empty": 1,
+   "fieldname": "modality_type",
+   "fieldtype": "Link",
+   "label": "Modality Type",
+   "options": "Modality Type",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.modality_type && doc.patient",
+   "fetch_from": "service_unit.modality_name",
+   "fieldname": "modality",
+   "fieldtype": "Data",
+   "label": "Modality",
+   "read_only": 1
   }
  ],
+ "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-05-21 03:04:21.400893",
+ "modified": "2020-09-18 16:45:24.104559",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Appointment",
