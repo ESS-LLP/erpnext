@@ -24,6 +24,8 @@ def get_healthcare_services_to_invoice(patient, company):
 		items_to_invoice += get_clinical_procedures_to_invoice(patient, company)
 		items_to_invoice += get_inpatient_services_to_invoice(patient, company)
 		items_to_invoice += get_therapy_sessions_to_invoice(patient, company)
+		items_to_invoice += get_radiology_examinations_to_invoice(patient, company)
+		items_to_invoice += get_healthcare_service_orders_to_invoice(patient, company)
 
 		return items_to_invoice
 
@@ -118,28 +120,6 @@ def get_lab_tests_to_invoice(patient, company):
 				'service': item
 			})
 
-	lab_prescriptions = frappe.db.sql(
-		'''
-			SELECT
-				lp.name, lp.lab_test_code
-			FROM
-				`tabPatient Encounter` et, `tabLab Prescription` lp
-			WHERE
-				et.patient=%s
-				and lp.parent=et.name
-				and lp.lab_test_created=0
-				and lp.invoiced=0
-		''', (patient.name), as_dict=1)
-
-	for prescription in lab_prescriptions:
-		item, is_billable = frappe.get_cached_value('Lab Test Template', prescription.lab_test_code, ['item', 'is_billable'])
-		if prescription.lab_test_code and is_billable:
-			lab_tests_to_invoice.append({
-				'reference_type': 'Lab Prescription',
-				'reference_name': prescription.name,
-				'service': item
-			})
-
 	return lab_tests_to_invoice
 
 
@@ -176,29 +156,6 @@ def get_clinical_procedures_to_invoice(patient, company):
 				'service': service_item,
 				'rate': procedure.consumable_total_amount,
 				'description': procedure.consumption_details
-			})
-
-	procedure_prescriptions = frappe.db.sql(
-		'''
-			SELECT
-				pp.name, pp.procedure
-			FROM
-				`tabPatient Encounter` et, `tabProcedure Prescription` pp
-			WHERE
-				et.patient=%s
-				and pp.parent=et.name
-				and pp.procedure_created=0
-				and pp.invoiced=0
-				and pp.appointment_booked=0
-		''', (patient.name), as_dict=1)
-
-	for prescription in procedure_prescriptions:
-		item, is_billable = frappe.get_cached_value('Clinical Procedure Template', prescription.procedure, ['item', 'is_billable'])
-		if is_billable:
-			clinical_procedures_to_invoice.append({
-				'reference_type': 'Procedure Prescription',
-				'reference_name': prescription.name,
-				'service': item
 			})
 
 	return clinical_procedures_to_invoice
@@ -263,6 +220,41 @@ def get_therapy_sessions_to_invoice(patient, company):
 
 	return therapy_sessions_to_invoice
 
+def get_radiology_examinations_to_invoice(patient, company):
+	radiology_to_invoice = []
+	radiology_examinations = frappe.get_list(
+		'Radiology Examination',
+		fields=['name', 'radiology_examination_template'],
+		filters={'patient': patient.name, 'company': company, 'invoiced': False, 'docstatus': 1}
+	)
+	for radiology_examination in radiology_examinations:
+		item, is_billable = frappe.get_cached_value('Radiology Examination Template', radiology_examination.radiology_examination_template, ['item', 'is_billable'])
+		if is_billable:
+			radiology_to_invoice.append({
+				'reference_type': 'Radiology Examination',
+				'reference_name': radiology_examination.name,
+				'service': item
+			})
+
+	return radiology_to_invoice
+
+def get_healthcare_service_orders_to_invoice(patient, company):
+	service_order_to_invoice = []
+	service_orders = frappe.get_list(
+		'Healthcare Service Order',
+		fields=['name'],
+		filters={'patient': patient.name, 'company': company, 'is_invoiced': False}
+	)
+	for service_order in service_orders:
+		service_order_doc = frappe.get_doc('Healthcare Service Order', service_request_order.name)
+		item, is_billable = frappe.get_cached_value(service_order_doc.order_doctype, service_order_doc.order, ['item', 'is_billable'])
+		if is_billable:
+			service_request_order_to_invoice.append({
+				'reference_type': 'Healthcare Service Order',
+				'reference_name': service_request_order.name,
+				'service': item
+			})
+	return service_order_to_invoice
 
 def get_service_item_and_practitioner_charge(doc):
 	is_inpatient = doc.inpatient_record
@@ -769,7 +761,7 @@ def delete_medical_record(reference_doc, reference_name):
 # make_healthcare_service_order
 @frappe.whitelist()
 def make_healthcare_service_order(args):
-	healthcare_service_order = frappe.new_doc('Healthcare Service Order')
+	healthcare_service_order = frappe.new_doc('HealthcareService Order')
 	for key in args:
 		if key == 'order_date':
 			healthcare_service_order.set(key, getdate(args[key]))
