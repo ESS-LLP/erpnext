@@ -761,7 +761,7 @@ def delete_medical_record(reference_doc, reference_name):
 # make_healthcare_service_order
 @frappe.whitelist()
 def make_healthcare_service_order(args):
-	healthcare_service_order = frappe.new_doc('HealthcareService Order')
+	healthcare_service_order = frappe.new_doc('Healthcare Service Order')
 	for key in args:
 		if key == 'order_date':
 			healthcare_service_order.set(key, getdate(args[key]))
