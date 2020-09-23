@@ -1,0 +1,78 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:service_frequency_name",
+ "beta": 1,
+ "creation": "2020-09-23 12:01:21.905533",
+ "description": "Insurance Service Frequency",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "service_frequency_name",
+  "service_frequency_count",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "service_frequency_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Service Frequency Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "service_frequency_count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Service Frequency Count",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "links": [],
+ "modified": "2020-09-23 12:02:55.044452",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Insurance Service Frequency",
+ "name_case": "Title Case",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Healthcare Administrator",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "service_frequency_name",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "service_frequency_name",
+ "track_changes": 1,
+ "track_seen": 1
+}

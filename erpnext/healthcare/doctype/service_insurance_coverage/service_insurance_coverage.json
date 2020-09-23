@@ -1,0 +1,93 @@
+{
+ "actions": [],
+ "beta": 1,
+ "creation": "2020-09-23 12:27:28.841868",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "healthcare_service_group",
+  "healthcare_service_type",
+  "healthcare_service_templates",
+  "healthcare_service",
+  "insurance_coverage_slab",
+  "rate",
+  "coverage_percent",
+  "discount",
+  "insurance_service_frequency",
+  "allow_to_override"
+ ],
+ "fields": [
+  {
+   "fieldname": "healthcare_service_group",
+   "fieldtype": "Link",
+   "label": "Healthcare Service Group",
+   "options": "Healthcare Service Group"
+  },
+  {
+   "fieldname": "healthcare_service_type",
+   "fieldtype": "Select",
+   "label": " Healthcare Service Type",
+   "options": "Appointment\nEncounter\nClinical Procedure\nTherapy\nMedication\nLab Test\nRadiology"
+  },
+  {
+   "fieldname": "healthcare_service_templates",
+   "fieldtype": "Link",
+   "label": "Healthcare Service Templates",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "healthcare_service",
+   "fieldtype": "Dynamic Link",
+   "label": "Healthcare Service",
+   "options": "healthcare_service_templates"
+  },
+  {
+   "fieldname": "insurance_coverage_slab",
+   "fieldtype": "Link",
+   "label": "Insurance Coverage Slab",
+   "options": "Insurance Coverage Slab"
+  },
+  {
+   "fetch_from": "insurance_coverage_slab.percentage",
+   "fieldname": "coverage_percent",
+   "fieldtype": "Percent",
+   "label": "Coverage Percent"
+  },
+  {
+   "fieldname": "discount",
+   "fieldtype": "Currency",
+   "label": "Discount"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Rate"
+  },
+  {
+   "fieldname": "insurance_service_frequency",
+   "fieldtype": "Link",
+   "label": "Insurance Service Frequency",
+   "options": "Insurance Service Frequency"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_to_override",
+   "fieldtype": "Check",
+   "label": "Allow to Override"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2020-09-23 12:33:48.753125",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Service Insurance Coverage",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
