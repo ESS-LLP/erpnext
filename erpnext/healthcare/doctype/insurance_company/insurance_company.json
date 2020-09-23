@@ -1,0 +1,195 @@
+{
+ "actions": [],
+ "allow_copy": 1,
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "beta": 1,
+ "creation": "2020-09-23 08:41:45.503401",
+ "description": "Insurance Company",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "insurance_company_name",
+  "insurance_approval_required",
+  "column_break_4",
+  "company",
+  "customer",
+  "address_and_contacts_section",
+  "address_html",
+  "column_break_9",
+  "contact_html",
+  "website",
+  "accounts_section",
+  "billed_but_not_claimed_account",
+  "claimed_but_not_approved_account",
+  "column_break_15",
+  "approved_claim_receivable_account",
+  "rejected_claims_account"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "HIC-"
+  },
+  {
+   "fieldname": "insurance_company_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Insurance Company Name",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "insurance_approval_required",
+   "fieldtype": "Check",
+   "label": "Insurance Approval Required"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:!doc.__islocal",
+   "fieldname": "address_and_contacts_section",
+   "fieldtype": "Section Break",
+   "label": "Address and Contacts",
+   "options": "fa fa-map-marker"
+  },
+  {
+   "fieldname": "address_html",
+   "fieldtype": "HTML",
+   "label": "Address HTML",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contact_html",
+   "fieldtype": "HTML",
+   "label": "Contact HTML",
+   "read_only": 1
+  },
+  {
+   "fieldname": "website",
+   "fieldtype": "Data",
+   "label": "Website"
+  },
+  {
+   "fieldname": "accounts_section",
+   "fieldtype": "Section Break",
+   "label": "Accounts"
+  },
+  {
+   "fieldname": "billed_but_not_claimed_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Billed But Not Claimed Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "claimed_but_not_approved_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Claimed But Not Approved Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_15",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approved_claim_receivable_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Approved Claim Receivable Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rejected_claims_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Rejected Claims Account",
+   "options": "Account",
+   "reqd": 1
+  }
+ ],
+ "links": [],
+ "modified": "2020-09-23 08:47:48.301567",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Insurance Company",
+ "name_case": "Title Case",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Healthcare Administrator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "restrict_to_domain": "Healthcare",
+ "search_fields": "insurance_company_name,customer",
+ "sort_field": "modified",
+ "sort_order": "ASC",
+ "title_field": "insurance_company_name",
+ "track_changes": 1,
+ "track_seen": 1
+}

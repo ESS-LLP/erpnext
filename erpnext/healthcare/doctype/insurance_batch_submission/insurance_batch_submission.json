@@ -1,0 +1,157 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2020-09-23 12:15:28.765152",
+ "description": "Insurance Batch Submission",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "insurance_company",
+  "column_break_3",
+  "from_date",
+  "to_date",
+  "get_claims_for_submission",
+  "section_break_6",
+  "insurance_claim",
+  "section_break_8",
+  "total_claim_amount",
+  "total_approved_amount",
+  "column_break_11",
+  "total_rejected_amount",
+  "total_received_amount",
+  "amended_from",
+  "company"
+ ],
+ "fields": [
+  {
+   "fieldname": "insurance_company",
+   "fieldtype": "Link",
+   "label": "Insurance Company",
+   "options": "Insurance Company"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date"
+  },
+  {
+   "fieldname": "get_claims_for_submission",
+   "fieldtype": "Button",
+   "label": "Get Claims for Submission"
+  },
+  {
+   "fieldname": "total_claim_amount",
+   "fieldtype": "Currency",
+   "label": "Total Claim Amount"
+  },
+  {
+   "fieldname": "total_approved_amount",
+   "fieldtype": "Currency",
+   "label": "Total Approved Amount"
+  },
+  {
+   "fieldname": "total_rejected_amount",
+   "fieldtype": "Currency",
+   "label": "Total Rejected Amount"
+  },
+  {
+   "fieldname": "total_received_amount",
+   "fieldtype": "Currency",
+   "label": "Total Received Amount"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "IBS-.YYYY."
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "insurance_claim",
+   "fieldtype": "Table",
+   "label": "Insurance Claim",
+   "options": "Insurance Claim"
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Insurance Batch Submission",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Company",
+   "options": "Company"
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2020-09-23 16:39:56.662582",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Insurance Batch Submission",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Healthcare Administrator",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "restrict_to_domain": "Healthcare",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

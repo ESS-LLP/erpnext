@@ -1,0 +1,31 @@
+{
+ "actions": [],
+ "creation": "2020-09-23 16:35:56.733240",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "insurance_coverage_request"
+ ],
+ "fields": [
+  {
+   "fieldname": "insurance_coverage_request",
+   "fieldtype": "Link",
+   "label": "Insurance Coverage Request",
+   "options": "Insurance Coverage Request"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2020-09-23 16:35:56.733240",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Insurance Claim",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
