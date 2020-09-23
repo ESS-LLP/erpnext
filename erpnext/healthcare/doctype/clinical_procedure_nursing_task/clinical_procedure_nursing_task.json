@@ -1,0 +1,65 @@
+{
+ "actions": [],
+ "creation": "2020-09-09 18:39:06.224400",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "check_list",
+  "task",
+  "expected_time",
+  "nursing_task_reference",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "check_list",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Check List",
+   "options": "Clinical Procedure Check List",
+   "reqd": 1
+  },
+  {
+   "fieldname": "task",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Task",
+   "options": "\nBefore\nAfter",
+   "reqd": 1
+  },
+  {
+   "fieldname": "expected_time",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Time in Minutes(Before or After)",
+   "options": "10:00:00"
+  },
+  {
+   "fieldname": "nursing_task_reference",
+   "fieldtype": "Link",
+   "label": "Nursing Task Reference",
+   "options": "Healthcare Nursing Task",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "label": "Status",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2020-09-09 19:39:08.541780",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Clinical Procedure Nursing Task",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

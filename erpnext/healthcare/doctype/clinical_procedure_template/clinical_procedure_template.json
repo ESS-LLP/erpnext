@@ -11,13 +11,14 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "disabled",
+  "section_break_2",
   "template",
   "item",
   "item_code",
   "item_group",
   "description",
   "column_break_5",
-  "disabled",
   "is_billable",
   "rate",
   "healthcare_service_order_category",
@@ -31,6 +32,9 @@
   "consumables",
   "consume_stock",
   "items",
+  "sb_nursing_tasks",
+  "clinical_procedure_check_list_template",
+  "nursing_tasks",
   "sample_collection",
   "sample",
   "sample_uom",
@@ -225,10 +229,32 @@
    "label": "Healthcare Service Order Category",
    "options": "Healthcare Service Order Category",
    "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sb_nursing_tasks",
+   "fieldtype": "Section Break",
+   "label": "Nursing Tasks"
+  },
+  {
+   "fieldname": "clinical_procedure_check_list_template",
+   "fieldtype": "Link",
+   "label": "Clinical Procedure Check List Template",
+   "options": "Clinical Procedure Check List Template"
+  },
+  {
+   "fieldname": "nursing_tasks",
+   "fieldtype": "Table",
+   "label": "Nursing Tasks",
+   "options": "Clinical Procedure Nursing Task"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
   }
  ],
  "links": [],
- "modified": "2020-09-18 18:30:34.627242",
+ "modified": "2020-09-23 17:39:04.168090",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Clinical Procedure Template",
