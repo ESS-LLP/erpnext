@@ -199,7 +199,7 @@ def create_healthcare_service_order(encounter):
 				'patient': encounter.get_value('patient'),
 				'order_doctype': 'Therapy Type',
 				'order': therapy_type.name,
-				'order_description': therapy_type.get_value('lab_test_description'),
+				'order_description': therapy_type.get_value('description'),
 				'quantity' : 1,
 				'intent': therapy.get_value('intent'),
 				'priority': therapy.get_value('priority'),
