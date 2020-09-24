@@ -201,7 +201,7 @@ def create_healthcare_service_order(encounter):
 				'order': therapy_type.name,
 				'order_description': therapy_type.get_value('description'),
 				'quantity' : 1,
-				'intent': therapy.get_value('intent'),
+				'intent': therapy.get_value('intents'),
 				'priority': therapy.get_value('priority'),
 				'sequence': therapy.get_value('sequence'),
 				'as_needed': therapy.get_value('as_needed'),
