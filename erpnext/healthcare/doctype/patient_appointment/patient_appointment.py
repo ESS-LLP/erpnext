@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 import json
-from frappe.utils import getdate, get_time, flt
+from frappe.utils import getdate, get_time, add_days, time_diff_in_seconds
 from frappe.model.mapper import get_mapped_doc
 from frappe import _
 import datetime
@@ -245,19 +245,25 @@ def get_availability_data(date, practitioner):
 	practitioner_doc = frappe.get_doc('Healthcare Practitioner', practitioner)
 
 	check_employee_wise_availability(date, practitioner_doc)
+	present_events = get_present_event(practitioner, date)
 
-	if practitioner_doc.practitioner_schedules:
+	if practitioner_doc.practitioner_schedules or present_events:
 		slot_details = get_available_slots(practitioner_doc, date)
+		present_events = get_present_event_slots(present_events, date, practitioner)
 	else:
 		frappe.throw(_('{0} does not have a Healthcare Practitioner Schedule. Add it in Healthcare Practitioner master').format(
 			practitioner), title=_('Practitioner Schedule Not Found'))
 
 
-	if not slot_details:
+	if not slot_details  and not present_events:
 		# TODO: return available slots in nearby dates
 		frappe.throw(_('Healthcare Practitioner not available on {0}').format(weekday), title=_('Not Available'))
 
-	return {'slot_details': slot_details}
+	return {
+		'slot_details': slot_details,
+		'present_events': present_events
+	}
+
 
 
 def check_employee_wise_availability(date, practitioner_doc):
@@ -282,6 +288,48 @@ def check_employee_wise_availability(date, practitioner_doc):
 			else:
 				frappe.throw(_('{0} is on Leave on {1}').format(practitioner_doc.name, date), title=_('Not Available'))
 
+def get_present_event(practitioner, date):
+	present_events = frappe.db.sql("""
+		select
+			name, availability, from_time, to_time, from_date, to_date, duration, service_unit, repeat_this_event, repeat_on, repeat_till,
+			monday, tuesday, wednesday, thursday, friday, saturday, sunday
+		from
+			`tabPractitioner Availability`
+		where
+			practitioner = %(practitioner)s and present = 1 and
+			(
+				(repeat_this_event = 1 and (from_date<=%(date)s and ifnull(repeat_till, "3000-01-01")>=%(date)s))
+				or
+				(repeat_this_event != 1 and (from_date<=%(date)s and to_date>=%(date)s))
+			)
+		order by
+			from_date, from_time
+	""".format(),{"practitioner":practitioner, "date":getdate(date)}, as_dict=True)
+	return present_events if present_events else ''
+
+def get_absent_event(practitioner,date):
+	# Absent events
+	absent_events = frappe.db.sql("""
+		select
+			name, availability, from_time, to_time, from_date, to_date, duration, service_unit, service_unit, repeat_this_event, repeat_on, repeat_till,
+			monday, tuesday, wednesday, thursday, friday, saturday, sunday
+		from
+			`tabPractitioner Availability`
+		where
+			practitioner = %(practitioner)s and present != 1 and
+			(
+				(repeat_this_event = 1 and (from_date<=%(date)s and ifnull(repeat_till, "3000-01-01")>=%(date)s))
+				or
+				(repeat_this_event != 1 and (from_date<=%(date)s and to_date>=%(date)s))
+			)
+	""".format(),{"practitioner": practitioner, "date": getdate(date)}, as_dict=True)
+
+	if absent_events:
+		remove_events, add_events = remove_events_by_repeat_on(absent_events,date)
+		for e in remove_events:
+			absent_events.remove(e)
+		absent_events = absent_events + add_events
+	return absent_events if absent_events else []
 
 def get_available_slots(practitioner_doc, date):
 	available_slots = []
@@ -331,11 +379,94 @@ def get_available_slots(practitioner_doc, date):
 					filters=filters,
 					fields=['name', 'appointment_time', 'duration', 'status'])
 
-				slot_details.append({'slot_name':slot_name, 'service_unit':schedule_entry.service_unit,
+				absent_events = get_absent_event(practitioner, date)
+
+				slot_details.append({'slot_name':slot_name, 'service_unit':schedule_entry.service_unit, 'absent_events': absent_events,
 					'avail_slot':available_slots, 'appointments': appointments,  'allow_overlap': allow_overlap, 'service_unit_capacity':service_unit_capacity})
 
 	return slot_details
+def get_present_event_slots(present_events, date, practitioner):
+	present_events_details = []
+	if present_events:
+		remove_events, add_events = remove_events_by_repeat_on(present_events, date)
+		for e in remove_events:
+			present_events.remove(e)
+		present_events = present_events + add_events
 
+		for present_event in present_events:
+			event_available_slots = []
+			total_time_diff = time_diff_in_seconds(present_event.to_time, present_event.from_time)/60
+			from_time = present_event.from_time
+			slot_name = present_event.availability
+			for x in range(0, int(total_time_diff), present_event.duration):
+				to_time = from_time + datetime.timedelta(seconds=present_event.duration*60)
+				event_available_slots.append({'from_time': from_time, 'to_time': to_time})
+				from_time = to_time
+			appointments = []
+			if event_available_slots:
+				appointments = []
+				allow_overlap = 0
+				service_unit_capacity = 0
+				# fetch all appointments to practitioner by service unit
+				filters = {
+					'practitioner': practitioner,
+					'service_unit': present_event.service_unit,
+					'appointment_date': date,
+					'status': ['not in',['Cancelled']]
+				}
+
+				if present_event.service_unit:
+					slot_name  = slot_name+" - "+present_event.service_unit
+					allow_overlap, service_unit_capacity = frappe.get_value('Healthcare Service Unit', present_event.service_unit, ['overlap_appointments', 'total_service_unit_capacity'])
+					if not allow_overlap:
+						# fetch all appointments to service unit
+						filters.pop('practitioner')
+				else:
+					# fetch all appointments to practitioner without service unit
+					filters['practitioner'] = practitioner
+					filters.pop('service_unit')
+
+				appointments = frappe.get_all(
+					'Patient Appointment',
+					filters=filters,
+					fields=['name', 'appointment_time', 'duration', 'status'],
+					order_by= "appointment_date, appointment_time")
+
+				absent_events = get_absent_event(practitioner, date)
+
+				present_events_details.append({'slot_name': slot_name, "service_unit":present_event.service_unit, 'availability': present_event.name,
+				'avail_slot': event_available_slots, 'appointments': appointments, 'absent_events': absent_events, 'allow_overlap': allow_overlap, 'service_unit_capacity':service_unit_capacity})
+	return present_events_details
+
+def remove_events_by_repeat_on(events_list, date):
+	remove_events = []
+	add_events = []
+
+	weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+	if events_list:
+		i = 0
+		for event in events_list:
+			if event.repeat_this_event:
+				if event.repeat_on == 'Every Day':
+					if event[weekdays[getdate(date).weekday()]]:
+						add_events.append(event.copy())
+					remove_events.append(event.copy())
+
+				if event.repeat_on=='Every Week':
+					if getdate(event.from_date).weekday() == getdate(date).weekday():
+						add_events.append(event.copy())
+					remove_events.append(event.copy())
+
+				if event.repeat_on=='Every Month':
+					if getdate(event.from_date).day == getdate(date).day:
+						add_events.append(event.copy())
+					remove_events.append(event.copy())
+
+				if event.repeat_on=='Every Year':
+					if getdate(event.from_date).strftime('%j') == getdate(date).strftime('%j'):
+						add_events.append(event.copy())
+					remove_events.append(event.copy())
+	return remove_events, add_events
 
 @frappe.whitelist()
 def update_status(appointment_id, status):
