@@ -331,6 +331,7 @@
    "options": "Healthcare Practitioner"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "nursing_tasks",
    "fieldtype": "Table",
    "label": "Nursing Tasks",
@@ -346,7 +347,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-09-23 17:55:28.400013",
+ "modified": "2020-09-26 15:56:05.510156",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Clinical Procedure",
