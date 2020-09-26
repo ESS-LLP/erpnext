@@ -243,16 +243,17 @@ def get_healthcare_service_orders_to_invoice(patient, company):
 	service_orders = frappe.get_list(
 		'Healthcare Service Order',
 		fields=['name'],
-		filters={'patient': patient.name, 'company': company, 'is_invoiced': False}
+		filters={'patient': patient.name, 'company': company, 'invoiced': False}
 	)
 	for service_order in service_orders:
-		service_order_doc = frappe.get_doc('Healthcare Service Order', service_request_order.name)
+		service_order_doc = frappe.get_doc('Healthcare Service Order', service_order.name)
 		item, is_billable = frappe.get_cached_value(service_order_doc.order_doctype, service_order_doc.order, ['item', 'is_billable'])
 		if is_billable:
-			service_request_order_to_invoice.append({
+			service_order_to_invoice.append({
 				'reference_type': 'Healthcare Service Order',
-				'reference_name': service_request_order.name,
-				'service': item
+				'reference_name': service_order.name,
+				'service': item,
+				'qty': service_order_doc.quantity if service_order_doc.quantity else 1
 			})
 	return service_order_to_invoice
 
@@ -352,6 +353,8 @@ def set_invoiced(item, method, ref_invoice=None):
 	elif item.reference_dt == 'Procedure Prescription':
 		manage_prescriptions(invoiced, item.reference_dt, item.reference_dn, 'Clinical Procedure', 'procedure_created')
 
+	elif item.reference_dt == 'Healthcare Service Order':
+		frappe.db.set_value(item.reference_dt, item.reference_dn, 'invoiced', invoiced)
 
 def validate_invoiced_on_submit(item):
 	if item.reference_dt == 'Clinical Procedure' and get_healthcare_service_item('clinical_procedure_consumable_item') == item.item_code:
