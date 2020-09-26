@@ -181,6 +181,13 @@ frappe.ui.form.on('Patient Appointment', {
 		if (!frm.doc.service_unit) {
 			frm.set_value('modality_type', '');
 		}
+		if(frm.doc.service_unit){
+			frappe.db.get_value("Healthcare Service Unit", frm.doc.service_unit, "company", function(r) {
+				if(r && r.company){
+					frm.set_value("company", r.company)
+				}
+			});
+		}
 	},
 
 	get_procedure_from_encounter: function (frm) {
