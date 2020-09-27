@@ -85,15 +85,13 @@
    "fieldtype": "Float",
    "label": "Strength",
    "no_copy": 1,
-   "precision": "2",
-   "set_only_once": 1
+   "precision": "2"
   },
   {
    "fieldname": "strength_uom",
    "fieldtype": "Link",
    "label": "Strength UOM",
-   "options": "UOM",
-   "set_only_once": 1
+   "options": "UOM"
   },
   {
    "fieldname": "abbr",
@@ -310,7 +308,7 @@
   }
  ],
  "links": [],
- "modified": "2020-09-18 18:31:26.823152",
+ "modified": "2020-09-27 10:52:54.683402",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Medication",
