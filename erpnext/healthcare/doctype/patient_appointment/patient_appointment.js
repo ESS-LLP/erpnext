@@ -304,6 +304,12 @@ let check_and_set_availability = function (frm) {
 				frm.enable_save();
 				frm.save();
 				d.get_primary_btn().attr('disabled', true);
+				if (frm.doc.patient_referral) {
+					frappe.db.set_value('Patient Referral', frm.doc.patient_referral, {
+						status: 'Completed',
+					}).then(r => {
+					})
+				}
 			}
 		});
 
