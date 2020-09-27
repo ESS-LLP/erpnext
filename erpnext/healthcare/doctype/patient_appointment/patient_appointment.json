@@ -18,6 +18,7 @@
   "patient_sex",
   "patient_age",
   "inpatient_record",
+  "patient_referral",
   "column_break_1",
   "company",
   "service_unit",
@@ -421,11 +422,18 @@
    "label": "Triage",
    "options": "Triage",
    "read_only": 1
+  },
+  {
+   "fieldname": "patient_referral",
+   "fieldtype": "Link",
+   "label": "Patient Referral",
+   "options": "Patient Referral",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-09-27 11:51:52.257899",
+ "modified": "2020-09-27 19:07:38.157661",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Appointment",
