@@ -127,7 +127,6 @@ def create_healthcare_service_order(encounter):
 				'expected_date': drug.get_value('expected_date'),
 				'as_needed': drug.get_value('as_needed'),
 				'occurrence': drug.get_value('occurrence'),
-				'occurence_period': drug.get_value('occurence_period'),
 				'staff_role': medication.get_value('staff_role'),
 				'note': drug.get_value('note'),
 				'patient_instruction': drug.get_value('patient_instruction'),

@@ -21,6 +21,13 @@ frappe.ui.form.on('Healthcare Service Unit', {
 		frm.add_custom_button(__('Healthcare Service Unit Tree'), function() {
 			frappe.set_route('Tree', 'Healthcare Service Unit');
 		});
+		frm.set_query('warehouse', function() {
+			return {
+				filters: {
+					'company': frm.doc.company
+				}
+			};
+		});
 	},
 	set_root_readonly: function(frm) {
 		// read-only for root healthcare service unit
