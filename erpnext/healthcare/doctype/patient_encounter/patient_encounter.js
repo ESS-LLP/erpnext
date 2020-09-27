@@ -46,6 +46,9 @@ frappe.ui.form.on('Patient Encounter', {
 						schedule_inpatient(frm);
 					});
 				}
+				frm.add_custom_button(__('Refer Practitioner'), function() {
+					refer_practitioner(frm);
+				});
 			}
 
 			frm.add_custom_button(__('Patient History'), function() {
@@ -545,4 +548,52 @@ var show_patient_vital_charts = function(patient, frm, btn_show_id, pts, title) 
 			}
 		}
 	});
+};
+
+var refer_practitioner = function(frm) {
+	var dialog = new frappe.ui.Dialog ({
+		title: 'Refer Practitioner',
+		fields: [
+			{fieldtype: 'Link', label: 'Referred To', reqd: 1, fieldname: 'referred_to', options: 'Healthcare Practitioner'},
+			{fieldtype: 'Select', label: 'Priority', reqd: 1, fieldname: 'priority', options: '\nRoutine\nUrgent\nASAP\nCritical'},
+			{fieldtype: 'Column Break'},
+			{fieldtype: 'Link', label: 'Referring Reason', reqd: 1, fieldname: 'referring_reason', options: 'Referring Reason'},
+			{fieldtype: 'Small Text', label: 'Referral Note', fieldname: 'referral_note'}
+		],
+		primary_action_label: __('Refer'),
+		primary_action : function() {
+			var args = {
+				patient: frm.doc.patient,
+				triage:frm.doc.triage,
+				diagnosis:frm.doc.diagnosis,
+				complaint:frm.doc.symptoms,
+				patient_encounter: frm.doc.name,
+				referring_practitioner: frm.doc.practitioner,
+				company: frm.doc.company,
+				date: frappe.datetime.get_today(),
+				time: frappe.datetime.now_time(),
+				priority: dialog.get_value('priority'),
+				referred_to_practitioner: dialog.get_value('referred_to'),
+				referral_note: dialog.get_value('referral_note'),
+				discharge_note: dialog.get_value('discharge_note'),
+				referring_reason: dialog.get_value('referring_reason')
+			}
+			frappe.call ({
+				method: 'erpnext.healthcare.doctype.patient_encounter.patient_encounter.create_patient_referral',
+				args: {args},
+				callback: function(data) {
+					if(!data.exc){
+						frm.reload_doc();
+					}
+				},
+				freeze: true,
+				freeze_message: 'Referring Practitioner..'
+			});
+			frm.refresh_fields();
+			dialog.hide();
+		}
+	});
+
+	dialog.show();
+	dialog.$wrapper.find('.modal-dialog').css('width', '800px');
 };
