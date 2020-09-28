@@ -12,12 +12,16 @@ def get_data():
 				'items': ['Patient Appointment', 'Patient Encounter']
 			},
 			{
-				'label': _('Lab Tests and Vital Signs'),
- 				'items': ['Lab Test', 'Sample Collection', 'Vital Signs']
+				'label': _('Diagnostics'),
+ 				'items': ['Lab Test', 'Sample Collection', 'Vital Signs', 'Radiology Examination']
 			},
 			{
 				'label': _('Billing'),
 				'items': ['Sales Invoice']
-			}
+			},
+			{
+				'label': _('Procedures and Therapies'),
+ 				'items': ['Clinical Procedure', 'Therapy Plan']
+			},
 		]
 	}
