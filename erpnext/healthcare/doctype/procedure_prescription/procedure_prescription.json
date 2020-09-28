@@ -16,6 +16,7 @@
   "appointment_booked",
   "procedure_created",
   "invoiced",
+  "clinical_procedure",
   "order_details_section",
   "intent",
   "sequence",
@@ -32,7 +33,7 @@
    "fieldname": "procedure",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Clinical Procedure",
+   "label": "Clinical Procedure Template",
    "options": "Clinical Procedure Template",
    "reqd": 1
   },
@@ -146,11 +147,19 @@
    "fieldname": "note",
    "fieldtype": "Small Text",
    "label": "Note"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "clinical_procedure",
+   "fieldtype": "Link",
+   "label": "Clinical Procedure",
+   "options": "Clinical Procedure",
+   "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2020-09-18 18:25:39.447174",
+ "modified": "2020-09-28 18:07:45.536434",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Procedure Prescription",

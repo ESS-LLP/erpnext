@@ -12,6 +12,7 @@
   "radiology_test_comment",
   "radiology_examination_created",
   "appointment_booked",
+  "radiology_examination",
   "order_details_section",
   "intent",
   "sequence",
@@ -133,12 +134,20 @@
    "fieldname": "note",
    "fieldtype": "Small Text",
    "label": "Note"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "radiology_examination",
+   "fieldtype": "Link",
+   "label": "Radiology Examination",
+   "options": "Radiology Examination",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2020-09-18 18:27:37.152832",
+ "modified": "2020-09-28 18:01:48.294253",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Radiology Procedure Prescription",

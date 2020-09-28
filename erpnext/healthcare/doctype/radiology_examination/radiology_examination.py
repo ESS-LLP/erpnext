@@ -15,6 +15,8 @@ class RadiologyExamination(Document):
 		if self.radiology_procedure_prescription:
 			frappe.db.set_value('Radiology Procedure Prescription',
 			                    self.radiology_procedure_prescription, 'radiology_examination_created', True)
+			frappe.db.set_value('Radiology Procedure Prescription',
+			                    self.radiology_procedure_prescription, 'radiology_examination', self.name)
 
 	def on_cancel(self):
 		manage_healthcare_doc_cancel(self)
