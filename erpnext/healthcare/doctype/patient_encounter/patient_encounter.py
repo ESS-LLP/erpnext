@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+import json
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cstr
@@ -237,3 +238,11 @@ def create_healthcare_service_order(encounter):
 				'company':encounter.company
 				}
 			make_healthcare_service_order(args)
+
+@frappe.whitelist()
+def create_patient_referral(args):
+	patient_referral = frappe.new_doc('Patient Referral')
+	args = json.loads(args)
+	for key in args:
+		patient_referral.set(key, args[key] if args[key] else '')
+	patient_referral.save(ignore_permissions=True)

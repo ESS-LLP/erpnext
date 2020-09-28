@@ -23,6 +23,7 @@
   "age_html",
   "image",
   "column_break_14",
+  "triage",
   "status",
   "inpatient_record",
   "inpatient_status",
@@ -424,13 +425,21 @@
    "fieldname": "invite_user",
    "fieldtype": "Check",
    "label": "Invite As  User"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "triage",
+   "fieldtype": "Link",
+   "in_preview": 1,
+   "label": "Triage",
+   "options": "Triage"
   }
  ],
  "icon": "fa fa-user",
  "image_field": "image",
  "links": [],
  "max_attachments": 50,
- "modified": "2020-08-13 17:18:46.953974",
+ "modified": "2020-09-27 10:44:31.024566",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient",

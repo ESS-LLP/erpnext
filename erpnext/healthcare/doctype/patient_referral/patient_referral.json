@@ -1,0 +1,188 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2020-09-26 13:41:54.227139",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "patient",
+  "naming_series",
+  "triage",
+  "column_break_5",
+  "company",
+  "status",
+  "date",
+  "time",
+  "encounter_impression_section",
+  "complaint",
+  "column_break_7",
+  "diagnosis",
+  "section_break_9",
+  "referring_practitioner",
+  "priority",
+  "patient_encounter",
+  "referring_reason",
+  "column_break_8",
+  "referred_to_practitioner",
+  "referral_note",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "patient",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Patient",
+   "options": "Patient",
+   "reqd": 1
+  },
+  {
+   "fieldname": "triage",
+   "fieldtype": "Link",
+   "label": "Triage",
+   "options": "Triage"
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "\nRoutine\nUrgent\nASAP\nCritical"
+  },
+  {
+   "fieldname": "referring_practitioner",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Referring Practitioner",
+   "options": "Healthcare Practitioner",
+   "reqd": 1
+  },
+  {
+   "fieldname": "diagnosis",
+   "fieldtype": "Table MultiSelect",
+   "label": "Diagnosis",
+   "options": "Patient Encounter Diagnosis"
+  },
+  {
+   "fieldname": "complaint",
+   "fieldtype": "Table MultiSelect",
+   "label": "Symptoms",
+   "options": "Patient Encounter Symptom"
+  },
+  {
+   "fieldname": "patient_encounter",
+   "fieldtype": "Link",
+   "label": "Patient Encounter",
+   "options": "Patient Encounter"
+  },
+  {
+   "fieldname": "referring_reason",
+   "fieldtype": "Link",
+   "label": "Referring Reason",
+   "options": "Referring Reason"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "time",
+   "fieldtype": "Time",
+   "label": "Time"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "no_copy": 1,
+   "options": "PAT-REF-.YYYY.-",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "referred_to_practitioner",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Referred to practitioner ",
+   "options": "Healthcare Practitioner",
+   "reqd": 1
+  },
+  {
+   "fieldname": "referral_note",
+   "fieldtype": "Small Text",
+   "label": "Referral Note "
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "encounter_impression_section",
+   "fieldtype": "Section Break",
+   "label": "ENCOUNTER IMPRESSION"
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Patient Referral",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nPending\nCompleted"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2020-09-27 18:12:13.669389",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Patient Referral",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

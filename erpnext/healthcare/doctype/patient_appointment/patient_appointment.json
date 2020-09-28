@@ -14,9 +14,11 @@
   "status",
   "patient",
   "patient_name",
+  "triage",
   "patient_sex",
   "patient_age",
   "inpatient_record",
+  "patient_referral",
   "column_break_1",
   "company",
   "service_unit",
@@ -412,11 +414,26 @@
    "label": "Practitioner Availability",
    "options": "Practitioner Availability",
    "read_only": 1
+  },
+  {
+   "fetch_from": "patient.triage",
+   "fieldname": "triage",
+   "fieldtype": "Link",
+   "label": "Triage",
+   "options": "Triage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "patient_referral",
+   "fieldtype": "Link",
+   "label": "Patient Referral",
+   "options": "Patient Referral",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-09-25 10:14:39.465901",
+ "modified": "2020-09-27 19:07:38.157661",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Appointment",
