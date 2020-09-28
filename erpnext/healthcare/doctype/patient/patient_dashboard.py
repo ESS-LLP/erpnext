@@ -16,12 +16,16 @@ def get_data():
  				'items': ['Lab Test', 'Sample Collection', 'Vital Signs', 'Radiology Examination']
 			},
 			{
-				'label': _('Billing'),
-				'items': ['Sales Invoice']
+				'label': _('Procedures'),
+ 				'items': ['Clinical Procedure', 'Healthcare Nursing Task']
 			},
 			{
-				'label': _('Procedures and Therapies'),
- 				'items': ['Clinical Procedure', 'Therapy Plan']
+				'label': _('Rehabilitation and Physiotherapy'),
+ 				'items': ['Therapy Plan', 'Therapy Session', 'Patient Assessment']
 			},
+			{
+				'label': _('Billing'),
+				'items': ['Sales Invoice']
+			}
 		]
 	}
