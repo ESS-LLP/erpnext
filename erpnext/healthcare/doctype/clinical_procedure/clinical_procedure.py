@@ -37,6 +37,8 @@ class ClinicalProcedure(Document):
         if self.prescription:
             frappe.db.set_value('Procedure Prescription',
                                 self.prescription, 'procedure_created', 1)
+			frappe.db.set_value('Procedure Prescription',
+                                self.prescription, 'clinical_procedure', self.name)
         if self.appointment:
             frappe.db.set_value('Patient Appointment',
                                 self.appointment, 'status', 'Closed')
