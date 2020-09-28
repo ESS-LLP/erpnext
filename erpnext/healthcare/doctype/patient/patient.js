@@ -31,7 +31,13 @@ frappe.ui.form.on('Patient', {
 				frappe.set_route('patient_history');
 			},'View');
 		}
-
+		if(!frm.doc.__islocal && frm.doc.inpatient_record){
+			frm.add_custom_button(__("IP Record"), function(){
+				if(frm.doc.inpatient_record){
+					frappe.set_route("Form", "Inpatient Record", frm.doc.inpatient_record);
+				}
+			});
+		}
 		frappe.dynamic_link = {doc: frm.doc, fieldname: 'name', doctype: 'Patient'}
 		frm.toggle_display(['address_html','contact_html'], !frm.doc.__islocal);
 
@@ -53,6 +59,14 @@ frappe.ui.form.on('Patient', {
 		else{
 			frappe.contacts.clear_address_and_contact(frm);
 		}
+		frappe.call({
+			method: "get_billing_info",
+			doc: frm.doc,
+			callback: function(r) {
+				frm.dashboard.add_indicator(__('Total Billing: {0}', [format_currency(r.message.total_billing)]), 'blue');
+				frm.dashboard.add_indicator(__('Patient Balance: {0}', [format_currency(r.message.party_balance)]), 'orange');
+			}
+		});
 	},
 	onload: function (frm) {
 		if(!frm.doc.dob){

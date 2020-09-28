@@ -34,6 +34,7 @@ class LabTest(Document):
 	def after_insert(self):
 		if self.prescription:
 			frappe.db.set_value('Lab Prescription', self.prescription, 'lab_test_created', 1)
+			frappe.db.set_value('Lab Prescription', self.prescription, 'lab_test', self.name)
 			if frappe.db.get_value('Lab Prescription', self.prescription, 'invoiced'):
 				self.invoiced = True
 		if not self.lab_test_name and self.template:
