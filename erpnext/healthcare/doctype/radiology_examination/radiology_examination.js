@@ -113,6 +113,13 @@ frappe.ui.form.on('Radiology Examination', {
 			});
 		}
 	},
+	tc_name: function(frm) {
+		erpnext.utils.get_terms(frm.doc.tc_name, frm.doc, function (r) {
+			if (!r.exc) {
+				frm.set_value('terms', r.message);
+			}
+		});
+	},
 	source: function (frm) {
 		if (frm.doc.source == 'Direct') {
 			frm.set_value('referring_practitioner', '');
