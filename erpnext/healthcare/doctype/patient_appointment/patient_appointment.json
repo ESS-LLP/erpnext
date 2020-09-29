@@ -9,12 +9,16 @@
  "document_type": "Document",
  "engine": "InnoDB",
  "field_order": [
+  "emergency_section",
+  "triage",
+  "column_break_3",
+  "color",
+  "section_break_5",
   "naming_series",
   "title",
   "status",
   "patient",
   "patient_name",
-  "triage",
   "patient_sex",
   "patient_age",
   "inpatient_record",
@@ -388,7 +392,7 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval: !doc.procedure_template && doc.__islocal && doc.patient",
+   "depends_on": "eval:!doc.procedure_template && doc.__islocal && doc.patient",
    "fieldname": "get_ordered_radiology_procedures",
    "fieldtype": "Button",
    "label": "Get Ordered Radiology Procedures"
@@ -445,11 +449,31 @@
   {
    "fieldname": "column_break_27",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "emergency_section",
+   "fieldtype": "Section Break",
+   "label": "Emergency"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "triage",
+   "fetch_from": "triage.color",
+   "fieldname": "color",
+   "fieldtype": "Color",
+   "label": "Color"
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-09-28 18:38:13.030678",
+ "modified": "2020-09-29 16:07:24.696273",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Appointment",
