@@ -10,5 +10,13 @@ frappe.ui.form.on('Healthcare Nursing Task', {
 					}
 				};
 			});
+			if(!frm.doc.__islocal){
+				frm.add_custom_button(__('Completed'), function() {
+					make_status_completed(frm);
+				});
+			}
+		},
+		make_status_completed: function (frm) {
+			frm.set_value('status', 'Completed');
 		}
 });

@@ -23,7 +23,8 @@
   "remarks",
   "reference_doctype",
   "reference_docname",
-  "company"
+  "company",
+  "amended_from"
  ],
  "fields": [
   {
@@ -101,11 +102,12 @@
    "options": "Healthcare Service Unit"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "\nOpen\nScheduled\nStart\nInprogress\nDone\nCancelled\nPending"
+   "options": "Open\nScheduled\nStart\nInprogress\nCompleted\nCancelled\nPending"
   },
   {
    "fieldname": "remarks",
@@ -137,11 +139,21 @@
   {
    "fieldname": "column_break_12",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Healthcare Nursing Task",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2020-09-09 17:51:29.486110",
+ "modified": "2020-09-29 17:40:58.719491",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Nursing Task",
