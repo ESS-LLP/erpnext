@@ -68,12 +68,16 @@ class PatientAppointment(Document):
 			query +=""" and service_unit=%(service_unit)s"""
 			overlaps = frappe.db.sql(query.format(),{'appointment_date':self.appointment_date, 'name':self.name, 'practitioner':self.practitioner,
 			'patient':self.patient, 'appointment_time':self.appointment_time,  'end_time':end_time.time(), 'service_unit':self.service_unit})
-			allow_overlap, service_unit_capacity =frappe.get_value('Healthcare Service Unit', self.service_unit, ['overlap_appointments', 'total_service_unit_capacity'])
+			allow_overlap = frappe.get_value('Healthcare Service Unit', self.service_unit, 'overlap_appointments')
 			if allow_overlap:
-				 if service_unit_capacity and  len(overlaps)>=int(service_unit_capacity):
-					 frappe.throw(_(""" Not Allowed, Maximum capacity reached Service unit {0}""").format(self.service_unit), Maximumcapacityerror)
+				if self.practitioner_availability:
+					service_unit_capacity= frappe.get_value('Practitioner Availability', self.practitioner_availability, 'total_service_unit_capacity')
+				else:
+					service_unit_capacity= frappe.get_value('Healthcare Service Unit', self.service_unit, 'total_service_unit_capacity')
 
-				 else:
+				if service_unit_capacity and  len(overlaps)>=int(service_unit_capacity):
+					frappe.throw(_(""" Not Allowed, Maximum capacity reached Service unit {0}""").format(self.service_unit), Maximumcapacityerror)
+				else:
 					 overlaps = False
 		else:
 			overlaps  = frappe.db.sql(query.format(),{"appointment_date":self.appointment_date, "name":self.name, "practitioner":self.practitioner,
@@ -83,6 +87,10 @@ class PatientAppointment(Document):
 			frappe.throw(_("""Appointment overlaps with {0}.<br> {1} has appointment scheduled
 			with {2} at {3} having {4} minute(s) duration.""").format(overlaps[0][0], overlaps[0][1], overlaps[0][2], overlaps[0][3], overlaps[0][4]), Overlappingerror)
 
+		if self.service_unit:
+			service_unit_company = frappe.db.get_value("Healthcare Service Unit", self.service_unit, "company")
+			if service_unit_company and service_unit_company != self.company:
+				self.company = service_unit_company
 
 	def set_appointment_datetime(self):
 		self.appointment_datetime = "%s %s" % (self.appointment_date, self.appointment_time or "00:00:00")
