@@ -9,21 +9,30 @@
   "naming_series",
   "task",
   "task_order",
+  "medical_department",
+  "column_break_4",
+  "status",
+  "service_unit",
+  "company",
+  "practitioner",
+  "healthcare_practitioner_name",
+  "patient_demographics_section",
+  "patient",
+  "patient_name",
+  "triage",
+  "column_break_14",
+  "blood_group",
+  "gender",
+  "birth_date",
+  "section_break_18",
   "description",
   "date",
   "time",
-  "patient",
-  "patient_name",
-  "practitioner",
-  "healthcare_practitioner_name",
-  "medical_department",
+  "inpatient_record",
   "column_break_12",
-  "service_unit",
-  "status",
   "remarks",
   "reference_doctype",
   "reference_docname",
-  "company",
   "amended_from"
  ],
  "fields": [
@@ -102,12 +111,11 @@
    "options": "Healthcare Service Unit"
   },
   {
-   "allow_on_submit": 1,
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Open\nScheduled\nStart\nInprogress\nCompleted\nCancelled\nPending"
+   "options": "\nOpen\nScheduled\nStart\nInprogress\nDone\nCancelled\nPending"
   },
   {
    "fieldname": "remarks",
@@ -141,6 +149,62 @@
    "fieldtype": "Column Break"
   },
   {
+   "fetch_from": "patient.triage",
+   "fieldname": "triage",
+   "fieldtype": "Link",
+   "label": "Triage",
+   "options": "Triage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "patient_demographics_section",
+   "fieldtype": "Section Break",
+   "label": "Patient Demographics"
+  },
+  {
+   "fetch_from": "patient.blood_group",
+   "fieldname": "blood_group",
+   "fieldtype": "Select",
+   "label": "Blood Group",
+   "options": "\nA Positive\nA Negative\nAB Positive\nAB Negative\nB Positive\nB Negative\nO Positive\nO Negative",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "patient.sex",
+   "fieldname": "gender",
+   "fieldtype": "Link",
+   "label": "Gender",
+   "options": "Gender",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "patient.dob",
+   "fieldname": "birth_date",
+   "fieldtype": "Date",
+   "label": "Birth Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_18",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "inpatient_record",
+   "fieldtype": "Link",
+   "label": "Inpatient Record",
+   "options": "Inpatient Record",
+   "read_only": 1
+  },
+  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -153,7 +217,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-09-29 17:40:58.719491",
+ "modified": "2020-09-30 01:31:21.840965",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Nursing Task",

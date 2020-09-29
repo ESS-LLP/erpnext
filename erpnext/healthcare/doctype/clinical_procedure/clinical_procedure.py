@@ -37,7 +37,7 @@ class ClinicalProcedure(Document):
         if self.prescription:
             frappe.db.set_value('Procedure Prescription',
                                 self.prescription, 'procedure_created', 1)
-			frappe.db.set_value('Procedure Prescription',
+            frappe.db.set_value('Procedure Prescription',
                                 self.prescription, 'clinical_procedure', self.name)
         if self.appointment:
             frappe.db.set_value('Patient Appointment',
@@ -217,13 +217,13 @@ def create_nursing_task(doc, nursing_task):
     hc_nursing_task.reference_doctype = doc.doctype
     hc_nursing_task.reference_docname = doc.name
     hc_nursing_task.date = doc.start_date
-    if doc.start_time and nursing_task.expected_time and nursing_task.expected_time > 0:
-        if nursing_task.task == "After":
-            hc_nursing_task.time = to_timedelta(
-                doc.start_time) + datetime.timedelta(seconds=nursing_task.expected_time*60)
-        elif nursing_task.task == "Before":
-            hc_nursing_task.time = to_timedelta(
-                doc.start_time) - datetime.timedelta(seconds=nursing_task.expected_time*60)
+    # if doc.start_time and nursing_task.expected_time and nursing_task.expected_time > 0:
+    #     if nursing_task.task == "After":
+    #         hc_nursing_task.time = to_timedelta(
+    #             doc.start_time) + datetime.timedelta(seconds=nursing_task.expected_time*60)
+    #     elif nursing_task.task   == "Before":
+    #         hc_nursing_task.time = to_timedelta(
+    #             doc.start_time) - datetime.timedelta(seconds=nursing_task.expected_time*60)
     hc_nursing_task.save(ignore_permissions=True)
 
 
