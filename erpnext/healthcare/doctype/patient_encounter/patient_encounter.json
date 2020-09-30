@@ -55,6 +55,8 @@
   "rehabilitation_section",
   "therapy_plan",
   "therapies",
+  "diet_recommendation_section",
+  "diet_recommendation",
   "section_break_33",
   "encounter_comment",
   "sb_refs",
@@ -391,12 +393,23 @@
    "label": "Triage",
    "options": "Triage",
    "read_only": 1
+  },
+  {
+   "fieldname": "diet_recommendation_section",
+   "fieldtype": "Section Break",
+   "label": "Diet Recommendation"
+  },
+  {
+   "fieldname": "diet_recommendation",
+   "fieldtype": "Table",
+   "label": "Diet Recommendation",
+   "options": "Diet Recommendation"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-09-27 11:49:41.683942",
+ "modified": "2020-09-30 07:11:53.872556",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Encounter",

@@ -6,7 +6,8 @@
  "engine": "InnoDB",
  "field_order": [
   "diet_plan",
-  "occurance"
+  "occurance",
+  "comments"
  ],
  "fields": [
   {
@@ -20,12 +21,18 @@
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "Occurance"
+  },
+  {
+   "fieldname": "comments",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Comments"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2020-09-29 20:35:07.626038",
+ "modified": "2020-09-30 07:13:22.428204",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Diet Recommendation",
