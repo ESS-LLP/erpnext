@@ -110,6 +110,12 @@ def schedule_inpatient(args):
 		inpatient_record.therapy_plan = encounter.therapy_plan
 		set_ip_child_records(inpatient_record, 'therapies', encounter.therapies)
 
+	if encounter and encounter.radiology_procedure_prescription: # radiology
+		set_ip_child_records(inpatient_record, 'radiology_procedure_prescription', encounter.radiology_procedure_prescription)
+
+	if encounter and encounter.diet_recommendation: # diet Prescription
+		set_ip_child_records(inpatient_record, 'diet_recommendation', encounter.diet_recommendation)
+
 	if encounter and encounter.source: # Source
 		inpatient_record.source = encounter.source
 

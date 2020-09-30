@@ -47,9 +47,13 @@
   "lab_test_prescription",
   "procedures_section",
   "procedure_prescription",
+  "radiology_orders_section",
+  "radiology_procedure_prescription",
   "rehabilitation_section",
   "therapy_plan",
   "therapies",
+  "diet_recommendation_section",
+  "diet_recommendation",
   "sb_inpatient_occupancy",
   "inpatient_occupancies",
   "btn_transfer",
@@ -436,10 +440,34 @@
    "ignore_user_permissions": 1,
    "label": "Referring Practitioner",
    "options": "Healthcare Practitioner"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "radiology_orders_section",
+   "fieldtype": "Section Break",
+   "label": "Radiology Orders"
+  },
+  {
+   "fieldname": "radiology_procedure_prescription",
+   "fieldtype": "Table",
+   "label": "Radiology Procedure Prescription",
+   "options": "Radiology Procedure Prescription"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "diet_recommendation_section",
+   "fieldtype": "Section Break",
+   "label": "Diet Recommendation"
+  },
+  {
+   "fieldname": "diet_recommendation",
+   "fieldtype": "Table",
+   "label": "Diet Recommendation",
+   "options": "Diet Recommendation"
   }
  ],
  "links": [],
- "modified": "2020-06-25 22:45:22.657964",
+ "modified": "2020-09-30 07:30:51.418245",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Inpatient Record",
