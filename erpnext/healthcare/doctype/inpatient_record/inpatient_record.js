@@ -35,6 +35,13 @@ frappe.ui.form.on('Inpatient Record', {
 				discharge_patient(frm);
 			} );
 		}
+
+		if (frm.doc.patient && frappe.user.has_role('Physician')) {
+			frm.add_custom_button(__('Patient History'), function() {
+				frappe.route_options = {'patient': frm.doc.patient};
+				frappe.set_route('patient_history');
+			},'View');
+		}
 		if (!frm.doc.__islocal && frm.doc.status != 'Admitted') {
 			frm.disable_save();
 			frm.set_df_property('btn_transfer', 'hidden', 1);
