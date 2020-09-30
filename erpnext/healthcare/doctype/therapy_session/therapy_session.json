@@ -9,6 +9,7 @@
   "naming_series",
   "appointment",
   "patient",
+  "inpatient_record",
   "patient_name",
   "patient_age",
   "gender",
@@ -18,10 +19,6 @@
   "therapy_type",
   "practitioner",
   "department",
-  "sb_source",
-  "source",
-  "column_break_15",
-  "referring_practitioner",
   "details_section",
   "medical_code",
   "duration",
@@ -222,33 +219,17 @@
    "read_only": 1
   },
   {
-   "fieldname": "sb_source",
-   "fieldtype": "Section Break",
-   "label": "Source"
-  },
-  {
-   "fieldname": "source",
-   "fieldtype": "Select",
-   "label": "Source",
-   "options": "Direct\nReferral\nExternal Referral",
-   "reqd": 1
-  },
-  {
-   "fieldname": "column_break_15",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "referring_practitioner",
+   "fetch_from": "patient.inpatient_record",
+   "fieldname": "inpatient_record",
    "fieldtype": "Link",
-   "hidden": 1,
-   "ignore_user_permissions": 1,
-   "label": "Referring Practitioner",
-   "options": "Healthcare Practitioner"
+   "label": "Inpatient Record",
+   "options": "Inpatient Record",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-06-30 10:56:10.354268",
+ "modified": "2020-09-29 22:50:12.691555",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Therapy Session",

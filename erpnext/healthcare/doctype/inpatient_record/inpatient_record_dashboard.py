@@ -10,8 +10,16 @@ def get_data():
 				'items': ['Patient Appointment', 'Patient Encounter']
 			},
 			{
-				'label': _('Lab Tests and Vital Signs'),
- 				'items': ['Lab Test', 'Clinical Procedure', 'Sample Collection', 'Vital Signs']
+				'label': _('Diagnostics'),
+ 				'items': ['Lab Test', 'Sample Collection', 'Vital Signs', 'Radiology Examination']
+			},
+			{
+				'label': _('Procedures'),
+ 				'items': ['Clinical Procedure', 'Healthcare Nursing Task']
+			},
+			{
+				'label': _('Rehabilitation and Physiotherapy'),
+ 				'items': ['Therapy Plan', 'Therapy Session', 'Patient Assessment']
 			}
 		]
 	}
