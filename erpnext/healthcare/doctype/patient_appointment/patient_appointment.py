@@ -565,7 +565,7 @@ def get_events(start, end, filters=None):
 	data = frappe.db.sql("""
 		select
 		`tabPatient Appointment`.name, `tabPatient Appointment`.patient_name, `tabPatient Appointment`.practitioner_name,`tabPatient Appointment`.patient_sex, `tabPatient Appointment`.patient_age,`tabPatient Appointment`.appointment_type,
-		`tabPatient Appointment`.practitioner, `tabPatient Appointment`.status,
+		`tabPatient Appointment`.practitioner, `tabPatient Appointment`.status,`tabPatient Appointment`.triage,
 		`tabPatient Appointment`.duration,
 		timestamp(`tabPatient Appointment`.appointment_date, `tabPatient Appointment`.appointment_time) as 'start',
 		`tabAppointment Type`.color
@@ -583,11 +583,17 @@ def get_events(start, end, filters=None):
 		if item.appointment_type:
 			item.title = item.title + item.appointment_type +" - "
 		item.title = item.title +"("+ item.patient_name
+		if item.triage:
+			item.title = item.title +" - "+ item.triage
 		if item.patient_sex:
 			item.title = item.title +" - "+ item.patient_sex
 		if item.patient_age:
 			item.title = item.title +" - "+ item.patient_age
 		item.title = item.title +")"
+		if item.triage:
+			color = frappe.db.get_value('Triage', item.triage, 'color')
+			if color:
+				item.color = color
 	return data
 
 
