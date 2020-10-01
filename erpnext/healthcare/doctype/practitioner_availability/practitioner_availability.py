@@ -76,7 +76,7 @@ def validate_service_unit_capacity(doc):
 def validate_event_overlap(doc):
 	query = """
 		select
-			name, from_date, from_time, to_time
+			name, from_date, from_time, to_time, service_unit
 		from
 			`tabPractitioner Availability`
 		where
@@ -162,8 +162,14 @@ def validate_event_overlap(doc):
 		}, as_dict = 1)
 
 	if overlap_doc:
-		throw_overlap_error(doc, doc.practitioner, overlap_doc[0].name, overlap_doc[0].from_date,
-		 overlap_doc[0].from_time, overlap_doc[0].to_time)
+		if doc.service_unit:
+			for overlap in overlap_doc:
+				if doc.service_unit == overlap.service_unit:
+					throw_overlap_error(doc, doc.practitioner, overlap.name, overlap.from_date,
+					 overlap.from_time, overlap.to_time)
+		else:
+			throw_overlap_error(doc, doc.practitioner, overlap_doc[0].name, overlap_doc[0].from_date,
+			 overlap_doc[0].from_time, overlap_doc[0].to_time)
 
 def throw_overlap_error(doc, exists_for, overlap_doc, from_date, from_time, to_time):
 	msg = _('A {0} exists on {1} with time {2} to {3} (').format(doc.doctype,
