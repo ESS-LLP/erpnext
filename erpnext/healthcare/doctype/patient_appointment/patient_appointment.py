@@ -579,14 +579,15 @@ def get_events(start, end, filters=None):
 
 	for item in data:
 		item.end = item.start + datetime.timedelta(minutes = item.duration)
-		item.title = item.practitioner_name +" - ("+ item.patient_name
+		item.title = item.practitioner_name +" - "
+		if item.appointment_type:
+			item.title = item.title + item.appointment_type +" - "
+		item.title = item.title +"("+ item.patient_name
 		if item.patient_sex:
 			item.title = item.title +" - "+ item.patient_sex
 		if item.patient_age:
 			item.title = item.title +" - "+ item.patient_age
 		item.title = item.title +")"
-		if item.appointment_type:
-			item.title = item.title +" - "+ item.appointment_type
 	return data
 
 
