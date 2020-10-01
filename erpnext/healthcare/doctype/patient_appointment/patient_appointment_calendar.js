@@ -4,7 +4,7 @@ frappe.views.calendar["Patient Appointment"] = {
 		"start": "start",
 		"end": "end",
 		"id": "name",
-		"title": "patient",
+		"title": "title",
 		"allDay": "allDay",
 		"eventColor": "color"
 	},
