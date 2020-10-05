@@ -637,6 +637,14 @@ def render_doc_as_html(doctype, docname, exclude_fields = []):
 				html += "<table class='table table-condensed table-bordered'>" \
 				+ table_head +  table_row + "</table>"
 			continue
+		if df.fieldtype == "Table MultiSelect":
+			multiselect_items = doc.get(df.fieldname)
+			multitable_meta = frappe.get_meta(df.options)
+			if not has_data : has_data = True
+			if not multiselect_items: continue
+			for m_items in multiselect_items:
+				for mdf in multitable_meta.fields:
+					html +=  '<br>{0} :&nbsp;{1}'.format(df.label or df.fieldname, m_items.get(mdf.fieldname))
 		#on other field types add label and value to html
 		if not df.hidden and not df.print_hide and doc.get(df.fieldname) and df.fieldname not in exclude_fields:
 			html +=  '<br>{0} : {1}'.format(df.label or df.fieldname, \
@@ -650,7 +658,6 @@ def render_doc_as_html(doctype, docname, exclude_fields = []):
 		+ section_html + html +'</div></div>'
 	if doc_html:
 		doc_html = "<div class='small'><div class='col-md-12 text-right'><a class='btn btn-default btn-xs' href='#Form/%s/%s'></a></div>" %(doctype, docname) + doc_html + '</div>'
-
 	return {'html': doc_html}
 
 
