@@ -6,21 +6,29 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "healthcare_service",
   "healthcare_service_template"
  ],
  "fields": [
   {
    "fieldname": "healthcare_service_template",
-   "fieldtype": "Select",
+   "fieldtype": "Dynamic Link",
    "in_list_view": 1,
    "label": "Healthcare Service Template",
-   "options": "\nAppointment Type\nClinical Procedure Template\nTherapy Type\nMedication\nLab Test Template\nRadiology Examination Template\nInpatient Service"
+   "options": "healthcare_service"
+  },
+  {
+   "fieldname": "healthcare_service",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Healthcare Service",
+   "options": "\nAppointment Type\nClinical Procedure Template\nTherapy Type\nMedication\nLab Test Template\nRadiology Examination Template\nHealthcare Service Unit Type"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2020-09-23 12:16:24.490903",
+ "modified": "2020-10-07 22:25:44.494456",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Service Group Item",
