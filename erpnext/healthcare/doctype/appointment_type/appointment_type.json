@@ -11,8 +11,18 @@
  "field_order": [
   "appointment_type",
   "ip",
+  "is_procedure",
   "default_duration",
-  "color"
+  "color",
+  "column_break_6",
+  "medical_code_standard",
+  "medical_code",
+  "billing_section",
+  "out_patient_consulting_charge_item",
+  "op_consulting_charge",
+  "column_break_12",
+  "inpatient_visit_charge_item",
+  "inpatient_visit_charge"
  ],
  "fields": [
   {
@@ -52,10 +62,63 @@
    "label": "Color",
    "no_copy": 1,
    "report_hide": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_procedure",
+   "fieldtype": "Check",
+   "label": "Is Procedure"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "medical_code_standard",
+   "fieldtype": "Link",
+   "label": "Medical Code Standard",
+   "options": "Medical Code Standard"
+  },
+  {
+   "fieldname": "medical_code",
+   "fieldtype": "Link",
+   "label": "Medical Code",
+   "options": "Medical Code"
+  },
+  {
+   "fieldname": "billing_section",
+   "fieldtype": "Section Break",
+   "label": "Billing"
+  },
+  {
+   "fieldname": "out_patient_consulting_charge_item",
+   "fieldtype": "Link",
+   "label": "Out Patient Consulting Charge Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "op_consulting_charge",
+   "fieldtype": "Currency",
+   "label": "OP Consulting Charge"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "inpatient_visit_charge_item",
+   "fieldtype": "Link",
+   "label": "Inpatient Visit Charge Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "inpatient_visit_charge",
+   "fieldtype": "Currency",
+   "label": "Inpatient Visit Charge"
   }
  ],
  "links": [],
- "modified": "2020-02-03 21:06:05.833050",
+ "modified": "2020-10-07 12:51:50.946384",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Appointment Type",
