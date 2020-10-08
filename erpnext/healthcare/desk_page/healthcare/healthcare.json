@@ -84,6 +84,16 @@
    "hidden": 0,
    "label": "Reports",
    "links": "[\n\t{\n\t\t\"type\": \"report\",\n\t\t\"is_query_report\": true,\n\t\t\"name\": \"Patient Appointment Analytics\",\n\t\t\"doctype\": \"Patient Appointment\"\n\t},\n\t{\n\t\t\"type\": \"report\",\n\t\t\"is_query_report\": true,\n\t\t\"name\": \"Lab Test Report\",\n\t\t\"doctype\": \"Lab Test\",\n\t\t\"label\": \"Lab Test Report\"\n\t}\n]"
+  },
+  {
+   "hidden": 0,
+   "label": "Insurance",
+   "links": "[\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Insurance Company\",\n\t\t\"label\": \"Insurance Company\"\n    },\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Insurance Contract\",\n\t\t\"label\": \"Insurance Contract\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Insurance Plan\",\n\t\t\"label\": \"Insurance Plan\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Insurance Assignment\",\n\t\t\"label\": \"Insurance Assignment\"\n\t},\n\t{\n\t    \"type\": \"doctype\",\n\t\t\"name\": \"Insurance Coverage Request\",\n\t\t\"label\": \"Insurance Coverage Request\"\n\t},\n\t{\n\t    \"type\": \"doctype\",\n\t    \"name\": \"Insurance Batch Submission\",\n\t    \"label\": \"Insurance Batch Submission\"\n\t    \n\t}\n]"
+  },
+  {
+   "hidden": 0,
+   "label": "Insurance Setup",
+   "links": "[\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Insurance Coverage Slab\",\n\t\t\"label\": \"Insurance Coverage Slab\"\n    },\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Insurance Coverage\",\n\t\t\"label\": \"Insurance Coverage\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Service Group\",\n\t\t\"label\": \"Healthcare Service Group\"\n\t}\n]"
   }
  ],
  "category": "Domains",
@@ -104,7 +114,7 @@
  "idx": 0,
  "is_standard": 1,
  "label": "Healthcare",
- "modified": "2020-10-07 19:26:50.266182",
+ "modified": "2020-10-08 05:57:35.368716",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare",
