@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "autoname": "field:coverage_slab_name",
  "creation": "2020-09-23 09:16:59.824658",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -14,7 +15,8 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Coverage Slab Name",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "percentage",
@@ -26,7 +28,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-09-23 09:17:14.985746",
+ "modified": "2020-10-08 10:11:34.818987",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Insurance Coverage Slab",
