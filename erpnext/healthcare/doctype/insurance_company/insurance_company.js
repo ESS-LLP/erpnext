@@ -13,7 +13,7 @@ frappe.ui.form.on('Insurance Company', {
 			unhide_field(['address_html', 'contact_html', 'address_contacts']);
 			frappe.contacts.render_address_and_contact(frm);
 		}
-		frm.set_query("billed_but_not_claimed_account", function() {
+		frm.set_query('billed_but_not_claimed_account', function() {
 			return {
 				filters: {
 					'account_type': 'Receivable',
@@ -22,7 +22,7 @@ frappe.ui.form.on('Insurance Company', {
 				}
 			};
 		});
-		frm.set_query("claimed_but_not_approved_account", function() {
+		frm.set_query('claimed_but_not_approved_account', function() {
 			return {
 				filters: {
 					'account_type': 'Receivable',
@@ -31,7 +31,7 @@ frappe.ui.form.on('Insurance Company', {
 				}
 			};
 		});
-		frm.set_query("approved_claim_receivable_account", function() {
+		frm.set_query('approved_claim_receivable_account', function() {
 			return {
 				filters: {
 					'account_type': 'Receivable',
@@ -40,7 +40,7 @@ frappe.ui.form.on('Insurance Company', {
 				}
 			};
 		});
-		frm.set_query("rejected_claims_account", function() {
+		frm.set_query('rejected_claims_account', function() {
 			return {
 				filters: {
 					'root_type': 'Expense',
