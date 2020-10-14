@@ -26,7 +26,7 @@
   "birth_date",
   "age",
   "column_break_16",
-  "blodd_group",
+  "blood_group",
   "marital_status",
   "occupation",
   "email",
@@ -56,6 +56,10 @@
   "healthcare_service_unit_type",
   "note",
   "patient_instruction",
+  "source_section",
+  "source",
+  "column_break_51",
+  "referring_practitioner",
   "medical_code_section",
   "medical_code_standard",
   "column_break_24",
@@ -350,14 +354,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fetch_from": "patient.blood_group",
-   "fieldname": "blodd_group",
-   "fieldtype": "Select",
-   "label": "Blodd Group",
-   "options": "\nA Positive\nA Negative\nAB Positive\nAB Negative\nB Positive\nB Negative\nO Positive\nO Negative",
-   "read_only": 1
-  },
-  {
    "fetch_from": "patient.marital_status",
    "fieldname": "marital_status",
    "fieldtype": "Select",
@@ -432,11 +428,42 @@
    "label": "Triage",
    "options": "Triage",
    "read_only": 1
+  },
+  {
+   "fieldname": "source_section",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "\nDirect\nReferral\nExternal Referral",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_51",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "referring_practitioner",
+   "fieldtype": "Link",
+   "label": "Referring Practitioner",
+   "options": "Healthcare Practitioner",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "patient.blood_group",
+   "fieldname": "blood_group",
+   "fieldtype": "Select",
+   "label": "Blood Group",
+   "options": "\nA Positive\nA Negative\nAB Positive\nAB Negative\nB Positive\nB Negative\nO Positive\nO Negative",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-09-27 11:50:16.756515",
+ "modified": "2020-10-14 14:40:44.291545",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Service Order",
