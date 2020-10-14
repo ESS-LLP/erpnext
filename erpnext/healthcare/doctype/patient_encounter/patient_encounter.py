@@ -156,7 +156,9 @@ def create_healthcare_service_order(encounter):
 				'note': labtest.get_value('note'),
 				'patient_instruction': labtest.get_value('patient_instruction'),
 				'healthcare_service_unit_type':lab_template.get_value('healthcare_service_unit_type'),
-				'company':encounter.company
+				'company':encounter.company,
+				'source':encounter.source,
+				'referring_practitioner':encounter.referring_practitioner
 				}
 			make_healthcare_service_order(args)
 	if encounter.procedure_prescription:
@@ -182,8 +184,10 @@ def create_healthcare_service_order(encounter):
 				'staff_role': procedure_template.get_value('staff_role'),
 				'note': procedure.get_value('note'),
 				'patient_instruction': procedure.get_value('patient_instruction'),
-				'healthcare_service_unit_type':lab_template.get_value('healthcare_service_unit_type'),
-				'company':encounter.company
+				'healthcare_service_unit_type':procedure_template.get_value('healthcare_service_unit_type'),
+				'company':encounter.company,
+				'source':encounter.source,
+				'referring_practitioner':encounter.referring_practitioner
 				}
 			make_healthcare_service_order(args)
 	if encounter.therapies:
@@ -235,7 +239,9 @@ def create_healthcare_service_order(encounter):
 				'note': radiology.get_value('note'),
 				'patient_instruction': radiology.get_value('patient_instruction'),
 				'healthcare_service_unit_type':radiology_template.get_value('healthcare_service_unit_type'),
-				'company':encounter.company
+				'company':encounter.company,
+				'source':encounter.source,
+				'referring_practitioner':encounter.referring_practitioner
 				}
 			make_healthcare_service_order(args)
 
