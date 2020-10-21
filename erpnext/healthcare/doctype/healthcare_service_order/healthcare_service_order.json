@@ -21,6 +21,7 @@
   "patient_demographics_section",
   "patient",
   "patient_name",
+  "triage",
   "gender",
   "birth_date",
   "age",
@@ -423,11 +424,19 @@
    "fieldtype": "Check",
    "label": "Invoiced",
    "read_only": 1
+  },
+  {
+   "fetch_from": "patient.triage",
+   "fieldname": "triage",
+   "fieldtype": "Link",
+   "label": "Triage",
+   "options": "Triage",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-09-18 11:18:02.389596",
+ "modified": "2020-09-27 11:50:16.756515",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Service Order",

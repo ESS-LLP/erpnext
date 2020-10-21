@@ -443,7 +443,7 @@ let check_and_set_availability = function (frm) {
 									let slot_start_time = moment(slot.from_time, 'HH:mm:ss');
 									let slot_to_time = moment(slot.to_time, 'HH:mm:ss');
 									let interval = (slot_to_time - slot_start_time)/60000 | 0;
-									//checking current time in solt
+									//checking current time in slot
 									var today = frappe.datetime.nowdate();
 									if(today == d.get_value('appointment_date')){
 										// disable before  current  time in current date

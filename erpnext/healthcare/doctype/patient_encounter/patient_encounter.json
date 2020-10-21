@@ -19,6 +19,7 @@
   "appointment_type",
   "patient",
   "patient_name",
+  "triage",
   "patient_sex",
   "patient_age",
   "inpatient_record",
@@ -382,12 +383,20 @@
   {
    "fieldname": "section_break_3",
    "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "patient.triage",
+   "fieldname": "triage",
+   "fieldtype": "Link",
+   "label": "Triage",
+   "options": "Triage",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-09-25 15:06:24.486195",
+ "modified": "2020-09-27 11:49:41.683942",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Encounter",
