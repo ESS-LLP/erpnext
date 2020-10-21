@@ -105,8 +105,8 @@ def create_multiple(doctype, docname):
 
 	if lab_test_created:
 		frappe.msgprint(_('Lab Test(s) {0} created successfully').format(lab_test_created), indicator='green')
-	else:
-		frappe.msgprint(_('No Lab Tests created'))
+	# else:
+	# 	frappe.msgprint(_('No Lab Tests created'))
 
 def create_lab_test_from_encounter(encounter):
 	lab_test_created = False
