@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import math
 import frappe
 from frappe import _
-from frappe.utils import time_diff_in_hours, rounded
+from frappe.utils import time_diff_in_hours, rounded, getdate
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_income_account
 from erpnext.healthcare.doctype.fee_validity.fee_validity import create_fee_validity
 from erpnext.healthcare.doctype.lab_test.lab_test import create_multiple
@@ -24,7 +24,6 @@ def get_healthcare_services_to_invoice(patient, company):
 		items_to_invoice += get_clinical_procedures_to_invoice(patient, company)
 		items_to_invoice += get_inpatient_services_to_invoice(patient, company)
 		items_to_invoice += get_therapy_sessions_to_invoice(patient, company)
-
 
 		return items_to_invoice
 
@@ -766,3 +765,16 @@ def delete_medical_record(reference_doc, reference_name):
 		where
 			reference_doctype = %s and reference_name = %s"""
 	frappe.db.sql(query, (reference_doc, reference_name))
+
+# make_healthcare_service_order
+@frappe.whitelist()
+def make_healthcare_service_order(args):
+	healthcare_service_order = frappe.new_doc('Healthcare Service Order')
+	for key in args:
+		if key == 'order_date':
+			healthcare_service_order.set(key, getdate(args[key]))
+		elif key == 'expected_date':
+			healthcare_service_order.set(key, getdate(args[key]))
+		else:
+			healthcare_service_order.set(key, args[key] if args[key] else '')
+	healthcare_service_order.save(ignore_permissions=True)
