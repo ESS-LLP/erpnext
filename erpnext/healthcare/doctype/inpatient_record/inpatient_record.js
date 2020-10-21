@@ -65,7 +65,14 @@ frappe.ui.form.on('Inpatient Record', {
 				};
 			}
 		});
-
+		frm.set_query('insurance_subscription', function(){
+			return{
+				filters:{
+					'patient': frm.doc.patient,
+					'docstatus': 1
+				}
+			};
+		});
 	},
 	btn_transfer: function(frm) {
 		transfer_patient_dialog(frm);

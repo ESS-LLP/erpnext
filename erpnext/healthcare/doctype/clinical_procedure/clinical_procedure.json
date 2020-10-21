@@ -35,6 +35,10 @@
   "source",
   "column_break_26",
   "referring_practitioner",
+  "insurance_section",
+  "insurance_subscription",
+  "column_break_31",
+  "insurance_company",
   "consumables_section",
   "consume_stock",
   "warehouse",
@@ -343,11 +347,34 @@
    "hidden": 1,
    "label": "Referring Practitioner",
    "options": "Healthcare Practitioner"
+  },
+  {
+   "fieldname": "insurance_section",
+   "fieldtype": "Section Break",
+   "label": "Insurance"
+  },
+  {
+   "fieldname": "column_break_31",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "insurance_subscription.insurance_company",
+   "fieldname": "insurance_company",
+   "fieldtype": "Link",
+   "label": "Insurance Company",
+   "options": "Healthcare Insurance Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "insurance_subscription",
+   "fieldtype": "Link",
+   "label": "Insurance Subscription",
+   "options": "Healthcare Insurance Subscription"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-09-26 15:56:05.510156",
+ "modified": "2020-10-21 17:14:39.656978",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Clinical Procedure",
