@@ -1,0 +1,293 @@
+{
+ "actions": [],
+ "allow_copy": 1,
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "HPA.#####",
+ "beta": 1,
+ "creation": "2020-09-25 09:02:20.838228",
+ "description": "Practitioner Availability",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "availability_type",
+  "availability",
+  "practitioner",
+  "healthcare_practitioner_name",
+  "from_date",
+  "from_time",
+  "to_date",
+  "to_time",
+  "repeat_this_event",
+  "column_break_10",
+  "present",
+  "appointment_type",
+  "duration",
+  "service_unit",
+  "total_service_unit_capacity",
+  "color",
+  "out_patient_consulting_charge_item",
+  "op_consulting_charge",
+  "inpatient_visit_charge_item",
+  "inpatient_visit_charge",
+  "section_break_21",
+  "repeat_on",
+  "repeat_till",
+  "column_break_24",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday"
+ ],
+ "fields": [
+  {
+   "fieldname": "availability_type",
+   "fieldtype": "Link",
+   "label": "Availability Type",
+   "options": "Practitioner Availability Type"
+  },
+  {
+   "fieldname": "availability",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Availability",
+   "reqd": 1
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Healthcare Practitioner",
+   "options": "Healthcare Practitioner",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "practitioner.practitioner_name",
+   "fieldname": "healthcare_practitioner_name",
+   "fieldtype": "Data",
+   "label": "Healthcare Practitioner Name"
+  },
+  {
+   "default": "Today",
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date"
+  },
+  {
+   "fieldname": "from_time",
+   "fieldtype": "Time",
+   "label": "From Time"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "hidden": 1,
+   "label": "To Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "to_time",
+   "fieldtype": "Time",
+   "label": "To Time"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "present",
+   "fieldtype": "Check",
+   "label": "Present"
+  },
+  {
+   "depends_on": "present",
+   "fieldname": "appointment_type",
+   "fieldtype": "Link",
+   "label": "Appointment Type",
+   "options": "Appointment Type"
+  },
+  {
+   "depends_on": "present",
+   "fieldname": "duration",
+   "fieldtype": "Int",
+   "label": "Duration"
+  },
+  {
+   "depends_on": "present",
+   "fieldname": "service_unit",
+   "fieldtype": "Link",
+   "label": "Service Unit",
+   "options": "Healthcare Service Unit"
+  },
+  {
+   "depends_on": "present",
+   "fieldname": "total_service_unit_capacity",
+   "fieldtype": "Int",
+   "label": "Total Service Unit Capacity"
+  },
+  {
+   "depends_on": "present",
+   "fieldname": "color",
+   "fieldtype": "Color",
+   "label": "Color"
+  },
+  {
+   "depends_on": "present",
+   "fieldname": "out_patient_consulting_charge_item",
+   "fieldtype": "Link",
+   "label": "Out Patient Consulting Charge Item",
+   "options": "Item"
+  },
+  {
+   "depends_on": "present",
+   "fieldname": "op_consulting_charge",
+   "fieldtype": "Currency",
+   "label": "OP Consulting Charge"
+  },
+  {
+   "depends_on": "present",
+   "fieldname": "inpatient_visit_charge_item",
+   "fieldtype": "Link",
+   "label": "Inpatient Visit Charge Item",
+   "options": "Item"
+  },
+  {
+   "depends_on": "present",
+   "fieldname": "inpatient_visit_charge",
+   "fieldtype": "Currency",
+   "label": "Inpatient Visit Charge"
+  },
+  {
+   "depends_on": "repeat_this_event",
+   "fieldname": "section_break_21",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "repeat_this_event",
+   "fieldname": "repeat_on",
+   "fieldtype": "Select",
+   "label": "Repeat On",
+   "options": "\nEvery Day\nEvery Week\nEvery Month\nEvery Year"
+  },
+  {
+   "depends_on": "repeat_this_event",
+   "fieldname": "repeat_till",
+   "fieldtype": "Date",
+   "label": "Repeat Till"
+  },
+  {
+   "fieldname": "column_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.repeat_this_event && doc.repeat_on===\"Every Day\"",
+   "fieldname": "monday",
+   "fieldtype": "Check",
+   "label": "Monday"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.repeat_this_event && doc.repeat_on==='Every Day'",
+   "fieldname": "tuesday",
+   "fieldtype": "Check",
+   "label": "Tuesday"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.repeat_this_event && doc.repeat_on==='Every Day'",
+   "fieldname": "wednesday",
+   "fieldtype": "Check",
+   "label": "Wednesday"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.repeat_this_event && doc.repeat_on==='Every Day'",
+   "fieldname": "thursday",
+   "fieldtype": "Check",
+   "label": "Thursday"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.repeat_this_event && doc.repeat_on==='Every Day'",
+   "fieldname": "friday",
+   "fieldtype": "Check",
+   "label": "Friday"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.repeat_this_event && doc.repeat_on==='Every Day'",
+   "fieldname": "saturday",
+   "fieldtype": "Check",
+   "label": "Saturday"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.repeat_this_event && doc.repeat_on==='Every Day'",
+   "fieldname": "sunday",
+   "fieldtype": "Check",
+   "label": "Sunday"
+  },
+  {
+   "default": "0",
+   "fieldname": "repeat_this_event",
+   "fieldtype": "Check",
+   "label": "Repeat"
+  }
+ ],
+ "links": [],
+ "modified": "2020-09-25 09:21:25.342956",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Practitioner Availability",
+ "name_case": "Title Case",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Healthcare Administrator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Physician",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "restrict_to_domain": "Healthcare",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1
+}
