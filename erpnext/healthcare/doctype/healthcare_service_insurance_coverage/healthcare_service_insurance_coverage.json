@@ -1,0 +1,156 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "beta": 1,
+ "creation": "2020-10-16 10:11:39.077709",
+ "description": "Healthcare Service Insurance Coverage",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "healthcare_service",
+  "healthcare_service_template",
+  "column_break_3",
+  "is_active",
+  "healthcare_insurance_coverage_plan",
+  "coverage_deatils_section",
+  "coverage",
+  "discount",
+  "maximum_number_of_claims",
+  "approval_mandatory_for_claim",
+  "manual_approval_only",
+  "column_break_12",
+  "start_date",
+  "end_date",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "healthcare_service",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Healthcare Service",
+   "options": "\nAppointment Type\nClinical Procedure Template\nTherapy Type\nMedication\nLab Test Template\nRadiology Examination Template\nHealthcare Service Unit Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "healthcare_service_template",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Healthcare Service Template",
+   "options": "healthcare_service",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "healthcare_insurance_coverage_plan",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Healthcare Insurance Coverage Plan",
+   "options": "Healthcare Insurance Coverage Plan",
+   "reqd": 1
+  },
+  {
+   "fieldname": "coverage_deatils_section",
+   "fieldtype": "Section Break",
+   "label": "Coverage Deatils"
+  },
+  {
+   "fieldname": "coverage",
+   "fieldtype": "Percent",
+   "label": "Coverage"
+  },
+  {
+   "fieldname": "discount",
+   "fieldtype": "Percent",
+   "label": "Discount"
+  },
+  {
+   "description": "Number of claims allowed per year",
+   "fieldname": "maximum_number_of_claims",
+   "fieldtype": "Int",
+   "label": "Maximum Number of Claims"
+  },
+  {
+   "default": "0",
+   "fieldname": "approval_mandatory_for_claim",
+   "fieldtype": "Check",
+   "label": "Approval Mandatory for Claim"
+  },
+  {
+   "default": "0",
+   "depends_on": "approval_mandatory_for_claim",
+   "fieldname": "manual_approval_only",
+   "fieldtype": "Check",
+   "label": "Manual Approval Only"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Healthcare Service Insurance Coverage",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "HSIC-.YYYY.-"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2020-10-16 16:18:18.293313",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Healthcare Service Insurance Coverage",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1
+}
