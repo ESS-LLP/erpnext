@@ -67,7 +67,8 @@
   "origin_section",
   "order_reference_doctype",
   "column_break_9",
-  "order_reference_name"
+  "order_reference_name",
+  "amended_from"
  ],
  "fields": [
   {
@@ -459,11 +460,21 @@
    "label": "Blood Group",
    "options": "\nA Positive\nA Negative\nAB Positive\nAB Negative\nB Positive\nB Negative\nO Positive\nO Negative",
    "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Healthcare Service Order",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2020-10-14 14:40:44.291545",
+ "modified": "2020-10-21 16:51:40.259217",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Service Order",
