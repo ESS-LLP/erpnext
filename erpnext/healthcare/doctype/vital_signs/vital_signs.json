@@ -73,7 +73,6 @@
    "fieldtype": "Link",
    "in_filter": 1,
    "label": "Patient Appointment",
-   "no_copy": 1,
    "options": "Patient Appointment",
    "print_hide": 1,
    "read_only": 1
@@ -259,7 +258,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-05-17 22:23:24.632286",
+ "modified": "2020-10-22 18:39:13.196393",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Vital Signs",
