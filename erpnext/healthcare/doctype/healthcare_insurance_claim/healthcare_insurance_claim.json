@@ -89,6 +89,7 @@
    "label": "Claim Details"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "mode_of_claim_approval",
    "fieldtype": "Select",
    "label": "Mode of Claim Approval",
@@ -104,12 +105,14 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "claim_status",
    "fieldtype": "Select",
    "label": "Claim Status",
    "options": "\nPending\nApproved\nRejected"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "approval_validity_end_date",
    "fieldtype": "Date",
    "label": "Approval Validity End Date"
@@ -206,13 +209,15 @@
    "fieldname": "sales_invoice",
    "fieldtype": "Link",
    "label": "Sales Invoice",
-   "options": "Sales Invoice"
+   "options": "Sales Invoice",
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
    "fieldname": "sales_invoice_posting_date",
    "fieldtype": "Date",
-   "label": "Sales Invoice Posting Date"
+   "label": "Sales Invoice Posting Date",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_31",
@@ -222,13 +227,15 @@
    "allow_on_submit": 1,
    "fieldname": "billing_date",
    "fieldtype": "Date",
-   "label": "Billing Date "
+   "label": "Billing Date ",
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
    "fieldname": "billing_amount",
    "fieldtype": "Data",
-   "label": "Billing Amount"
+   "label": "Billing Amount",
+   "read_only": 1
   },
   {
    "fieldname": "amended_from",
@@ -243,7 +250,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-10-16 12:00:12.276512",
+ "modified": "2020-10-22 13:41:34.076719",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Insurance Claim",
