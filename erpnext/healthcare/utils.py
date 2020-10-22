@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import math
 import frappe
 from frappe import _
-from frappe.utils import time_diff_in_hours, rounded, getdate
+from frappe.utils import time_diff_in_hours, rounded, getdate, nowdate
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_income_account
 from erpnext.healthcare.doctype.fee_validity.fee_validity import create_fee_validity
 from erpnext.healthcare.doctype.lab_test.lab_test import create_multiple
@@ -780,3 +780,91 @@ def make_healthcare_service_order(args):
 		else:
 			healthcare_service_order.set(key, args[key] if args[key] else '')
 	healthcare_service_order.save(ignore_permissions=True)
+#insurance claim
+def create_insurance_claim(doc, service_doctype, service, qty, billing_item):
+	insurance_details = get_insurance_details(service, doc.insurance_subscription, billing_item)
+	insurance_claim = frappe.new_doc('Healthcare Insurance Claim')
+	insurance_claim.patient = doc.patient
+	insurance_claim.reference_dt = doc.doctype
+	insurance_claim.reference_dn = doc.name
+	insurance_claim.insurance_subscription = doc.insurance_subscription
+	insurance_claim.insurance_company = doc.insurance_company
+	insurance_claim.healthcare_service_type = service_doctype
+	insurance_claim.service_template = service
+	insurance_claim.claim_status = 'Pending'
+	insurance_claim.claim_posting_date = nowdate()
+	insurance_claim.quantity = qty
+	insurance_claim.service_doctype = doc.doctype
+	insurance_claim.service_item = billing_item
+	insurance_claim.discount = insurance_details.discount
+	insurance_claim.price_list_rate = insurance_details.rate
+	insurance_claim.amount = float(insurance_details.rate) * float(qty)
+	if insurance_claim.discount and float(insurance_claim.discount) > 0:
+		insurance_claim.discount_amount = float(insurance_claim.price_list_rate) * float(insurance_claim.discount) * 0.01
+		insurance_claim.amount = float(insurance_details.rate - insurance_claim.discount_amount) * float(qty)
+	insurance_claim.coverage = insurance_details.coverage
+	insurance_claim.coverage_amount = float(insurance_claim.amount) * 0.01 * float(insurance_claim.coverage)
+	insurance_claim.save(ignore_permissions=True)
+	insurance_claim.submit()
+	return insurance_claim.name
+
+def get_insurance_details(service, insurance_subscription, billing_item):
+	valid_date = nowdate()
+	claim_coverage = 0
+	price_list_rate = 0
+	claim_discount = 0
+	insurance_subscription = frappe.get_doc('Healthcare Insurance Subscription', insurance_subscription)
+	if insurance_subscription and valid_insurance(insurance_subscription.name, insurance_subscription.insurance_company, valid_date):
+		if insurance_subscription.healthcare_insurance_coverage_plan:
+			price_list_rate = get_insurance_price_list_rate(insurance_subscription.healthcare_insurance_coverage_plan, billing_item)
+			coverage, discount = get_insurance_coverage_details(insurance_subscription.healthcare_insurance_coverage_plan, service)
+			if coverage and discount:
+				claim_discount = discount
+				claim_coverage = coverage
+	insurance_details = frappe._dict({'rate': price_list_rate, 'discount': claim_discount, 'coverage': claim_coverage})
+	return insurance_details
+
+def valid_insurance(insurance_subscription, insurance_company, posting_date):
+	if frappe.db.exists('Healthcare Insurance Contract',
+		{
+			'insurance_company': insurance_company,
+			'start_date':("<=", getdate(posting_date)),
+			'end_date':(">=", getdate(posting_date)),
+			'is_active': 1
+		}):
+		if frappe.db.exists('Healthcare Insurance Subscription',
+			{
+				'name': insurance_subscription,
+				'subscription_end_date':(">=", getdate(posting_date)),
+				'is_active': 1
+			}):
+			return True
+	return False
+
+def get_insurance_price_list_rate(healthcare_insurance_coverage_plan, billing_item):
+	rate = 0.0
+	if healthcare_insurance_coverage_plan:
+		price_list = frappe.db.get_value('Healthcare Insurance Coverage Plan', healthcare_insurance_coverage_plan, 'price_list')
+		if price_list:
+			item_price = frappe.db.exists('Item Price',
+						{
+							'item_code': billing_item,
+							'price_list': price_list
+						})
+			if item_price:
+				rate = frappe.db.get_value('Item Price', item_price, 'price_list_rate')
+				print(rate)
+	return rate
+
+def get_insurance_coverage_details(healthcare_insurance_coverage_plan, service):
+	coverage = 0
+	discount = 0
+	if healthcare_insurance_coverage_plan:
+		healthcare_service_coverage = frappe.db.exists('Healthcare Service Insurance Coverage',
+									{
+										'healthcare_insurance_coverage_plan': healthcare_insurance_coverage_plan,
+										'healthcare_service_template': service
+									})
+		if healthcare_service_coverage:
+			coverage, discount = frappe.db.get_value('Healthcare Service Insurance Coverage', healthcare_service_coverage, ['coverage', 'discount'])
+			return coverage, discount
