@@ -74,16 +74,14 @@
    "read_only": 1
   }
  ],
- "is_submittable": 1,
  "links": [],
- "modified": "2020-10-16 10:13:29.679922",
+ "modified": "2020-10-26 08:14:34.897521",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Insurance Coverage Plan",
  "owner": "Administrator",
  "permissions": [
   {
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -93,11 +91,9 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -107,11 +103,9 @@
    "report": 1,
    "role": "Healthcare Administrator",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -121,7 +115,6 @@
    "report": 1,
    "role": "Accounts Manager",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
