@@ -27,6 +27,7 @@ class PatientEncounter(Document):
 		update_encounter_medical_record(self)
 		create_therapy_plan(self)
 		create_healthcare_service_order(self)
+		make_insurance_claim(self)
 
 	def on_cancel(self):
 		if self.appointment:
@@ -130,7 +131,8 @@ def create_healthcare_service_order(encounter):
 				'staff_role': medication.get_value('staff_role'),
 				'note': drug.get_value('note'),
 				'patient_instruction': drug.get_value('patient_instruction'),
-				'company':encounter.company
+				'company':encounter.company,
+				'insurance_subscription' : encounter.insurance_subscription if encounter.insurance_subscription else ''
 				}
 			make_healthcare_service_order(args)
 	if encounter.lab_test_prescription:
@@ -158,7 +160,8 @@ def create_healthcare_service_order(encounter):
 				'healthcare_service_unit_type':lab_template.get_value('healthcare_service_unit_type'),
 				'company':encounter.company,
 				'source':encounter.source,
-				'referring_practitioner':encounter.referring_practitioner
+				'referring_practitioner':encounter.referring_practitioner,
+				'insurance_subscription' : encounter.insurance_subscription if encounter.insurance_subscription else ''
 				}
 			make_healthcare_service_order(args)
 	if encounter.procedure_prescription:
@@ -187,7 +190,8 @@ def create_healthcare_service_order(encounter):
 				'healthcare_service_unit_type':procedure_template.get_value('healthcare_service_unit_type'),
 				'company':encounter.company,
 				'source':encounter.source,
-				'referring_practitioner':encounter.referring_practitioner
+				'referring_practitioner':encounter.referring_practitioner,
+				'insurance_subscription' : encounter.insurance_subscription if encounter.insurance_subscription else ''
 				}
 			make_healthcare_service_order(args)
 	if encounter.therapies:
@@ -241,7 +245,8 @@ def create_healthcare_service_order(encounter):
 				'healthcare_service_unit_type':radiology_template.get_value('healthcare_service_unit_type'),
 				'company':encounter.company,
 				'source':encounter.source,
-				'referring_practitioner':encounter.referring_practitioner
+				'referring_practitioner':encounter.referring_practitioner,
+				'insurance_subscription' : encounter.insurance_subscription if encounter.insurance_subscription else ''
 				}
 			make_healthcare_service_order(args)
 
@@ -252,3 +257,13 @@ def create_patient_referral(args):
 	for key in args:
 		patient_referral.set(key, args[key] if args[key] else '')
 	patient_referral.save(ignore_permissions=True)
+
+def make_insurance_claim(doc):
+	if doc.insurance_subscription:
+		from erpnext.healthcare.utils import create_insurance_claim, get_service_item_and_practitioner_charge
+		billing_item, rate  = get_service_item_and_practitioner_charge(doc)
+		insurance_claim, claim_status = create_insurance_claim(doc, 'Appointment Type', doc.appointment_type, 1, billing_item)
+		if insurance_claim:
+			frappe.set_value(doc.doctype, doc.name ,'insurance_claim', insurance_claim)
+			frappe.set_value(doc.doctype, doc.name ,'claim_status', claim_status)
+			doc.reload()

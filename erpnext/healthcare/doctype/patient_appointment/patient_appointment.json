@@ -99,6 +99,7 @@
    "ignore_user_permissions": 1,
    "label": "Appointment Type",
    "options": "Appointment Type",
+   "reqd": 1,
    "set_only_once": 1
   },
   {
@@ -516,7 +517,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-10-21 18:06:48.193153",
+ "modified": "2020-10-26 22:50:24.984924",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Appointment",
