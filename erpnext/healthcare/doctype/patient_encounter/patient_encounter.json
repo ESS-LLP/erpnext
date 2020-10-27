@@ -301,8 +301,8 @@
    "no_copy": 1,
    "options": "Appointment Type",
    "print_hide": 1,
-   "read_only": 1,
-   "report_hide": 1
+   "report_hide": 1,
+   "reqd": 1
   },
   {
    "fetch_from": "practitioner.department",
@@ -454,7 +454,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-10-21 17:45:16.797551",
+ "modified": "2020-10-26 20:15:04.474406",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Encounter",

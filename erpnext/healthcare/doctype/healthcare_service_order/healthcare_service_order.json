@@ -189,7 +189,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Draft\nActive\nOn Hold\nRevoked\nCompleted\nReplaced\nError\nUnknown"
+   "options": "Draft\nActive\nOn Hold\nRevoked\nCompleted\nReplaced\nError\nUnknown\nWaiting"
   },
   {
    "allow_in_quick_entry": 1,
@@ -519,7 +519,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-10-21 17:34:23.242752",
+ "modified": "2020-10-26 23:08:37.901846",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Service Order",
