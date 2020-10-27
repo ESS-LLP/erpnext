@@ -108,17 +108,30 @@ def get_lab_tests_to_invoice(patient, company):
 	lab_tests_to_invoice = []
 	lab_tests = frappe.get_list(
 		'Lab Test',
-		fields=['name', 'template'],
+		fields='*',
 		filters={'patient': patient.name, 'company': company, 'invoiced': False, 'docstatus': 1}
 	)
 	for lab_test in lab_tests:
 		item, is_billable = frappe.get_cached_value('Lab Test Template', lab_test.template, ['item', 'is_billable'])
 		if is_billable:
-			lab_tests_to_invoice.append({
-				'reference_type': 'Lab Test',
-				'reference_name': lab_test.name,
-				'service': item
-			})
+			if lab_test.insurance_claim:
+				if lab_test.claim_status == 'Approved':
+					coverage, discount, price_list_rate = frappe.get_cached_value('Healthcare Insurance Claim', lab_test.insurance_claim, ['coverage', 'discount', 'price_list_rate'])
+					lab_tests_to_invoice.append({
+						'reference_type': 'Lab Test',
+						'reference_name': lab_test.name,
+						'service': item,
+						'rate': price_list_rate,
+						'discount_percentage':discount,
+						'insurance_claim_coverage': coverage,
+						'insurance_claim': lab_test.insurance_claim
+					})
+			else:
+				lab_tests_to_invoice.append({
+					'reference_type': 'Lab Test',
+					'reference_name': lab_test.name,
+					'service': item
+				})
 
 	return lab_tests_to_invoice
 
@@ -134,11 +147,24 @@ def get_clinical_procedures_to_invoice(patient, company):
 		if not procedure.appointment:
 			item, is_billable = frappe.get_cached_value('Clinical Procedure Template', procedure.procedure_template, ['item', 'is_billable'])
 			if procedure.procedure_template and is_billable:
-				clinical_procedures_to_invoice.append({
-					'reference_type': 'Clinical Procedure',
-					'reference_name': procedure.name,
-					'service': item
-				})
+				if procedure.insurance_claim:
+					if procedure.claim_status == 'Approved':
+						coverage, discount, rate = frappe.get_cached_value('Healthcare Insurance Claim', procedure.insurance_claim, ['coverage', 'discount', 'price_list_rate'])
+						clinical_procedures_to_invoice.append({
+							'reference_type': 'Clinical Procedure',
+							'reference_name': procedure.name,
+							'service': item,
+							'rate': rate,
+							'discount_percentage':discount,
+							'insurance_claim_coverage': coverage,
+							'insurance_claim': procedure.insurance_claim
+						})
+				else:
+					clinical_procedures_to_invoice.append({
+						'reference_type': 'Clinical Procedure',
+						'reference_name': procedure.name,
+						'service': item
+					})
 
 		# consumables
 		if procedure.invoice_separately_as_consumables and procedure.consume_stock \
@@ -224,17 +250,30 @@ def get_radiology_examinations_to_invoice(patient, company):
 	radiology_to_invoice = []
 	radiology_examinations = frappe.get_list(
 		'Radiology Examination',
-		fields=['name', 'radiology_examination_template'],
+		fields='*',
 		filters={'patient': patient.name, 'company': company, 'invoiced': False, 'docstatus': 1}
 	)
 	for radiology_examination in radiology_examinations:
 		item, is_billable = frappe.get_cached_value('Radiology Examination Template', radiology_examination.radiology_examination_template, ['item', 'is_billable'])
 		if is_billable:
-			radiology_to_invoice.append({
-				'reference_type': 'Radiology Examination',
-				'reference_name': radiology_examination.name,
-				'service': item
-			})
+			if radiology_examination.insurance_claim:
+				if radiology_examination.claim_status == 'Approved':
+					coverage, discount, rate = frappe.get_cached_value('Healthcare Insurance Claim', radiology_examination.insurance_claim, ['coverage', 'discount', 'price_list_rate'])
+					radiology_to_invoice.append({
+						'reference_type': 'Radiology Examination',
+						'reference_name': radiology_examination.name,
+						'service': item,
+						'rate': rate,
+						'discount_percentage':discount,
+						'insurance_claim_coverage': coverage,
+						'insurance_claim': radiology_examination.insurance_claim
+					})
+			else:
+				radiology_to_invoice.append({
+					'reference_type': 'Radiology Examination',
+					'reference_name': radiology_examination.name,
+					'service': item
+				})
 
 	return radiology_to_invoice
 
@@ -242,19 +281,32 @@ def get_healthcare_service_orders_to_invoice(patient, company):
 	service_order_to_invoice = []
 	service_orders = frappe.get_list(
 		'Healthcare Service Order',
-		fields=['name'],
+		fields='*',
 		filters={'patient': patient.name, 'company': company, 'invoiced': False}
 	)
 	for service_order in service_orders:
-		service_order_doc = frappe.get_doc('Healthcare Service Order', service_order.name)
-		item, is_billable = frappe.get_cached_value(service_order_doc.order_doctype, service_order_doc.order, ['item', 'is_billable'])
+		item, is_billable = frappe.get_cached_value(service_order.order_doctype, service_order.order, ['item', 'is_billable'])
 		if is_billable:
-			service_order_to_invoice.append({
-				'reference_type': 'Healthcare Service Order',
-				'reference_name': service_order.name,
-				'service': item,
-				'qty': service_order_doc.quantity if service_order_doc.quantity else 1
-			})
+			if service_order.insurance_claim:
+				if service_order.claim_status == 'Approved':
+					coverage, discount, rate = frappe.get_cached_value('Healthcare Insurance Claim', service_order.insurance_claim, ['coverage', 'discount', 'price_list_rate'])
+					service_order_to_invoice.append({
+						'reference_type': 'Healthcare Service Order',
+						'reference_name': service_order.name,
+						'service': item,
+						'rate': rate,
+						'qty': service_order.quantity if service_order.quantity else 1,
+						'discount_percentage':discount,
+						'insurance_claim_coverage': coverage,
+						'insurance_claim': service_order.insurance_claim
+					})
+			else:
+				service_order_to_invoice.append({
+					'reference_type': 'Healthcare Service Order',
+					'reference_name': service_order.name,
+					'service': item,
+					'qty': service_order.quantity if service_order.quantity else 1
+				})
 	return service_order_to_invoice
 
 def get_service_item_and_practitioner_charge(doc):
@@ -262,11 +314,16 @@ def get_service_item_and_practitioner_charge(doc):
 	if is_inpatient:
 		service_item = get_practitioner_service_item(doc.practitioner, 'inpatient_visit_charge_item')
 		if not service_item:
-			service_item = get_healthcare_service_item('inpatient_visit_charge_item')
+			service_item = get_appointment_type_service_item(doc.appointment_type, 'inpatient_visit_charge_item')
+			if not service_item:
+				service_item = get_healthcare_service_item('inpatient_visit_charge_item')
+
 	else:
 		service_item = get_practitioner_service_item(doc.practitioner, 'op_consulting_charge_item')
 		if not service_item:
-			service_item = get_healthcare_service_item('op_consulting_charge_item')
+			service_item = get_appointment_type_service_item(doc.appointment_type, 'op_consulting_charge_item')
+			if not service_item:
+				service_item = get_healthcare_service_item('op_consulting_charge_item')
 	if not service_item:
 		throw_config_service_item(is_inpatient)
 
@@ -300,6 +357,8 @@ def throw_config_practitioner_charge(is_inpatient, practitioner):
 def get_practitioner_service_item(practitioner, service_item_field):
 	return frappe.db.get_value('Healthcare Practitioner', practitioner, service_item_field)
 
+def get_appointment_type_service_item(appointment_type, service_item_field):
+	return frappe.db.get_value('Appointment Type', appointment_type, service_item_field)
 
 def get_healthcare_service_item(service_item_field):
 	return frappe.db.get_single_value('Healthcare Settings', service_item_field)
@@ -321,6 +380,8 @@ def manage_invoice_submit_cancel(doc, method):
 			if item.get('reference_dt') and item.get('reference_dn'):
 				if frappe.get_meta(item.reference_dt).has_field('invoiced'):
 					set_invoiced(item, method, doc.name)
+			if item.get('insurance_claim'):
+				update_insurance_claim(item.insurance_claim, doc.name, doc.posting_date, doc.total)
 
 	if method=='on_submit' and frappe.db.get_single_value('Healthcare Settings', 'create_lab_test_on_si_submit'):
 		create_multiple('Sales Invoice', doc.name)
@@ -791,7 +852,8 @@ def create_insurance_claim(doc, service_doctype, service, qty, billing_item):
 	insurance_claim.insurance_company = doc.insurance_company
 	insurance_claim.healthcare_service_type = service_doctype
 	insurance_claim.service_template = service
-	insurance_claim.claim_status = 'Pending'
+	insurance_claim.claim_status = 'Approved' if insurance_details.is_auto_approval else 'Pending'
+	insurance_claim.mode_of_claim_approval = 'Automatic' if insurance_details.is_auto_approval else ''
 	insurance_claim.claim_posting_date = nowdate()
 	insurance_claim.quantity = qty
 	insurance_claim.service_doctype = doc.doctype
@@ -806,7 +868,7 @@ def create_insurance_claim(doc, service_doctype, service, qty, billing_item):
 	insurance_claim.coverage_amount = float(insurance_claim.amount) * 0.01 * float(insurance_claim.coverage)
 	insurance_claim.save(ignore_permissions=True)
 	insurance_claim.submit()
-	return insurance_claim.name
+	return insurance_claim.name , insurance_claim.claim_status
 
 def get_insurance_details(service, insurance_subscription, billing_item):
 	valid_date = nowdate()
@@ -817,11 +879,11 @@ def get_insurance_details(service, insurance_subscription, billing_item):
 	if insurance_subscription and valid_insurance(insurance_subscription.name, insurance_subscription.insurance_company, valid_date):
 		if insurance_subscription.healthcare_insurance_coverage_plan:
 			price_list_rate = get_insurance_price_list_rate(insurance_subscription.healthcare_insurance_coverage_plan, billing_item)
-			coverage, discount = get_insurance_coverage_details(insurance_subscription.healthcare_insurance_coverage_plan, service)
+			coverage, discount, is_auto_approval = get_insurance_coverage_details(insurance_subscription.healthcare_insurance_coverage_plan, service)
 			if coverage and discount:
 				claim_discount = discount
 				claim_coverage = coverage
-	insurance_details = frappe._dict({'rate': price_list_rate, 'discount': claim_discount, 'coverage': claim_coverage})
+	insurance_details = frappe._dict({'rate': price_list_rate, 'discount': claim_discount, 'coverage': claim_coverage, 'is_auto_approval': is_auto_approval})
 	return insurance_details
 
 def valid_insurance(insurance_subscription, insurance_company, posting_date):
@@ -853,12 +915,12 @@ def get_insurance_price_list_rate(healthcare_insurance_coverage_plan, billing_it
 						})
 			if item_price:
 				rate = frappe.db.get_value('Item Price', item_price, 'price_list_rate')
-				print(rate)
 	return rate
 
 def get_insurance_coverage_details(healthcare_insurance_coverage_plan, service):
 	coverage = 0
 	discount = 0
+	is_auto_approval = True
 	if healthcare_insurance_coverage_plan:
 		healthcare_service_coverage = frappe.db.exists('Healthcare Service Insurance Coverage',
 									{
@@ -867,4 +929,14 @@ def get_insurance_coverage_details(healthcare_insurance_coverage_plan, service):
 									})
 		if healthcare_service_coverage:
 			coverage, discount = frappe.db.get_value('Healthcare Service Insurance Coverage', healthcare_service_coverage, ['coverage', 'discount'])
-			return coverage, discount
+			approval_mandatory_for_claim = frappe.db.get_value('Healthcare Service Insurance Coverage', healthcare_service_coverage, 'approval_mandatory_for_claim')
+			if approval_mandatory_for_claim:
+				manual_approval_only = frappe.db.get_value('Healthcare Service Insurance Coverage', healthcare_service_coverage, 'manual_approval_only')
+				if manual_approval_only:
+					is_auto_approval = False
+			return coverage, discount, is_auto_approval
+def update_insurance_claim(insurance_claim,sales_invoice_name, posting_date, total_amount):
+	frappe.set_value('Healthcare Insurance Claim', insurance_claim, 'sales_invoice', sales_invoice_name)
+	frappe.set_value('Healthcare Insurance Claim', insurance_claim, 'sales_invoice_posting_date', posting_date)
+	frappe.set_value('Healthcare Insurance Claim', insurance_claim, 'billing_date', nowdate())
+	frappe.set_value('Healthcare Insurance Claim', insurance_claim, 'billing_amount', total_amount)
