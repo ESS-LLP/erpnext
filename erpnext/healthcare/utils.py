@@ -784,6 +784,8 @@ def updating_rate(doc, item_name):
 def on_trash_doc_having_item_reference(doc):
 	if(doc.item):
 		try:
+			doc.item = ""
+			doc.save()
 			frappe.delete_doc('Item',doc.item)
 		except Exception:
 			frappe.throw(_('Not permitted. Please disable the {0}').format(doc.doctype))
