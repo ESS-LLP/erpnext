@@ -25,6 +25,7 @@
   "expected_result_time",
   "printed_on",
   "invoiced",
+  "healthcare_service_order",
   "sb_first",
   "patient",
   "patient_name",
@@ -627,6 +628,13 @@
    "label": "Claim Status",
    "options": "\nPending\nApproved\nRejected\nInvoiced",
    "read_only": 1
+  },
+  {
+   "fieldname": "healthcare_service_order",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Healthcare Service Order",
+   "options": "Healthcare Service Order"
   }
  ],
  "index_web_pages_for_search": 1,

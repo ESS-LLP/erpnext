@@ -181,21 +181,23 @@ var show_lab_tests = function (frm, lab_test_list) {
 		var row = $(repl(
 			'<div class="col-xs-12" style="padding-top:12px;">\
 				<div class="col-xs-3"> %(lab_test)s </div>\
-				<div class="col-xs-4"> %(practitioner_name)s<br>%(encounter)s</div>\
+				<div class="col-xs-4">%(encounter)s</div>\
 				<div class="col-xs-3"> %(date)s </div>\
 				<div class="col-xs-1">\
 					<a data-name="%(name)s" data-lab-test="%(lab_test)s"\
-					data-encounter="%(encounter)s" data-practitioner="%(practitioner)s"\
+					data-encounter="%(encounter)s" data-practitioner="%(practitioner)s" \
 					data-invoiced="%(invoiced)s" data-source="%(source)s"\
+					data-insurance-company="%(insurance_company)s" data-insurance-subscription="%(insurance_subscription)s"\
 					data-referring-practitioner="%(referring_practitioner)s" href="#"><button class="btn btn-default btn-xs">Get</button></a>\
 				</div>\
 			</div><hr>',
-			{name: y[0], lab_test: y[1], encounter: y[2], invoiced: y[3], practitioner: y[4], practitioner_name: y[5], date: y[6], source: y[7], referring_practitioner: y[8]})
+			{ lab_test: y[0], encounter: y[1], invoiced: y[2], practitioner: y[3], date: y[4], source: y[5], referring_practitioner: y[6],
+			name: y[7], insurance_subscription:y[8], insurance_company:y[9]})
 		).appendTo(html_field);
 
 		row.find("a").click(function () {
 			frm.doc.template = $(this).attr('data-lab-test');
-			frm.doc.prescription = $(this).attr('data-name');
+			frm.doc.healthcare_service_order = $(this).attr('data-name');
 			frm.doc.practitioner = $(this).attr('data-practitioner');
 			frm.set_df_property('template', 'read_only', 1);
 			frm.set_df_property('patient', 'read_only', 1);
@@ -207,13 +209,18 @@ var show_lab_tests = function (frm, lab_test_list) {
 			frm.doc.source = $(this).attr('data-source');
 			frm.set_df_property('source', 'read_only', 1);
 			frm.doc.referring_practitioner = $(this).attr('data-referring-practitioner');
+			frm.doc.insurance_subscription = $(this).attr("data-insurance-subscription");
+			frm.doc.insurance_company = $(this).attr("data-insurance-company");
 			if(frm.doc.referring_practitioner){
 				frm.set_df_property('referring_practitioner', 'hidden', 0);
 				frm.set_df_property('referring_practitioner', 'read_only', 1);
 			}
 			frm.refresh_field('invoiced');
+			frm.refresh_field('healthcare_service_order');
 			frm.refresh_field('template');
 			frm.refresh_field('source');
+			frm.refresh_field("insurance_subscription");
+			frm.refresh_field("insurance_company");
 			frm.refresh_field('referring_practitioner');
 
 			d.hide();
