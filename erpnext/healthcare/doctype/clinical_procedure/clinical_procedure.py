@@ -34,11 +34,9 @@ class ClinicalProcedure(Document):
         set_procedure_pre_post_tasks(self)
 
     def after_insert(self):
-        if self.prescription:
-            frappe.db.set_value('Procedure Prescription',
-                                self.prescription, 'procedure_created', 1)
-            frappe.db.set_value('Procedure Prescription',
-                                self.prescription, 'clinical_procedure', self.name)
+        if self.healthcare_service_order:
+            frappe.db.set_value('Healthcare Service Order',
+                                self.healthcare_service_order, 'status', 'Completed')
         if self.appointment:
             frappe.db.set_value('Patient Appointment',
                                 self.appointment, 'status', 'Closed')
@@ -359,3 +357,27 @@ def make_insurance_claim(doc):
 			frappe.set_value(doc.doctype, doc.name ,'insurance_claim', insurance_claim)
 			frappe.set_value(doc.doctype, doc.name ,'claim_status', claim_status)
 			doc.reload()
+@frappe.whitelist()
+def get_procedure_prescribed(patient, encounter=False):
+    return frappe.db.sql(
+         '''
+		select
+            hso.order as procedure_template,
+            hso.order_group,
+            hso.invoiced,
+            hso.ordered_by as practitioner,
+            hso.order_date as encounter_date,
+            hso.source,
+            hso.referring_practitioner,
+            hso.name,
+            hso.insurance_subscription,
+            hso.insurance_company
+		from
+			`tabHealthcare Service Order` hso
+		where
+            hso.patient=%s
+				and hso.status!=%s
+				and hso.order_doctype=%s
+        order by
+            hso.creation desc
+		''', (patient, 'Completed', 'Clinical Procedure Template'))

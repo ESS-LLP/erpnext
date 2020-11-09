@@ -15,6 +15,7 @@
   "column_break_30",
   "company",
   "invoiced",
+  "healthcare_service_order",
   "section_break_6",
   "patient",
   "patient_name",
@@ -390,6 +391,13 @@
    "label": "Claim Status",
    "options": "\nPending\nApproved\nRejected\nInvoiced",
    "read_only": 1
+  },
+  {
+   "fieldname": "healthcare_service_order",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Healthcare Service Order",
+   "options": "Healthcare Service Order"
   }
  ],
  "is_submittable": 1,

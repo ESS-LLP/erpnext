@@ -79,6 +79,12 @@ frappe.ui.form.on('Clinical Procedure', {
 				function(doc) { return (doc.qty<=doc.actual_qty) ? 'green' : 'orange' ; });
 		}
 
+		if(frm.doc.__islocal) {
+			frm.add_custom_button(__('Get from Patient Encounter'), function () {
+				get_procedure_prescribed(frm);
+			});
+		}
+
 		if (frm.doc.docstatus == 1) {
 			if (frm.doc.status == 'In Progress') {
 				let btn_label = '';
@@ -394,6 +400,21 @@ frappe.ui.form.on('Clinical Procedure Item', {
 	}
 });
 
+let get_procedure_prescribed = function(frm){
+	if(frm.doc.patient){
+		frappe.call({
+			method:"erpnext.healthcare.doctype.clinical_procedure.clinical_procedure.get_procedure_prescribed",
+			args: {patient: frm.doc.patient},
+			callback: function(r){
+				show_procedure_templates(frm, r.message);
+			}
+		});
+	}
+	else{
+		frappe.msgprint("Please select Patient to get prescribed procedure");
+	}
+};
+
 let calculate_age = function(birth) {
 	let ageMS = Date.parse(Date()) - Date.parse(birth);
 	let age = new Date();
@@ -452,3 +473,69 @@ cur_frm.set_query('item_code', 'items', function() {
 		}
 	};
 });
+
+let show_procedure_templates = function(frm, result){
+	var d = new frappe.ui.Dialog({
+		title: __("Prescribed Procedures"),
+		fields: [{
+				fieldtype: "HTML", fieldname: "procedure_template"
+		}]
+	});
+	var html_field = d.fields_dict.procedure_template.$wrapper;
+	html_field.empty();
+	$.each(result, function(x, y){
+		var row = $(repl(
+			'<div class="col-xs-12" style="padding-top:12px;">\
+				<div class="col-xs-3"> %(procedure_template)s </div>\
+				<div class="col-xs-4">%(encounter)s</div>\
+				<div class="col-xs-3"> %(date)s </div>\
+				<div class="col-xs-1">\
+				<a data-name="%(name)s" data-procedure-template="%(procedure_template)s"\
+					data-encounter="%(encounter)s" data-practitioner="%(practitioner)s"\
+					data-invoiced="%(invoiced)s" data-source="%(source)s"\
+					data-insurance-company="%(insurance_company)s" data-insurance-subscription="%(insurance_subscription)s"\
+					data-referring-practitioner="%(referring_practitioner)s" href="#"><button class="btn btn-default btn-xs">Get</button></a>\
+				</div>\
+			</div><hr>',
+			{ procedure_template: y[0], encounter: y[1], invoiced: y[2], practitioner: y[3], date: y[4], source: y[5], referring_practitioner: y[6],
+				name: y[7], insurance_subscription:y[8], insurance_company:y[9]})
+			).appendTo(html_field);
+			row.find("a").click(function() {
+			frm.doc.procedure_template = $(this).attr("data-procedure-template");
+			frm.doc.healthcare_service_order = $(this).attr('data-name');
+			frm.doc.practitioner = $(this).attr("data-practitioner");
+			frm.doc.source =  $(this).attr("data-source");
+			frm.set_df_property("source", "read_only", 1);
+			frm.doc.referring_practitioner= $(this).attr("data-referring-practitioner");
+			frm.doc.insurance_subscription = $(this).attr("data-insurance-subscription");
+			frm.doc.insurance_company = $(this).attr("data-insurance-company");
+			if(frm.doc.insurance){
+				frm.set_df_property("insurance_subscription", "read_only", 1);
+			}
+			if(frm.doc.referring_practitioner){
+				frm.set_df_property("referring_practitioner", "hidden", 0);
+				frm.set_df_property("referring_practitioner", "read_only", 1);
+			}
+			frm.doc.invoiced = 0;
+			if ($(this).attr('data-invoiced') === 1) {
+				frm.doc.invoiced = 1;
+			}
+			frm.refresh_field("procedure_template");
+			frm.refresh_field("healthcare_service_order");
+			frm.refresh_field("practitioner");
+			frm.refresh_field("source");
+			frm.refresh_field("referring_practitioner");
+			frm.refresh_field('insurance_subscription');
+			frm.refresh_field("insurance_company");
+			frm.refresh_field('invoiced');
+			d.hide();
+			return false;
+		});
+	});
+	if(!result || result.length < 1){
+		var msg = "There are no procedure prescribed for patient "+frm.doc.patient;
+		$(repl('<div class="text-left">%(msg)s</div>', {msg: msg})).appendTo(html_field);
+	}
+	d.show();
+};
+
