@@ -819,29 +819,35 @@ let show_radiology_procedure = function (frm, result) {
 	var html_field = d.fields_dict.radiology_prescribed.$wrapper;
 	html_field.empty();
 	$.each(result, function (x, y) {
-		var row = $(repl('<div class="col-xs-12" style="padding-top:12px; text-align:center;" >\
-		<div class="col-xs-2"> %(radiology_procedure)s </div>\
-		<div class="col-xs-2"> %(encounter)s </div>\
-		<div class="col-xs-3"> %(date)s </div>\
-		<div class="col-xs-1">\
-		<a data-name="%(name)s" data-radiology-procedure="%(radiology_procedure)s"\
-		data-encounter="%(encounter)s"\
-		data-invoiced="%(invoiced)s" data-source="%(source)s"\
-		data-referring-practitioner="%(referring_practitioner)s" data-comments="%(comments)s" href="#">\
-		<button class="btn btn-default btn-xs">Get Radiology\
-		</button></a></div></div>', { name: y[0], radiology_procedure: y[1], encounter: y[2], invoiced: y[3], date: y[4],
-			source:y[5], referring_practitioner:y[6],comments: y[9]})).appendTo(html_field);
+		console.log(y[9]);
+		var row = $(repl(
+			'<div class="col-xs-12" style="padding-top:12px;">\
+			<div class="col-xs-3"> %(radiology_template)s </div>\
+			<div class="col-xs-4">%(encounter)s</div>\
+			<div class="col-xs-3"> %(date)s </div>\
+			<div class="col-xs-1">\
+			<a data-name="%(name)s" data-radiology-template="%(radiology_template)s"\
+				data-encounter="%(encounter)s" data-practitioner="%(practitioner)s"\
+				data-invoiced="%(invoiced)s" data-source="%(source)s"\
+				data-insurance-company="%(insurance_company)s" data-insurance-subscription="%(insurance_subscription)s"\
+				data-referring-practitioner="%(referring_practitioner)s" href="#"><button class="btn btn-default btn-xs">Get</button></a>\
+			</div>\
+		</div><hr>',
+		{ radiology_template: y[0], encounter: y[1], invoiced: y[2], practitioner: y[3], date: y[4], source: y[5], referring_practitioner: y[6],
+			name: y[7], insurance_subscription:y[8], insurance_company:y[9]})
+		).appendTo(html_field);
 		row.find('a').click(function () {
-			frm.set_value('radiology_examination_template', $(this).attr('data-radiology-procedure'));
-			frm.set_value('radiology_procedure_prescription', $(this).attr('data-name'));
-			// frm.set_df_property('radiology_procedure', 'read_only', 1);
+			frm.set_value('radiology_examination_template', $(this).attr('data-radiology-template'));
+			// frm.set_value('radiology_procedure_prescription', $(this).attr('data-name'));
+			frm.set_df_property('radiology_examination_template', 'read_only', 1);
 			frm.set_df_property('patient', 'read_only', 1);
+			frm.doc.insurance_subscription = $(this).attr("data-insurance-subscription");
+			if (frm.doc.insurance_subscription){
+				frm.doc.insurance_company = $(this).attr("data-insurance-company");
+			}
 			frm.doc.invoiced = 0;
 			if ($(this).attr('data-invoiced') == 1) {
 				frm.doc.invoiced = 1;
-			}
-			if ($(this).attr('data-comments')) {
-				frm.set_value('notes', $(this).attr('data-comments'));
 			}
 			frm.set_value('source', $(this).attr('data-source'));
 			frm.set_value('referring_practitioner', $(this).attr('data-referring-practitioner'));
@@ -853,9 +859,14 @@ let show_radiology_procedure = function (frm, result) {
 					frm.set_value('modality_type', '');
 				}
 			});
-			refresh_field('radiology_procedure_prescription');
-			refresh_field('invoiced');
-			refresh_field('radiology_examination_template');
+			frm.refresh_field('radiology_examination_template');
+			frm.refresh_field('invoiced');
+			frm.refresh_field('radiology_examination_template');
+			frm.refresh_field("practitioner");
+			frm.refresh_field("source");
+			frm.refresh_field("insurance_subscription");
+			frm.refresh_field("referring_practitioner");
+			frm.refresh_field("insurance_company");
 			d.hide();
 			return false;
 		});

@@ -12,11 +12,9 @@ from frappe.utils import cstr
 
 class RadiologyExamination(Document):
 	def after_insert(self):
-		if self.radiology_procedure_prescription:
-			frappe.db.set_value('Radiology Procedure Prescription',
-			                    self.radiology_procedure_prescription, 'radiology_examination_created', True)
-			frappe.db.set_value('Radiology Procedure Prescription',
-			                    self.radiology_procedure_prescription, 'radiology_examination', self.name)
+		if self.healthcare_service_order:
+			frappe.db.set_value('Healthcare Service Order',
+                                self.healthcare_service_order, 'status', 'Completed')
 
 	def on_cancel(self):
 		manage_healthcare_doc_cancel(self)
@@ -58,26 +56,29 @@ def insert_to_medical_record(doc):
     medical_record.save(ignore_permissions=True)
 
 @frappe.whitelist()
-def get_radiology_procedure_prescribed(patient, encounter_practitioner=False):
-	query = """
-		SELECT
-			cp.name, cp.radiology_examination_template, cp.parent, ct.invoiced, ct.encounter_date, ct.source, ct.referring_practitioner,
-			ct.practitioner, cp.radiology_test_comment
-		FROM
-			`tabPatient Encounter` ct, `tabRadiology Procedure Prescription` cp
-		WHERE
-			ct.patient='{0}' and cp.parent=ct.name and cp.radiology_examination_created=0 and cp.appointment_booked=0
-	"""
-	if encounter_practitioner:
-		query +=""" and ct.practitioner=%(encounter_practitioner)s"""
-
-	query +="""
-		ORDER BY
-			ct.creation desc"""
-
-	return frappe.db.sql(query.format(patient),{
-		"encounter_practitioner": encounter_practitioner
-	})
+def get_radiology_procedure_prescribed(patient):
+	return frappe.db.sql(
+         '''
+		select
+            hso.order as radiology_template,
+            hso.order_group,
+            hso.invoiced,
+            hso.ordered_by as practitioner,
+            hso.order_date as encounter_date,
+            hso.source,
+            hso.referring_practitioner,
+            hso.name,
+            hso.insurance_subscription,
+			hso.insurance_company
+		from
+			`tabHealthcare Service Order` hso
+		where
+            hso.patient=%s
+				and hso.status!=%s
+				and hso.order_doctype=%s
+        order by
+            hso.creation desc
+		''', (patient, 'Completed', 'Radiology Examination Template'))
 
 @frappe.whitelist()
 def create_radiology_examination(appointment):

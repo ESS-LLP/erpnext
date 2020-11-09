@@ -23,6 +23,7 @@
   "radiology_procedure_prescription",
   "modality_type",
   "modality",
+  "healthcare_service_order",
   "source_section",
   "source",
   "column_break_16",
@@ -282,6 +283,13 @@
    "fieldtype": "Select",
    "label": "Claim Status",
    "options": "\nPending\nApproved\nRejected\nInvoiced",
+   "read_only": 1
+  },
+  {
+   "fieldname": "healthcare_service_order",
+   "fieldtype": "Link",
+   "label": "Healthcare Service Order",
+   "options": "Healthcare Service Order",
    "read_only": 1
   }
  ],
