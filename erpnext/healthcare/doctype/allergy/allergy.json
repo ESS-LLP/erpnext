@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "autoname": "field:allergy",
  "creation": "2020-08-18 06:35:33.270054",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -11,11 +12,12 @@
   {
    "fieldname": "allergy",
    "fieldtype": "Data",
-   "label": "Allergy"
+   "label": "Allergy",
+   "unique": 1
   }
  ],
  "links": [],
- "modified": "2020-08-18 06:35:33.270054",
+ "modified": "2020-11-10 11:27:01.106117",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Allergy",
