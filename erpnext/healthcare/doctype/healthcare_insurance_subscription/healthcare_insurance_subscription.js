@@ -14,7 +14,7 @@ frappe.ui.form.on('Healthcare Insurance Subscription', {
 					filters: {
 						'insurance_company': frm.doc.insurance_company,
 						'is_active':1,
-						'subscription_end_date':['>=', frappe.datetime.nowdate()],
+						'end_date':['>=', frappe.datetime.nowdate()],
 						'docstatus':1
 					},
 					fieldname: ['name']
