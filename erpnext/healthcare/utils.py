@@ -877,6 +877,7 @@ def get_insurance_details(service, insurance_subscription, billing_item):
 	claim_coverage = 0
 	price_list_rate = 0
 	claim_discount = 0
+	is_auto_approval = 0
 	insurance_subscription = frappe.get_doc('Healthcare Insurance Subscription', insurance_subscription)
 	if insurance_subscription and valid_insurance(insurance_subscription.name, insurance_subscription.insurance_company, valid_date):
 		if insurance_subscription.healthcare_insurance_coverage_plan:
