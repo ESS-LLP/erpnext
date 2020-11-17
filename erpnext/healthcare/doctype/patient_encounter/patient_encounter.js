@@ -3,21 +3,7 @@
 
 frappe.ui.form.on('Patient Encounter', {
 	setup: function(frm) {
-		frm.get_field('therapies').grid.editable_fields = [
-			{fieldname: 'therapy_type', columns: 8},
-			{fieldname: 'no_of_sessions', columns: 2}
-		];
-		frm.get_field('drug_prescription').grid.editable_fields = [
-			{fieldname: 'drug_code', columns: 2},
-			{fieldname: 'drug_name', columns: 2},
-			{fieldname: 'dosage', columns: 2},
-			{fieldname: 'period', columns: 2}
-		];
-		frm.get_field('lab_test_prescription').grid.editable_fields = [
-			{fieldname: 'lab_test_code', columns: 2},
-			{fieldname: 'lab_test_name', columns: 4},
-			{fieldname: 'lab_test_comment', columns: 4}
-		];
+
 	},
 
 	onload:function (frm) {

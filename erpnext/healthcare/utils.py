@@ -784,6 +784,8 @@ def updating_rate(doc, item_name):
 def on_trash_doc_having_item_reference(doc):
 	if(doc.item):
 		try:
+			doc.item = ""
+			doc.save()
 			frappe.delete_doc('Item',doc.item)
 		except Exception:
 			frappe.throw(_('Not permitted. Please disable the {0}').format(doc.doctype))
@@ -875,11 +877,12 @@ def get_insurance_details(service, insurance_subscription, billing_item):
 	claim_coverage = 0
 	price_list_rate = 0
 	claim_discount = 0
+	is_auto_approval = 0
 	insurance_subscription = frappe.get_doc('Healthcare Insurance Subscription', insurance_subscription)
 	if insurance_subscription and valid_insurance(insurance_subscription.name, insurance_subscription.insurance_company, valid_date):
 		if insurance_subscription.healthcare_insurance_coverage_plan:
 			price_list_rate = get_insurance_price_list_rate(insurance_subscription.healthcare_insurance_coverage_plan, billing_item)
-			coverage, discount, is_auto_approval = get_insurance_coverage_details(insurance_subscription.healthcare_insurance_coverage_plan, service)
+			coverage, discount, is_auto_approval = get_insurance_coverage_details(insurance_subscription.healthcare_insurance_coverage_plan, service) or (0,0,0)
 			if coverage and discount:
 				claim_discount = discount
 				claim_coverage = coverage
