@@ -206,7 +206,7 @@ frappe.ui.form.on('Patient Encounter', {
 				'inpatient_record': '',
 				'inpatient_status': '',
 				'insurance_subscription': '',
-				'insurance_claim': '
+				'insurance_claim': ''
 
 			};
 			frm.set_value(values);
