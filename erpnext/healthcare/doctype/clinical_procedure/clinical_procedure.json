@@ -383,6 +383,8 @@
   },
   {
    "allow_on_submit": 1,
+   "fetch_from": "insurance_claim.claim_status",
+   "fetch_if_empty": 1,
    "fieldname": "claim_status",
    "fieldtype": "Select",
    "label": "Claim Status",
@@ -392,7 +394,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-11-09 10:39:06.715359",
+ "modified": "2020-11-24 08:25:04.888865",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Clinical Procedure",

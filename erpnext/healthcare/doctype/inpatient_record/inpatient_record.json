@@ -502,6 +502,8 @@
    "read_only": 1
   },
   {
+   "fetch_from": "insurance_claim.claim_status",
+   "fetch_if_empty": 1,
    "fieldname": "claim_status",
    "fieldtype": "Select",
    "label": "Claim Status",
@@ -510,7 +512,7 @@
   }
  ],
  "links": [],
- "modified": "2020-11-09 10:38:05.854645",
+ "modified": "2020-11-24 08:26:36.547683",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Inpatient Record",

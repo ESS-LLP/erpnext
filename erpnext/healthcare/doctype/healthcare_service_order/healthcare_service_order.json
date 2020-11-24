@@ -189,7 +189,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Draft\nActive\nOn Hold\nRevoked\nCompleted\nReplaced\nError\nUnknown"
+   "options": "Draft\nActive\nOn Hold\nRevoked\nCompleted\nReplaced\nError\nUnknown\nWaiting"
   },
   {
    "allow_in_quick_entry": 1,
@@ -509,6 +509,8 @@
   },
   {
    "allow_on_submit": 1,
+   "fetch_from": "insurance_claim.claim_status",
+   "fetch_if_empty": 1,
    "fieldname": "claim_status",
    "fieldtype": "Select",
    "label": "Claim Status",
@@ -519,7 +521,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-11-09 10:38:36.854080",
+ "modified": "2020-11-24 08:25:54.922071",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Service Order",

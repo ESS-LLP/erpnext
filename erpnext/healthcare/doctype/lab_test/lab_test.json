@@ -611,6 +611,7 @@
   },
   {
    "allow_on_submit": 1,
+   "fetch_if_empty": 1,
    "fieldname": "insurance_claim",
    "fieldtype": "Link",
    "label": "Insurance Claim",
@@ -619,6 +620,8 @@
   },
   {
    "allow_on_submit": 1,
+   "fetch_from": "insurance_claim.claim_status",
+   "fetch_if_empty": 1,
    "fieldname": "claim_status",
    "fieldtype": "Select",
    "label": "Claim Status",
@@ -629,7 +632,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-11-09 10:34:57.172441",
+ "modified": "2020-11-24 08:20:47.716074",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Lab Test",
