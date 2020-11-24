@@ -47,6 +47,10 @@
   "source",
   "column_break_37",
   "referring_practitioner",
+  "insurance_section",
+  "insurance_subscription",
+  "column_break_41",
+  "insurance_company",
   "sb_normal",
   "lab_test_html",
   "normal_test_items",
@@ -579,12 +583,35 @@
    "fieldname": "sb_source",
    "fieldtype": "Section Break",
    "label": "Source"
+  },
+  {
+   "fieldname": "insurance_section",
+   "fieldtype": "Section Break",
+   "label": "Insurance"
+  },
+  {
+   "fieldname": "column_break_41",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "insurance_subscription.insurance_company",
+   "fieldname": "insurance_company",
+   "fieldtype": "Link",
+   "label": "Insurance Company",
+   "options": "Healthcare Insurance Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "insurance_subscription",
+   "fieldtype": "Link",
+   "label": "Insurance Subscription",
+   "options": "Healthcare Insurance Subscription"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-08-25 14:17:38.753208",
+ "modified": "2020-10-21 17:11:50.002057",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Lab Test",

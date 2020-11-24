@@ -55,6 +55,10 @@
   "source",
   "column_break_30",
   "referring_practitioner",
+  "insurance_section",
+  "insurance_subscription",
+  "column_break_49",
+  "insurance_company",
   "section_break_16",
   "mode_of_payment",
   "billing_item",
@@ -93,6 +97,7 @@
    "ignore_user_permissions": 1,
    "label": "Appointment Type",
    "options": "Appointment Type",
+   "reqd": 1,
    "set_only_once": 1
   },
   {
@@ -469,11 +474,34 @@
   {
    "fieldname": "section_break_5",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "insurance_section",
+   "fieldtype": "Section Break",
+   "label": "Insurance "
+  },
+  {
+   "fieldname": "column_break_49",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "insurance_subscription.insurance_company",
+   "fieldname": "insurance_company",
+   "fieldtype": "Link",
+   "label": "Insurance Company",
+   "options": "Healthcare Insurance Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "insurance_subscription",
+   "fieldtype": "Link",
+   "label": "Insurance Subscription",
+   "options": "Healthcare Insurance Subscription"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-09-29 16:07:24.696273",
+ "modified": "2020-11-24 06:53:39.770467",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Appointment",

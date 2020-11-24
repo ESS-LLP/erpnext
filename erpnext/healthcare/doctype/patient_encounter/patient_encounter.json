@@ -42,6 +42,10 @@
   "source",
   "column_break_27",
   "referring_practitioner",
+  "insurance_section",
+  "insurance_subscription",
+  "column_break_35",
+  "insurance_company",
   "codification",
   "codification_table",
   "sb_drug_prescription",
@@ -295,8 +299,8 @@
    "no_copy": 1,
    "options": "Appointment Type",
    "print_hide": 1,
-   "read_only": 1,
-   "report_hide": 1
+   "report_hide": 1,
+   "reqd": 1
   },
   {
    "fetch_from": "practitioner.department",
@@ -404,12 +408,35 @@
    "fieldtype": "Table",
    "label": "Diet Recommendation",
    "options": "Diet Recommendation"
+  },
+  {
+   "fieldname": "insurance_section",
+   "fieldtype": "Section Break",
+   "label": "Insurance"
+  },
+  {
+   "fieldname": "insurance_subscription",
+   "fieldtype": "Link",
+   "label": "Insurance Subscription",
+   "options": "Healthcare Insurance Subscription"
+  },
+  {
+   "fieldname": "column_break_35",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "insurance_subscription.insurance_company",
+   "fieldname": "insurance_company",
+   "fieldtype": "Link",
+   "label": "Insurance Company",
+   "options": "Healthcare Insurance Company",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-09-30 07:11:53.872556",
+ "modified": "2020-11-24 06:53:19.705884",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Encounter",

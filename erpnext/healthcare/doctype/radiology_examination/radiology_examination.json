@@ -27,6 +27,10 @@
   "source",
   "column_break_16",
   "referring_practitioner",
+  "insurance_section",
+  "insurance_subscription",
+  "column_break_24",
+  "insurance_company",
   "section_break_17",
   "start_date",
   "start_time",
@@ -236,12 +240,35 @@
    "fieldname": "terms",
    "fieldtype": "Text Editor",
    "label": "Terms and Conditions Details"
+  },
+  {
+   "fieldname": "insurance_section",
+   "fieldtype": "Section Break",
+   "label": "Insurance"
+  },
+  {
+   "fieldname": "column_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "insurance_subscription.insurance_company",
+   "fieldname": "insurance_company",
+   "fieldtype": "Link",
+   "label": "Insurance Company",
+   "options": "Healthcare Insurance Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "insurance_subscription",
+   "fieldtype": "Link",
+   "label": "Insurance Subscription",
+   "options": "Healthcare Insurance Subscription"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-09-29 16:27:55.637069",
+ "modified": "2020-10-21 17:16:33.569827",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Radiology Examination",

@@ -202,6 +202,14 @@ frappe.ui.form.on('Radiology Examination', {
 				};
 			}
 		});
+		frm.set_query('insurance_subscription', function(){
+			return{
+				filters:{
+					'patient': frm.doc.patient,
+					'docstatus': 1
+				}
+			};
+		});
 	}
 });
 
