@@ -23,6 +23,7 @@ class RadiologyExamination(Document):
 
 	def on_submit(self):
 		insert_to_medical_record(self)
+		make_insurance_claim(self)
 
 	def validate(self):
 		set_title_field(self)
@@ -100,3 +101,13 @@ def create_radiology_examination(appointment):
 	if appointment.referring_practitioner:
 		radiology_examination.referring_practitioner=appointment.referring_practitioner
 	return radiology_examination.as_dict()
+
+def make_insurance_claim(doc):
+	if doc.insurance_subscription and not doc.insurance_claim:
+		from erpnext.healthcare.utils import create_insurance_claim
+		billing_item = frappe.get_cached_value('Radiology Examination Template', doc.radiology_examination_template, 'item')
+		insurance_claim, claim_status = create_insurance_claim(doc, 'Radiology Examination Template', doc.radiology_examination_template, 1, billing_item)
+		if insurance_claim:
+			frappe.set_value(doc.doctype, doc.name ,'insurance_claim', insurance_claim)
+			frappe.set_value(doc.doctype, doc.name ,'claim_status', claim_status)
+			doc.reload()

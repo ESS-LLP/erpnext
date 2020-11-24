@@ -55,7 +55,8 @@ class ClinicalProcedure(Document):
 
     def on_trash(self):
         delete_pre_post_documents(self)
-
+    def on_submit(self):
+        make_insurance_claim(self)
     def set_status(self):
         if self.docstatus == 0:
             self.status = 'Draft'
@@ -348,3 +349,13 @@ def insert_clinical_procedure_to_medical_record(doc):
     medical_record.reference_name = doc.name
     medical_record.reference_owner = doc.owner
     medical_record.save(ignore_permissions=True)
+
+def make_insurance_claim(doc):
+	if doc.insurance_subscription and not doc.insurance_claim:
+		from erpnext.healthcare.utils import create_insurance_claim
+		billing_item = frappe.get_cached_value('Clinical Procedure Template', doc.procedure_template, 'item')
+		insurance_claim, claim_status = create_insurance_claim(doc, 'Clinical Procedure Template', doc.procedure_template, 1, billing_item)
+		if insurance_claim:
+			frappe.set_value(doc.doctype, doc.name ,'insurance_claim', insurance_claim)
+			frappe.set_value(doc.doctype, doc.name ,'claim_status', claim_status)
+			doc.reload()
