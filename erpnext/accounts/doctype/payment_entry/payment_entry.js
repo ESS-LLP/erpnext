@@ -311,6 +311,17 @@ frappe.ui.form.on('Payment Entry', {
 					frm.set_value(field, null);
 				})
 		}
+
+		// Healthcare
+		if(frappe.boot.active_domains.includes('Healthcare')){
+			if(frm.doc.patient && frm.doc.party_type == 'Customer'){
+			  frappe.db.get_value('Patient', {name: frm.doc.patient}, 'customer', (r) => {
+				if(r && r.customer){
+				  frm.set_value('party', r.customer);
+				}
+			  });
+			}
+		}
 	},
 
 	party: function(frm) {
@@ -973,6 +984,15 @@ frappe.ui.form.on('Payment Entry', {
 					}
 				}
 			});
+		}
+	},
+	// Healthcare
+	patient: function(frm) {
+		if(frm.doc.patient){
+			frm.set_value('party_type', 'Customer');
+		}
+		else{
+			frm.set_value('party_type', '');
 		}
 	}
 });

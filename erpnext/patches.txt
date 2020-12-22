@@ -742,3 +742,4 @@ erpnext.patches.v13_0.create_leave_policy_assignment_based_on_employee_current_l
 erpnext.patches.v13_0.add_po_to_global_search
 erpnext.patches.v13_0.update_returned_qty_in_pr_dn
 erpnext.patches.v13_0.healthcare_insurance_fields_for_sales_invoice
+erpnext.patches.v13_0.healthcare_patient_in_payment_entry
