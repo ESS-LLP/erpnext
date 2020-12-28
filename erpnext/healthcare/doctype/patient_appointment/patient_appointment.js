@@ -38,17 +38,10 @@ frappe.ui.form.on('Patient Appointment', {
 					'is_group': false,
 					'allow_appointments': true,
 					'company': frm.doc.company,
-				}
-			};
-		});
-		frm.set_query('radiology_examination_template', function () {
-			return {
-				filters: {
 					'modality_type': frm.doc.modality_type || ''
 				}
 			};
 		});
-
 		frm.set_query('referring_practitioner', function() {
 			if(frm.doc.source == 'External Referral'){
 				return {
@@ -177,9 +170,12 @@ frappe.ui.form.on('Patient Appointment', {
 
 	therapy_type: function (frm) {
 		if (frm.doc.therapy_type) {
-			frappe.db.get_value('Therapy Type', frm.doc.therapy_type, 'default_duration', (r) => {
+			frappe.db.get_value('Therapy Type', frm.doc.therapy_type, ['default_duration', 'appointment_type'], (r) => {
 				if (r.default_duration) {
 					frm.set_value('duration', r.default_duration)
+				}
+				if(r && r.appointment_type){
+					frm.set_value('appointment_type', r.appointment_type)
 				}
 			});
 		}
@@ -214,6 +210,22 @@ frappe.ui.form.on('Patient Appointment', {
 		else {
 			frm.set_df_property('service_unit', 'reqd', false);
 		}
+		frappe.db.get_value('Radiology Examination Template', frm.doc.radiology_examination_template, ['appointment_type', 'modality_type'], function(r) {
+			if(r && r.appointment_type){
+				frm.set_value('appointment_type', r.appointment_type)
+			}
+			if(r && r.modality_type){
+				frm.set_value('modality_type', r.modality_type)
+			}
+		});
+	},
+
+	procedure_template: function (frm) {
+		frappe.db.get_value('Clinical Procedure Template', frm.doc.procedure_template, 'appointment_type', function(r) {
+			if(r && r.appointment_type){
+				frm.set_value('appointment_type', r.appointment_type)
+			}
+		});
 	},
 
 	toggle_payment_fields: function (frm) {
