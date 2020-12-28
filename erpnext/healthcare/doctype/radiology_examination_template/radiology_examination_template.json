@@ -19,6 +19,7 @@
   "is_billable",
   "rate",
   "medical_department",
+  "appointment_type",
   "modality_type",
   "healthcare_service_unit_type",
   "healthcare_service_order_category",
@@ -149,11 +150,13 @@
    "reqd": 1
   },
   {
+   "depends_on": "healthcare_service_order_category",
    "fetch_from": "healthcare_service_order_category.patient_care_type",
    "fieldname": "patient_care_type",
    "fieldtype": "Link",
    "label": "Patient Care Type",
-   "options": "Patient Care Type"
+   "options": "Patient Care Type",
+   "read_only": 1
   },
   {
    "fieldname": "staff_role",
@@ -166,11 +169,18 @@
    "fieldtype": "Link",
    "label": "Healthcare Service Unit Type",
    "options": "Healthcare Service Unit Type"
+  },
+  {
+   "fieldname": "appointment_type",
+   "fieldtype": "Link",
+   "label": "Appointment Type",
+   "options": "Appointment Type",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-09-18 18:38:33.328373",
+ "modified": "2020-12-24 18:56:21.344294",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Radiology Examination Template",
@@ -189,7 +199,6 @@
    "write": 1
   }
  ],
- "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "track_changes": 1

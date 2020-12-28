@@ -25,6 +25,7 @@
   "patient_care_type",
   "staff_role",
   "medical_department",
+  "appointment_type",
   "healthcare_service_unit_type",
   "medical_coding_section",
   "medical_code_standard",
@@ -251,10 +252,17 @@
   {
    "fieldname": "section_break_2",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "appointment_type",
+   "fieldtype": "Link",
+   "label": "Appointment Type",
+   "options": "Appointment Type",
+   "reqd": 1
   }
  ],
  "links": [],
- "modified": "2020-09-23 17:39:04.168090",
+ "modified": "2020-12-24 18:52:39.593287",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Clinical Procedure Template",
