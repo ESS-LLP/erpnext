@@ -9,6 +9,7 @@
   "disabled",
   "section_break_2",
   "therapy_type",
+  "appointment_type",
   "default_duration",
   "medical_department",
   "column_break_3",
@@ -73,6 +74,7 @@
    "options": "Exercise"
   },
   {
+   "fetch_from": "appointment_type.default_duration",
    "fieldname": "default_duration",
    "fieldtype": "Int",
    "label": "Default Duration (In Minutes)"
@@ -207,10 +209,17 @@
    "label": "Healthcare Service Order Category",
    "options": "Healthcare Service Order Category",
    "reqd": 1
+  },
+  {
+   "fieldname": "appointment_type",
+   "fieldtype": "Link",
+   "label": "Appointment Type",
+   "options": "Appointment Type",
+   "reqd": 1
   }
  ],
  "links": [],
- "modified": "2020-09-18 18:32:35.726527",
+ "modified": "2020-12-28 12:55:42.511330",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Therapy Type",
