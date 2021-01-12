@@ -381,7 +381,7 @@ def get_service_item_and_practitioner_charge(doc):
 	else:
 		service_item = get_practitioner_service_item(doc.practitioner, 'op_consulting_charge_item')
 		if not service_item:
-			service_item = get_appointment_type_service_item(doc.appointment_type, 'op_consulting_charge_item')
+			service_item = get_appointment_type_service_item(doc.appointment_type, 'out_patient_consulting_charge_item')
 			if not service_item:
 				service_item = get_healthcare_service_item('op_consulting_charge_item')
 	if not service_item:
