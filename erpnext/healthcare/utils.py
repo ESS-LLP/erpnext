@@ -46,7 +46,6 @@ def get_appointments_to_invoice(patient, company):
 			filters = {'patient': patient.name, 'company': company, 'invoiced': 0, 'status': ['not in', 'Cancelled']},
 			order_by = 'appointment_date'
 		)
-
 	for appointment in patient_appointments:
 		# Procedure Appointments
 		if appointment.procedure_template:
@@ -80,14 +79,14 @@ def get_appointments_to_invoice(patient, company):
 						'insurance_claim_coverage': coverage,
 						'insurance_claim': appointment.insurance_claim
 					})
-				else:
-					appointments_to_invoice.append({
-						'reference_type': 'Patient Appointment',
-						'reference_name': appointment.name,
-						'service': service_item,
-						'rate': practitioner_charge,
-						'income_account': income_account
-					})
+			else:
+				appointments_to_invoice.append({
+					'reference_type': 'Patient Appointment',
+					'reference_name': appointment.name,
+					'service': service_item,
+					'rate': practitioner_charge,
+					'income_account': income_account
+				})
 	return appointments_to_invoice
 
 
@@ -121,14 +120,14 @@ def get_encounters_to_invoice(patient, company):
 							'insurance_claim_coverage': coverage,
 							'insurance_claim': encounter.insurance_claim
 						})
-					else:
-						encounters_to_invoice.append({
-							'reference_type': 'Patient Encounter',
-							'reference_name': encounter.name,
-							'service': service_item,
-							'rate': practitioner_charge,
-							'income_account': income_account
-						})
+				else:
+					encounters_to_invoice.append({
+						'reference_type': 'Patient Encounter',
+						'reference_name': encounter.name,
+						'service': service_item,
+						'rate': practitioner_charge,
+						'income_account': income_account
+					})
 	return encounters_to_invoice
 
 
