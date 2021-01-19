@@ -49,11 +49,30 @@ def get_appointments_to_invoice(patient, company):
 	for appointment in patient_appointments:
 		# Procedure Appointments
 		if appointment.procedure_template:
-			if frappe.db.get_value('Clinical Procedure Template', appointment.procedure_template, 'is_billable'):
+			is_billable, service_item = frappe.db.get_value('Clinical Procedure Template', appointment.procedure_template, ['is_billable', 'item'])
+			if is_billable and service_item:
 				appointments_to_invoice.append({
 					'reference_type': 'Patient Appointment',
 					'reference_name': appointment.name,
-					'service': appointment.procedure_template
+					'service': service_item
+				})
+		# Radiology Procedure Appointments
+		elif appointment.radiology_examination_template:
+			is_billable, service_item = frappe.db.get_value('Radiology Examination Template', appointment.radiology_examination_template, ['is_billable', 'item'])
+			if is_billable and service_item:
+				appointments_to_invoice.append({
+					'reference_type': 'Patient Appointment',
+					'reference_name': appointment.name,
+					'service': service_item
+				})
+		# therapy Appointments
+		elif appointment.therapy_type:
+			is_billable, service_item = frappe.db.get_value('Therapy Type', appointment.therapy_type, ['is_billable', 'item'])
+			if is_billable and service_item:
+				appointments_to_invoice.append({
+					'reference_type': 'Patient Appointment',
+					'reference_name': appointment.name,
+					'service': service_item
 				})
 		# Consultation Appointments, should check fee validity
 		else:
@@ -313,26 +332,27 @@ def get_radiology_examinations_to_invoice(patient, company):
 		filters={'patient': patient.name, 'company': company, 'invoiced': False, 'docstatus': 1}
 	)
 	for radiology_examination in radiology_examinations:
-		item, is_billable = frappe.get_cached_value('Radiology Examination Template', radiology_examination.radiology_examination_template, ['item', 'is_billable'])
-		if is_billable:
-			if radiology_examination.insurance_claim:
-				if radiology_examination.claim_status == 'Approved':
-					coverage, discount, rate = frappe.get_cached_value('Healthcare Insurance Claim', radiology_examination.insurance_claim, ['coverage', 'discount', 'price_list_rate'])
+		if not radiology_examination.appointment:
+			item, is_billable = frappe.get_cached_value('Radiology Examination Template', radiology_examination.radiology_examination_template, ['item', 'is_billable'])
+			if is_billable:
+				if radiology_examination.insurance_claim:
+					if radiology_examination.claim_status == 'Approved':
+						coverage, discount, rate = frappe.get_cached_value('Healthcare Insurance Claim', radiology_examination.insurance_claim, ['coverage', 'discount', 'price_list_rate'])
+						radiology_to_invoice.append({
+							'reference_type': 'Radiology Examination',
+							'reference_name': radiology_examination.name,
+							'service': item,
+							'rate': rate,
+							'discount_percentage':discount,
+							'insurance_claim_coverage': coverage,
+							'insurance_claim': radiology_examination.insurance_claim
+						})
+				else:
 					radiology_to_invoice.append({
 						'reference_type': 'Radiology Examination',
 						'reference_name': radiology_examination.name,
-						'service': item,
-						'rate': rate,
-						'discount_percentage':discount,
-						'insurance_claim_coverage': coverage,
-						'insurance_claim': radiology_examination.insurance_claim
+						'service': item
 					})
-			else:
-				radiology_to_invoice.append({
-					'reference_type': 'Radiology Examination',
-					'reference_name': radiology_examination.name,
-					'service': item
-				})
 
 	return radiology_to_invoice
 
@@ -380,7 +400,7 @@ def get_service_item_and_practitioner_charge(doc):
 	else:
 		service_item = get_practitioner_service_item(doc.practitioner, 'op_consulting_charge_item')
 		if not service_item:
-			service_item = get_appointment_type_service_item(doc.appointment_type, 'op_consulting_charge_item')
+			service_item = get_appointment_type_service_item(doc.appointment_type, 'out_patient_consulting_charge_item')
 			if not service_item:
 				service_item = get_healthcare_service_item('op_consulting_charge_item')
 	if not service_item:

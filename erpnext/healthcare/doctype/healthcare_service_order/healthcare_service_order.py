@@ -4,14 +4,20 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
 class HealthcareServiceOrder(Document):
 	def after_insert(self):
 		make_insurance_claim(self)
 	def validate(self):
+		self.set_title()
 		if self.insurance_subscription and self.claim_status == 'Pending':
 			self.status = 'Waiting'
+
+	def set_title(self):
+		self.title = _('{0} with {1}').format(self.patient_name or self.patient, self.order)
+
 def make_insurance_claim(doc):
 	if doc.insurance_subscription and not doc.insurance_claim:
 		from erpnext.healthcare.utils import create_insurance_claim
