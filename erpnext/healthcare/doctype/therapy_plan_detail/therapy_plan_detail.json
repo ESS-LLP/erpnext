@@ -9,7 +9,7 @@
   "no_of_sessions",
   "sessions_completed",
   "order_details_section",
-  "intents",
+  "intent",
   "sequence",
   "as_needed",
   "patient_instruction",
@@ -47,12 +47,6 @@
    "fieldname": "order_details_section",
    "fieldtype": "Section Break",
    "label": "Order Details"
-  },
-  {
-   "fieldname": "intents",
-   "fieldtype": "Select",
-   "label": "Intents",
-   "options": "\nProposal\nPlan\nDirective\nOrder\nOriginal Order\nReflex Order\nFiller Order\nInstance Order\nOption"
   },
   {
    "fieldname": "sequence",
@@ -96,11 +90,17 @@
    "fieldname": "note",
    "fieldtype": "Small Text",
    "label": "Note"
+  },
+  {
+   "fieldname": "intent",
+   "fieldtype": "Select",
+   "label": "Intent",
+   "options": "\nProposal\nPlan\nDirective\nOrder\nOriginal Order\nReflex Order\nFiller Order\nInstance Order\nOption"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2020-09-18 18:22:11.495998",
+ "modified": "2021-01-15 14:34:59.846631",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Therapy Plan Detail",

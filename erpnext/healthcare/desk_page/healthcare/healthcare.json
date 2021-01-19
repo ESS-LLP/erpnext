@@ -3,52 +3,47 @@
   {
    "hidden": 0,
    "label": "Patient",
-   "links": "[\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient\",\n\t\t\"label\": \"Patient\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"page\",\n\t\t\"name\": \"patient_history\",\n\t\t\"label\": \"Patient History\"\n\t},\n\t{\n    \t\"type\": \"doctype\",\n    \t\"name\": \"Inpatient Record\",\n    \t\"label\": \"Inpatient Record\"\n\t}\n]"
+   "links": "[\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient\",\n\t\t\"label\": \"Patient\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"page\",\n\t\t\"name\": \"patient_history\",\n\t\t\"label\": \"Patient History\"\n\t},\n\t\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Medical Record\",\n\t\t\"label\": \"Patient Medical Record\"\n\t}\n]"
   },
   {
    "hidden": 0,
    "label": "Outpatient",
-   "links": "[\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Appointment\",\n\t\t\"label\": \"Patient Appointment\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Vital Signs\",\n\t\t\"label\": \"Vital Signs\",\n\t\t\"description\": \"Record Patient Vitals\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Encounter\",\n\t\t\"label\": \"Patient Encounter\"\n\t}\n]"
+   "links": "[\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Appointment\",\n\t\t\"label\": \"Patient Appointment\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Vital Signs\",\n\t\t\"label\": \"Vital Signs\",\n\t\t\"description\": \"Record Patient Vitals\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Encounter\",\n\t\t\"label\": \"Patient Encounter\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Appointment Type\",\n\t\t\"label\": \"Appointment Type\"\n    },\n    \t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Complaint\",\n\t\t\"label\": \"Complaint\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Diagnosis\",\n\t\t\"label\": \"Diagnosis\"\n\t},\n\t\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Prescription Dosage\",\n\t\t\"label\": \"Prescription Dosage\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Prescription Duration\",\n\t\t\"label\": \"Prescription Duration\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Dosage Form\",\n\t\t\"label\": \"Dosage Form\"\n\t}\n]"
   },
   {
    "hidden": 0,
    "label": "Inpatient",
-   "links": "[\n\t{\n\t\"type\": \"doctype\",\n\t\"name\": \"Inpatient Record\",\n\t\"label\": \"Inpatient Record\"\n\t},\n\t{\n\t\"type\": \"doctype\",\n\t\"name\": \"Healthcare Nursing Task\",\n\t\"label\": \"Healthcare Nursing Task\"\n\t}\n]"
+   "links": "[\n\t{\n\t\"type\": \"doctype\",\n\t\"name\": \"Inpatient Record\",\n\t\"label\": \"Inpatient Record\",\n\t\"onboard\": 1\n\t},\n\t{\n\t\"type\": \"doctype\",\n\t\"name\": \"Healthcare Nursing Task\",\n\t\"label\": \"Healthcare Nursing Task\",\n\t\"onboard\": 1\n\t}\n]"
+  },
+  {
+   "hidden": 0,
+   "label": "Orders",
+   "links": "[\n  {\n    \t\"type\": \"doctype\",\n    \t\"name\": \"Healthcare Service Order\",\n    \t\"label\": \"Healthcare Service Order\",\n    \t\"onboard\": 1\n    },\n    \t{\n\t    \"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Service Order Category\",\n\t\t\"label\": \"Healthcare Service Order Category\"\n\t},\n\t{\n\t    \"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Service Order Priority\",\n\t\t\"label\": \"Healthcare Service Order Priority\"\n\t},\n\t{\n\t    \"type\": \"doctype\",\n\t\t\"name\": \"Patient Care Type\",\n\t\t\"label\": \"Patient Care Type\"\n\t}\n]"
   },
   {
    "hidden": 0,
    "label": "Laboratory",
-   "links": "[\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Lab Test\",\n\t\t\"label\": \"Lab Test\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Sample Collection\",\n\t\t\"label\": \"Sample Collection\"\n\t},\n\t{\n\t\t\"type\": \"report\",\n\t\t\"is_query_report\": true,\n\t\t\"name\": \"Lab Test Report\",\n\t\t\"doctype\": \"Lab Test\",\n\t\t\"label\": \"Lab Test Report\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Dosage Form\",\n\t\t\"label\": \"Dosage Form\"\n\t}\n]"
+   "links": "[\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Lab Test\",\n\t\t\"label\": \"Lab Test\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Sample Collection\",\n\t\t\"label\": \"Sample Collection\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"report\",\n\t\t\"is_query_report\": true,\n\t\t\"name\": \"Lab Test Report\",\n\t\t\"doctype\": \"Lab Test\",\n\t\t\"label\": \"Lab Test Report\"\n\t},\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Lab Test Template\",\n\t\t\"label\": \"Lab Test Template\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Lab Test Sample\",\n\t\t\"label\": \"Lab Test Sample\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Lab Test UOM\",\n\t\t\"label\": \"Lab Test UOM\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Sensitivity\",\n\t\t\"label\": \"Sensitivity\"\n\t},\n\t\t{\n\t    \"type\": \"doctype\",\n\t\t\"name\": \"Antibiotic\",\n\t\t\"label\": \"Antibiotic\"\n\t}\n]"
   },
   {
    "hidden": 0,
-   "label": "Laboratory Setup",
-   "links": "[\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Lab Test Template\",\n\t\t\"label\": \"Lab Test Template\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Lab Test Sample\",\n\t\t\"label\": \"Lab Test Sample\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Lab Test UOM\",\n\t\t\"label\": \"Lab Test UOM\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Sensitivity\",\n\t\t\"label\": \"Sensitivity\"\n\t}\n]"
-  },
-  {
-   "hidden": 0,
-   "label": "Radiology",
-   "links": "[\n  {\n    \t\"type\": \"doctype\",\n    \t\"name\": \"Radiology Examination\",\n    \t\"label\": \"Radiology Examination\",\n    \t\"onboard\": 1\n    }\n]"
-  },
-  {
-   "hidden": 0,
-   "label": "Consultation",
-   "links": "[\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Clinical Procedure\",\n\t\t\"label\": \"Clinical Procedure\"\n\t}\n]"
-  },
-  {
-   "hidden": 0,
-   "label": "Consultation Setup",
-   "links": "[\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Appointment Type\",\n\t\t\"label\": \"Appointment Type\"\n    },\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Clinical Procedure Template\",\n\t\t\"label\": \"Clinical Procedure Template\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Prescription Dosage\",\n\t\t\"label\": \"Prescription Dosage\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Prescription Duration\",\n\t\t\"label\": \"Prescription Duration\"\n\t},\n\t{\n\t    \"type\": \"doctype\",\n\t\t\"name\": \"Antibiotic\",\n\t\t\"label\": \"Antibiotic\"\n\t}\n]"
+   "label": "Clinical Procedures",
+   "links": "[\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Clinical Procedure\",\n\t\t\"label\": \"Clinical Procedure\",\n\t\t\"onboard\": 1\n\t},\n\t\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Clinical Procedure Template\",\n\t\t\"label\": \"Clinical Procedure Template\"\n\t}\n]"
   },
   {
    "hidden": 0,
    "label": "Rehabilitation and Physiotherapy",
-   "links": "[\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Exercise Type\",\n\t\t\"label\": \"Exercise Type\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Therapy Type\",\n\t\t\"label\": \"Therapy Type\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Therapy Plan\",\n\t\t\"label\": \"Therapy Plan\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Therapy Session\",\n\t\t\"label\": \"Therapy Session\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Assessment Template\",\n\t\t\"label\": \"Patient Assessment Template\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Assessment\",\n\t\t\"label\": \"Patient Assessment\"\n\t}\n]"
+   "links": "[\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Therapy Session\",\n\t\t\"label\": \"Therapy Session\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Therapy Plan\",\n\t\t\"label\": \"Therapy Plan\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Assessment\",\n\t\t\"label\": \"Patient Assessment\",\n\t\t\"onboard\": 1\n\t},\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Exercise Type\",\n\t\t\"label\": \"Exercise Type\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Therapy Type\",\n\t\t\"label\": \"Therapy Type\"\n\t},\n\t\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Assessment Template\",\n\t\t\"label\": \"Patient Assessment Template\"\n\t}\n]"
   },
   {
    "hidden": 0,
-   "label": "Billing",
-   "links": "[\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Sales Invoice\",\n\t\t\"label\": \"Sales Invoice\"\n\t}\n]"
+   "label": "Radiology",
+   "links": "[\n  {\n    \t\"type\": \"doctype\",\n    \t\"name\": \"Radiology Examination\",\n    \t\"label\": \"Radiology Examination\",\n    \t\"onboard\": 1\n    },\n    {\n    \t\"type\": \"doctype\",\n    \t\"name\": \"Radiology Examination Template\",\n    \t\"label\": \"Radiology Examination Template\"\n    }\n]"
+  },
+  {
+   "hidden": 0,
+   "label": "Patient Insurance ",
+   "links": "[\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Insurance Contract\",\n\t\t\"label\": \"Healthcare Insurance Contract\",\n\t\t\"onboard\": 1\n    },\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Insurance Subscription\",\n\t\t\"label\": \"Healthcare Insurance Subscription\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Insurance Claim\",\n\t\t\"label\": \"Healthcare Insurance Claim\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Insurance Payment Request\",\n\t\t\"label\": \"Healthcare Insurance Payment Request\",\n\t\t\"onboard\": 1\n\t},\n\t\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Insurance Company\",\n\t\t\"label\": \"Healthcare Insurance Company\"\n    },\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Insurance Coverage Plan\",\n\t\t\"label\": \"Healthcare Insurance Coverage Plan\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Service Insurance Coverage\",\n\t\t\"label\": \"Healthcare Service Insurance Coverage\"\n\t}\n]"
   },
   {
    "hidden": 0,
@@ -58,7 +53,7 @@
   {
    "hidden": 0,
    "label": "Facility Management",
-   "links": "[\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Service Unit Type\",\n\t\t\"label\": \"Healthcare Service Unit Type\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Service Unit\",\n\t\t\"label\": \"Healthcare Service Unit\"\n\t}\n]"
+   "links": "[\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Service Unit\",\n\t\t\"label\": \"Healthcare Service Unit\"\n\t},\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Service Unit Type\",\n\t\t\"label\": \"Healthcare Service Unit Type\"\n\t}\n]"
   },
   {
    "hidden": 0,
@@ -67,23 +62,13 @@
   },
   {
    "hidden": 0,
-   "label": "Additional Setup",
-   "links": "[\n    \n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Complaint\",\n\t\t\"label\": \"Complaint\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Diagnosis\",\n\t\t\"label\": \"Diagnosis\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Fee Validity\",\n\t\t\"label\": \"Fee Validity\"\n\t}\n]"
+   "label": "Reports",
+   "links": "[\n\t{\n\t\t\"type\": \"report\",\n\t\t\"is_query_report\": true,\n\t\t\"name\": \"Patient Appointment Analytics\",\n\t\t\"doctype\": \"Patient Appointment\"\n\t},\n\t{\n\t\t\"type\": \"report\",\n\t\t\"is_query_report\": true,\n\t\t\"name\": \"Lab Test Report\",\n\t\t\"doctype\": \"Lab Test\",\n\t\t\"label\": \"Lab Test Report\"\n\t},\n\t{\n\t\t\"type\": \"report\",\n\t\t\"is_query_report\": true,\n\t\t\"name\": \"Inpatient Medication Orders\",\n\t\t\"doctype\": \"Inpatient Medication Order\",\n\t\t\"label\": \"Inpatient Medication Orders\"\n\t}\n]"
   },
   {
    "hidden": 0,
    "label": "Settings",
-   "links": "[\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Settings\",\n\t\t\"label\": \"Healthcare Settings\",\n\t\t\"onboard\": 1\n\t}\n]"
-  },
-  {
-   "hidden": 0,
-   "label": "Records and History",
-   "links": "[\n\t{\n\t\t\"type\": \"page\",\n\t\t\"name\": \"patient_history\",\n\t\t\"label\": \"Patient History\"\n\t},\n\t{\n\t\t\"type\": \"page\",\n\t\t\"name\": \"patient-progress\",\n\t\t\"label\": \"Patient Progress\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Medical Record\",\n\t\t\"label\": \"Patient Medical Record\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Inpatient Record\",\n\t\t\"label\": \"Inpatient Record\"\n\t}\n]"
-  },
-  {
-   "hidden": 0,
-   "label": "Reports",
-   "links": "[\n\t{\n\t\t\"type\": \"report\",\n\t\t\"is_query_report\": true,\n\t\t\"name\": \"Patient Appointment Analytics\",\n\t\t\"doctype\": \"Patient Appointment\"\n\t},\n\t{\n\t\t\"type\": \"report\",\n\t\t\"is_query_report\": true,\n\t\t\"name\": \"Lab Test Report\",\n\t\t\"doctype\": \"Lab Test\",\n\t\t\"label\": \"Lab Test Report\"\n\t},\n\t{\n\t\t\"type\": \"report\",\n\t\t\"is_query_report\": true,\n\t\t\"name\": \"Inpatient Medication Orders\",\n\t\t\"doctype\": \"Inpatient Medication Order\",\n\t\t\"label\": \"Inpatient Medication Orders\"\n\t}\n]"
+   "links": "[\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Healthcare Settings\",\n\t\t\"label\": \"Healthcare Settings\",\n\t\t\"onboard\": 1\n\t},\n\t\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Fee Validity\",\n\t\t\"label\": \"Fee Validity\"\n\t}\n]"
   }
  ],
  "category": "Domains",
@@ -104,7 +89,7 @@
  "idx": 0,
  "is_standard": 1,
  "label": "Healthcare",
- "modified": "2020-11-23 23:00:48.764377",
+ "modified": "2021-01-18 16:18:50.740422",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare",
@@ -116,6 +101,14 @@
  "shortcuts": [
   {
    "color": "#ffe8cd",
+   "format": "{} Active",
+   "label": "Patient",
+   "link_to": "Patient",
+   "stats_filter": "{\n    \"status\": \"Active\"\n}",
+   "type": "DocType"
+  },
+  {
+   "color": "#ffe8cd",
    "format": "{} Open",
    "label": "Patient Appointment",
    "link_to": "Patient Appointment",
@@ -123,11 +116,26 @@
    "type": "DocType"
   },
   {
-   "color": "#ffe8cd",
-   "format": "{} Active",
-   "label": "Patient",
-   "link_to": "Patient",
-   "stats_filter": "{\n    \"status\": \"Active\"\n}",
+   "label": "Patient History",
+   "link_to": "patient_history",
+   "type": "Page"
+  },
+  {
+   "doc_view": "",
+   "label": "Healthcare Service Order",
+   "link_to": "Healthcare Service Order",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Clinical Procedure",
+   "link_to": "Clinical Procedure",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Emergency Patient Record",
+   "link_to": "Emergency Patient Record",
    "type": "DocType"
   },
   {
@@ -142,11 +150,6 @@
    "label": "Healthcare Practitioner",
    "link_to": "Healthcare Practitioner",
    "type": "DocType"
-  },
-  {
-   "label": "Patient History",
-   "link_to": "patient_history",
-   "type": "Page"
   },
   {
    "label": "Dashboard",
