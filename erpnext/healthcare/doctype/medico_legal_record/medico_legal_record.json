@@ -1,0 +1,190 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2021-01-18 17:55:26.593082",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "patient_details_section",
+  "naming_series",
+  "emergency_patient_record",
+  "patient",
+  "patient_name",
+  "column_break_6",
+  "recording_time",
+  "blood_group",
+  "gender",
+  "section_break_9",
+  "received_consent_from_patient",
+  "patient_consent",
+  "column_break_12",
+  "consent_received_from",
+  "relation_with_patient",
+  "contact_number",
+  "address",
+  "consent_letter",
+  "incident_report_section",
+  "reported_at",
+  "reported_to",
+  "response",
+  "column_break_22",
+  "reported_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "patient",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Patient",
+   "options": "Patient"
+  },
+  {
+   "fieldname": "patient_name",
+   "fieldtype": "Data",
+   "label": "Patient Name"
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Gender",
+   "options": "Gender"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "now",
+   "fieldname": "recording_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Recording Time"
+  },
+  {
+   "fieldname": "blood_group",
+   "fieldtype": "Select",
+   "label": "Blood Group",
+   "options": "\nA Positive\nA Negative\nAB Positive\nAB Negative\nB Positive\nB Negative\nO Positive\nO Negative"
+  },
+  {
+   "fieldname": "patient_details_section",
+   "fieldtype": "Section Break",
+   "label": "Patient Details"
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break",
+   "label": "Consent Details"
+  },
+  {
+   "fieldname": "consent_received_from",
+   "fieldtype": "Data",
+   "label": "Consent Received From"
+  },
+  {
+   "fieldname": "relation_with_patient",
+   "fieldtype": "Data",
+   "label": "Relation With Patient"
+  },
+  {
+   "fieldname": "contact_number",
+   "fieldtype": "Data",
+   "label": "Contact Number"
+  },
+  {
+   "fieldname": "consent_letter",
+   "fieldtype": "Attach",
+   "label": "Consent Letter"
+  },
+  {
+   "fieldname": "patient_consent",
+   "fieldtype": "Attach",
+   "label": "Patient Consent"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "received_consent_from_patient",
+   "fieldtype": "Select",
+   "label": "Received Consent From Patient",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "HLC-MLR-.YYYY.-",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "incident_report_section",
+   "fieldtype": "Section Break",
+   "label": "Incident Report"
+  },
+  {
+   "fieldname": "reported_to",
+   "fieldtype": "Data",
+   "label": "Reported To"
+  },
+  {
+   "fieldname": "response",
+   "fieldtype": "Small Text",
+   "label": "Response"
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reported_by",
+   "fieldtype": "Link",
+   "label": "Reported By",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "reported_at",
+   "fieldtype": "Datetime",
+   "label": "Reported At"
+  },
+  {
+   "fieldname": "emergency_patient_record",
+   "fieldtype": "Link",
+   "label": "Emergency Patient Record",
+   "options": "Emergency Patient Record"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2021-01-19 12:52:32.052079",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Medico Legal Record",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
