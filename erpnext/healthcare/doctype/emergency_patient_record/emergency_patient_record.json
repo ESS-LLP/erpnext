@@ -1,0 +1,211 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2021-01-18 12:38:57.096327",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "patient_details_section",
+  "triage",
+  "patient",
+  "patient_name",
+  "patient_identification",
+  "gender",
+  "column_break_5",
+  "active",
+  "color",
+  "patient_status",
+  "patient_age",
+  "blood_group",
+  "mobile",
+  "existing_patient",
+  "medico_legal_record_created",
+  "companion_details_section",
+  "companion_name",
+  "companion_contact",
+  "companion_address",
+  "column_break_16",
+  "companion_identification",
+  "incident_detail",
+  "section_break_24",
+  "practitioner",
+  "inpatient_record"
+ ],
+ "fields": [
+  {
+   "fieldname": "patient_details_section",
+   "fieldtype": "Section Break",
+   "label": "Patient Details"
+  },
+  {
+   "fieldname": "triage",
+   "fieldtype": "Link",
+   "label": "Triage",
+   "options": "Triage"
+  },
+  {
+   "fieldname": "patient",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Patient",
+   "options": "Patient"
+  },
+  {
+   "fieldname": "patient_name",
+   "fieldtype": "Data",
+   "label": "Patient Name"
+  },
+  {
+   "fetch_from": "patient.sex",
+   "fieldname": "gender",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Gender",
+   "options": "Gender"
+  },
+  {
+   "fieldname": "companion_details_section",
+   "fieldtype": "Section Break",
+   "label": "Companion Details"
+  },
+  {
+   "fieldname": "patient_age",
+   "fieldtype": "Int",
+   "label": "Patient Age"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "patient_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Patient Status"
+  },
+  {
+   "fieldname": "patient_identification",
+   "fieldtype": "Data",
+   "label": "Patient Identification"
+  },
+  {
+   "fetch_from": "patient.blood_group",
+   "fieldname": "blood_group",
+   "fieldtype": "Select",
+   "label": "Blood Group",
+   "options": "\nA Positive\nA Negative\nAB Positive\nAB Negative\nB Positive\nB Negative\nO Positive\nO Negative"
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "existing_patient",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Existing Patient"
+  },
+  {
+   "fetch_from": "patient.mobile",
+   "fieldname": "mobile",
+   "fieldtype": "Data",
+   "label": "Mobile"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "HLC-EPR-.YYYY.-",
+   "set_only_once": 1
+  },
+  {
+   "fetch_from": "triage.color",
+   "fieldname": "color",
+   "fieldtype": "Color",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Color"
+  },
+  {
+   "default": "0",
+   "fieldname": "active",
+   "fieldtype": "Check",
+   "label": "Active"
+  },
+  {
+   "fieldname": "incident_detail",
+   "fieldtype": "Small Text",
+   "label": "Incident Detail"
+  },
+  {
+   "fieldname": "companion_name",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "companion_contact",
+   "fieldtype": "Data",
+   "label": "Contact Number"
+  },
+  {
+   "fieldname": "companion_address",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "companion_identification",
+   "fieldtype": "Data",
+   "label": "Identification"
+  },
+  {
+   "default": "0",
+   "fieldname": "medico_legal_record_created",
+   "fieldtype": "Check",
+   "label": "Medico Legal Record Created"
+  },
+  {
+   "fieldname": "section_break_24",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "label": "Practitioner",
+   "options": "Healthcare Practitioner"
+  },
+  {
+   "fieldname": "inpatient_record",
+   "fieldtype": "Link",
+   "label": "Inpatient Record",
+   "options": "Inpatient Record"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2021-01-19 15:13:49.368112",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Emergency Patient Record",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
