@@ -137,6 +137,8 @@ def invoice_appointment(appointment_doc):
 	automate_invoicing = frappe.db.get_single_value('Healthcare Settings', 'automate_appointment_invoicing')
 	appointment_invoiced = frappe.db.get_value('Patient Appointment', appointment_doc.name, 'invoiced')
 	enable_free_follow_ups = frappe.db.get_single_value('Healthcare Settings', 'enable_free_follow_ups')
+	collect_registration_fee = frappe.db.get_single_value('Healthcare Settings', 'collect_registration_fee')
+
 	if enable_free_follow_ups:
 		fee_validity = check_fee_validity(appointment_doc)
 		if fee_validity and fee_validity.status == 'Completed':
@@ -149,7 +151,7 @@ def invoice_appointment(appointment_doc):
 	else:
 		fee_validity = None
 
-	if automate_invoicing and not appointment_invoiced and not fee_validity:
+	if (automate_invoicing and not appointment_invoiced and not fee_validity) or (collect_registration_fee and not frappe.db.exists('Patient', {'name': appointment_doc.patient, 'status': 'Active'})):
 		sales_invoice = frappe.new_doc('Sales Invoice')
 		sales_invoice.patient = appointment_doc.patient
 		sales_invoice.customer = frappe.get_value('Patient', appointment_doc.patient, 'customer')
@@ -158,8 +160,15 @@ def invoice_appointment(appointment_doc):
 		sales_invoice.company = appointment_doc.company
 		sales_invoice.debit_to = get_receivable_account(appointment_doc.company)
 
-		item = sales_invoice.append('items', {})
-		item = get_appointment_item(appointment_doc, item)
+		if collect_registration_fee:
+			patient = frappe.db.exists('Patient', {'name': appointment_doc.patient, 'status': 'Active'})
+			if not patient:
+				registration_fee_item = sales_invoice.append('items', {})
+				registration_fee_item = get_collect_registration_fee_item(appointment_doc.patient, registration_fee_item, appointment_doc.company)
+
+		if automate_invoicing and not appointment_invoiced and not fee_validity:
+			item = sales_invoice.append('items', {})
+			item = get_appointment_item(appointment_doc, item)
 
 		# Add payments if payment details are supplied else proceed to create invoice as Unpaid
 		if appointment_doc.mode_of_payment and appointment_doc.paid_amount:
@@ -173,6 +182,8 @@ def invoice_appointment(appointment_doc):
 		sales_invoice.save(ignore_permissions=True)
 		sales_invoice.submit()
 		frappe.msgprint(_('Sales Invoice {0} created'.format(sales_invoice.name)), alert=True)
+		if not frappe.db.exists('Patient', {'name': appointment_doc.patient, 'status': 'Active'}) and collect_registration_fee:
+			frappe.db.set_value('Patient', appointment_doc.patient, 'status', 'Active')
 		frappe.db.set_value('Patient Appointment', appointment_doc.name, 'invoiced', 1)
 		frappe.db.set_value('Patient Appointment', appointment_doc.name, 'ref_sales_invoice', sales_invoice.name)
 
@@ -201,6 +212,19 @@ def get_appointment_item(appointment_doc, item):
 	item.reference_dn = appointment_doc.name
 	return item
 
+def get_collect_registration_fee_item(patient, item_line, company):
+	uom = frappe.db.exists('UOM', 'Nos') or frappe.db.get_single_value('Stock Settings', 'stock_uom')
+	item_line.item_name = 'Registeration Fee'
+	item_line.description = 'Registeration Fee'
+	item_line.qty = 1
+	item_line.uom = uom
+	item_line.conversion_factor = 1
+	item_line.income_account = get_income_account(None, company)
+	item_line.rate = frappe.db.get_single_value('Healthcare Settings', 'registration_fee')
+	item_line.amount = item_line.rate
+	item_line.reference_dt = 'Patient'
+	item_line.reference_dn = patient
+	return item_line
 
 def cancel_appointment(appointment_id):
 	appointment = frappe.get_doc('Patient Appointment', appointment_id)

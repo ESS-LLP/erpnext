@@ -240,12 +240,16 @@ frappe.ui.form.on('Patient Appointment', {
 					frm.toggle_display('paid_amount', 0);
 					frm.toggle_reqd('mode_of_payment', 0);
 					frm.toggle_reqd('paid_amount', 0);
+					frm.toggle_display('consultation_charge', 0);
+					frm.toggle_reqd('consultation_charge', 0);
 				} else {
 					// if automated appointment invoicing is disabled, hide fields
 					frm.toggle_display('mode_of_payment', data.message ? 1 : 0);
 					frm.toggle_display('paid_amount', data.message ? 1 : 0);
 					frm.toggle_reqd('mode_of_payment', data.message ? 1 : 0);
 					frm.toggle_reqd('paid_amount', data.message ? 1 : 0);
+					frm.toggle_display('consultation_charge', data.message ? 1 : 0);
+					frm.toggle_reqd('consultation_charge', data.message ? 1 : 0);
 				}
 			}
 		});
@@ -270,10 +274,22 @@ frappe.ui.form.on('Patient Appointment', {
 			});
 		}
 	},
-
 	source: function(frm){
 		if(frm.doc.source){
 			set_source_referring_practitioner(frm);
+		}
+	},
+	registration_fee: function(frm){
+		if(frm.doc.registration_fee){
+			frm.set_value('paid_amount',  frm.doc.registration_fee)
+		}
+	},
+	consultation_charge: function(frm){
+		if(frm.doc.registration_fee){
+			frm.set_value('paid_amount', (frm.doc.consultation_charge + frm.doc.registration_fee))
+		}
+		else{
+			frm.set_value('paid_amount', (frm.doc.consultation_charge))
 		}
 	}
 });
@@ -755,7 +771,7 @@ frappe.ui.form.on('Patient Appointment', 'practitioner', function (frm) {
 			},
 			callback: function (data) {
 				frappe.model.set_value(frm.doctype, frm.docname, 'department', data.message.department);
-				frappe.model.set_value(frm.doctype, frm.docname, 'paid_amount', data.message.op_consulting_charge);
+				frappe.model.set_value(frm.doctype, frm.docname, 'consultation_charge', data.message.op_consulting_charge);
 				frappe.model.set_value(frm.doctype, frm.docname, 'billing_item', data.message.op_consulting_charge_item);
 			}
 		});
@@ -776,6 +792,18 @@ frappe.ui.form.on('Patient Appointment', 'patient', function (frm) {
 					age = calculate_age(data.message.dob);
 				}
 				frappe.model.set_value(frm.doctype, frm.docname, 'patient_age', age);
+				if(data.message.status == 'Disabled'){
+					frappe.db.get_single_value('Healthcare Settings', 'registration_fee')
+					.then(registration_fee => {
+						frm.set_value('registration_fee', registration_fee);
+					})
+					frm.toggle_display('mode_of_payment', 1);
+					frm.toggle_display('paid_amount', 1);
+					frm.toggle_reqd('mode_of_payment', 1);
+					frm.toggle_reqd('paid_amount', 1);
+
+				}
+
 			}
 		});
 	}
