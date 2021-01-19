@@ -9,6 +9,7 @@
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
+  "title",
   "company",
   "healthcare_service_order_category",
   "patient_care_type",
@@ -73,8 +74,7 @@
   "origin_section",
   "order_reference_doctype",
   "column_break_9",
-  "order_reference_name",
-  "amended_from"
+  "order_reference_name"
  ],
  "fields": [
   {
@@ -86,14 +86,18 @@
   {
    "fieldname": "ordered_by",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Ordered by (Practitioner)",
-   "options": "Healthcare Practitioner"
+   "options": "Healthcare Practitioner",
+   "reqd": 1,
+   "set_only_once": 1
   },
   {
    "fieldname": "sequence",
    "fieldtype": "Int",
    "label": "Sequence in Order Group",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "fieldname": "column_break_4",
@@ -104,8 +108,9 @@
    "fieldname": "order_date",
    "fieldtype": "Date",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Order Date",
-   "reqd": 1
+   "set_only_once": 1
   },
   {
    "collapsible": 1,
@@ -119,7 +124,9 @@
    "fieldname": "order_group",
    "fieldtype": "Link",
    "label": "Order Group (Encounter)",
-   "options": "Patient Encounter"
+   "options": "Patient Encounter",
+   "reqd": 1,
+   "set_only_once": 1
   },
   {
    "fieldname": "order_detail_section",
@@ -127,11 +134,13 @@
    "label": "Order Detail"
   },
   {
-   "allow_in_quick_entry": 1,
    "fieldname": "order_doctype",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Order DocType",
-   "options": "DocType"
+   "options": "DocType",
+   "reqd": 1,
+   "set_only_once": 1
   },
   {
    "fieldname": "column_break_9",
@@ -157,22 +166,23 @@
    "fieldname": "expected_date",
    "fieldtype": "Date",
    "label": "Expected Date",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "fieldname": "staff_role",
    "fieldtype": "Link",
-   "in_list_view": 1,
    "label": "Staff Role",
    "options": "Role",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
-   "allow_in_quick_entry": 1,
    "fieldname": "order",
    "fieldtype": "Dynamic Link",
+   "in_standard_filter": 1,
    "label": "Order",
-   "options": "order_doctype"
+   "options": "order_doctype",
+   "reqd": 1,
+   "set_only_once": 1
   },
   {
    "fetch_from": "healthcare_service_order_category.patient_care_type",
@@ -192,18 +202,15 @@
    "options": "Draft\nActive\nOn Hold\nRevoked\nCompleted\nReplaced\nError\nUnknown\nWaiting"
   },
   {
-   "allow_in_quick_entry": 1,
    "fieldname": "intent",
    "fieldtype": "Select",
-   "in_preview": 1,
    "label": "Intent",
    "options": "\nProposal\nPlan\nDirective\nOrder\nOriginal Order\nReflex Order\nFiller Order\nInstance Order\nOption"
   },
   {
-   "allow_in_quick_entry": 1,
    "fieldname": "priority",
    "fieldtype": "Link",
-   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Priority",
    "options": "Healthcare Service Order Priority"
   },
@@ -217,7 +224,8 @@
    "fieldname": "medical_code_standard",
    "fieldtype": "Link",
    "label": "Medical Code Standard",
-   "options": "Medical Code Standard"
+   "options": "Medical Code Standard",
+   "set_only_once": 1
   },
   {
    "fieldname": "column_break_24",
@@ -227,39 +235,41 @@
    "fieldname": "medical_code",
    "fieldtype": "Link",
    "label": "Medical Code",
-   "options": "Medical Code"
+   "options": "Medical Code",
+   "set_only_once": 1
   },
   {
+   "default": "1",
    "fieldname": "quantity",
    "fieldtype": "Int",
    "label": "Quantity",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "default": "0",
    "fieldname": "as_needed",
    "fieldtype": "Check",
    "label": "As Needed",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "fieldname": "occurrence",
    "fieldtype": "Datetime",
    "label": "Occurrence",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "fieldname": "occurence_period",
    "fieldtype": "Duration",
    "label": "Occurence Period",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "fieldname": "healthcare_service_unit_type",
    "fieldtype": "Link",
    "label": "Healthcare Service Unit Type",
    "options": "Healthcare Service Unit Type",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "fieldname": "reason",
@@ -273,7 +283,7 @@
    "fieldtype": "Link",
    "label": "Body Part",
    "options": "Body Part",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "fieldname": "reason_reference_doctype",
@@ -313,20 +323,24 @@
   {
    "fieldname": "order_description",
    "fieldtype": "Small Text",
-   "label": "Order Description"
+   "label": "Order Description",
+   "set_only_once": 1
   },
   {
    "fieldname": "replaces",
    "fieldtype": "Link",
    "label": "Replaces",
    "options": "Healthcare Service Order",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "fieldname": "patient",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Patient",
-   "options": "Patient"
+   "options": "Patient",
+   "reqd": 1,
+   "set_only_once": 1
   },
   {
    "fetch_from": "patient.patient_name",
@@ -402,10 +416,10 @@
    "fieldtype": "Link",
    "label": "Billing Item",
    "options": "Item",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
-   "allow_in_quick_entry": 1,
    "fieldname": "healthcare_service_order_category",
    "fieldtype": "Link",
    "in_standard_filter": 1,
@@ -445,8 +459,8 @@
    "fieldname": "source",
    "fieldtype": "Select",
    "label": "Source",
-   "options": "\nDirect\nReferral\nExternal Referral",
-   "read_only": 1
+   "options": "Direct\nReferral\nExternal Referral",
+   "set_only_once": 1
   },
   {
    "fieldname": "column_break_51",
@@ -457,7 +471,7 @@
    "fieldtype": "Link",
    "label": "Referring Practitioner",
    "options": "Healthcare Practitioner",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "fetch_from": "patient.blood_group",
@@ -476,7 +490,8 @@
    "fieldname": "insurance_subscription",
    "fieldtype": "Link",
    "label": "Insurance Subscription",
-   "options": "Healthcare Insurance Subscription"
+   "options": "Healthcare Insurance Subscription",
+   "set_only_once": 1
   },
   {
    "fieldname": "column_break_26",
@@ -488,15 +503,6 @@
    "fieldtype": "Link",
    "label": "Insurance Company",
    "options": "Healthcare Insurance Company",
-   "read_only": 1
-  },
-  {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Healthcare Service Order",
-   "print_hide": 1,
    "read_only": 1
   },
   {
@@ -516,12 +522,18 @@
    "label": "Claim Status",
    "options": "\nPending\nApproved\nRejected\nInvoiced",
    "read_only": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Title",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
- "is_submittable": 1,
  "links": [],
- "modified": "2020-11-24 08:25:54.922071",
+ "modified": "2021-01-19 13:02:00.422416",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Service Order",
@@ -561,6 +573,7 @@
   },
   {
    "create": 1,
+   "delete": 1,
    "email": 1,
    "export": 1,
    "print": 1,
@@ -571,11 +584,11 @@
    "write": 1
   }
  ],
- "quick_entry": 1,
  "restrict_to_domain": "Healthcare",
+ "search_fields": "order, patient, order_group",
  "sort_field": "modified",
  "sort_order": "DESC",
- "title_field": "order",
+ "title_field": "title",
  "track_changes": 1,
  "track_seen": 1
 }
