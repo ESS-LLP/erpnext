@@ -33,6 +33,7 @@
   "insurance_company",
   "claim_status",
   "references",
+  "document_type",
   "admission_encounter",
   "admission_practitioner",
   "medical_department",
@@ -234,9 +235,9 @@
   },
   {
    "fieldname": "admission_encounter",
-   "fieldtype": "Link",
-   "label": "Patient Encounter",
-   "options": "Patient Encounter",
+   "fieldtype": "Dynamic Link",
+   "label": "Source Document",
+   "options": "document_type",
    "read_only": 1
   },
   {
@@ -509,10 +510,16 @@
    "label": "Claim Status",
    "options": "\nPending\nApproved\nRejected\nInvoiced",
    "read_only": 1
+  },
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "label": "Source Document Type",
+   "options": "DocType"
   }
  ],
  "links": [],
- "modified": "2020-11-24 08:26:36.547683",
+ "modified": "2021-01-20 14:30:50.303686",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Inpatient Record",
