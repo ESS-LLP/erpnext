@@ -389,24 +389,29 @@ def get_healthcare_service_orders_to_invoice(patient, company):
 	return service_order_to_invoice
 
 def get_service_item_and_practitioner_charge(doc):
-	is_inpatient = doc.inpatient_record
-	if is_inpatient:
-		service_item = get_practitioner_service_item(doc.practitioner, 'inpatient_visit_charge_item')
-		if not service_item:
-			service_item = get_appointment_type_service_item(doc.appointment_type, 'inpatient_visit_charge_item')
-			if not service_item:
-				service_item = get_healthcare_service_item('inpatient_visit_charge_item')
-
+	service_item = ''
+	practitioner_charge = ''
+	if doc.doctype == 'Patient Encounter':
+		department = doc.medical_department
 	else:
-		service_item = get_practitioner_service_item(doc.practitioner, 'op_consulting_charge_item')
-		if not service_item:
-			service_item = get_appointment_type_service_item(doc.appointment_type, 'out_patient_consulting_charge_item')
+		department = doc.department
+	is_inpatient = doc.inpatient_record
+	if doc.practitioner_availability:
+		service_item, practitioner_charge = get_practitioner_availability_service_item(doc.practitioner_availability, is_inpatient)
+		if not service_item and not practitioner_charge:
+			service_item, practitioner_charge = get_appointment_type_service_item(doc.appointment_type, department, is_inpatient)
+			if not service_item and not practitioner_charge:
+				service_item, practitioner_charge = get_practitioner_service_item(doc.practitioner, is_inpatient)
+				if not service_item:
+					service_item = get_healthcare_service_item(is_inpatient)
+	else:
+		service_item, practitioner_charge = get_appointment_type_service_item(doc.appointment_type, department, is_inpatient)
+		if not service_item and not practitioner_charge:
+			service_item, practitioner_charge = get_practitioner_service_item(doc.practitioner, is_inpatient)
 			if not service_item:
-				service_item = get_healthcare_service_item('op_consulting_charge_item')
+				service_item = get_healthcare_service_item(is_inpatient)
 	if not service_item:
 		throw_config_service_item(is_inpatient)
-
-	practitioner_charge = get_practitioner_charge(doc.practitioner, is_inpatient)
 	if not practitioner_charge:
 		throw_config_practitioner_charge(is_inpatient, doc.practitioner)
 
@@ -432,26 +437,46 @@ def throw_config_practitioner_charge(is_inpatient, practitioner):
 		+ ''' <b><a href='#Form/Healthcare Practitioner/{0}'>{0}</a></b>'''.format(practitioner))
 	frappe.throw(msg, title=_('Missing Configuration'))
 
-
-def get_practitioner_service_item(practitioner, service_item_field):
-	return frappe.db.get_value('Healthcare Practitioner', practitioner, service_item_field)
-
-def get_appointment_type_service_item(appointment_type, service_item_field):
-	return frappe.db.get_value('Appointment Type', appointment_type, service_item_field)
-
-def get_healthcare_service_item(service_item_field):
-	return frappe.db.get_single_value('Healthcare Settings', service_item_field)
-
-
-def get_practitioner_charge(practitioner, is_inpatient):
+def get_practitioner_availability_service_item(practitioner_availability, is_inpatient):
 	if is_inpatient:
-		practitioner_charge = frappe.db.get_value('Healthcare Practitioner', practitioner, 'inpatient_visit_charge')
+		service_item, practitioner_charge = frappe.db.get_value('Practitioner Availability', practitioner_availability, ['inpatient_visit_charge_item', 'inpatient_visit_charge'])
 	else:
-		practitioner_charge = frappe.db.get_value('Healthcare Practitioner', practitioner, 'op_consulting_charge')
-	if practitioner_charge:
-		return practitioner_charge
-	return False
+		service_item, practitioner_charge = frappe.db.get_value('Practitioner Availability', practitioner_availability, ['out_patient_consulting_charge_item', 'op_consulting_charge'])
+	if service_item and practitioner_charge:
+		return service_item, practitioner_charge
+	return False, False
 
+def get_practitioner_service_item(practitioner, is_inpatient):
+	if is_inpatient:
+		service_item, practitioner_charge = frappe.db.get_value('Healthcare Practitioner', practitioner, ['inpatient_visit_charge_item', 'inpatient_visit_charge'])
+	else:
+		service_item, practitioner_charge = frappe.db.get_value('Healthcare Practitioner', practitioner, ['op_consulting_charge_item', 'op_consulting_charge'])
+	if service_item and practitioner_charge:
+		return service_item, practitioner_charge
+	return False, False
+
+def get_appointment_type_service_item(appointment_type, department, is_inpatient):
+	from erpnext.healthcare.doctype.appointment_type.appointment_type import get_service_item_based_on_department
+	item_list = get_service_item_based_on_department(appointment_type, department)
+	if item_list:
+		if is_inpatient:
+			service_item = item_list[0]['inpatient_visit_charge_item']
+			practitioner_charge = item_list[0]['inpatient_visit_charge']
+		else:
+			service_item = item_list[0]['op_consulting_charge_item']
+			practitioner_charge = item_list[0]['op_consulting_charge']
+		if service_item and practitioner_charge:
+			return service_item, practitioner_charge
+	return False, False
+
+def get_healthcare_service_item(is_inpatient):
+	if is_inpatient:
+		service_item = frappe.db.get_single_value('Healthcare Settings', 'inpatient_visit_charge_item')
+	else:
+		service_item = frappe.db.get_single_value('Healthcare Settings', 'op_consulting_charge_item')
+	if service_item:
+		return service_item
+	return False
 
 def manage_invoice_submit_cancel(doc, method):
 	if doc.items:
