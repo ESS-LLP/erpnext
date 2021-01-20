@@ -4,12 +4,13 @@
 
 from __future__ import unicode_literals
 import math
-import frappe
+import frappe, json
 from frappe import _
 from frappe.utils import time_diff_in_hours, rounded, getdate, nowdate
 from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_income_account
 from erpnext.healthcare.doctype.fee_validity.fee_validity import create_fee_validity
 from erpnext.healthcare.doctype.lab_test.lab_test import create_multiple
+from erpnext.stock.get_item_details import get_item_details
 
 @frappe.whitelist()
 def get_healthcare_services_to_invoice(patient, company):
@@ -1005,3 +1006,33 @@ def update_insurance_claim(insurance_claim, sales_invoice_name, posting_date, to
 	insurance_claim.billing_amount = total_amount
 	insurance_claim.claim_status = 'Invoiced'
 	insurance_claim.save(ignore_permissions= True)
+
+@frappe.whitelist()
+def sales_item_details_for_healthcare_doc(item_code, doc, wh=None):
+	from six import string_types
+	if isinstance(doc, string_types):
+		doc =  json.loads(doc)
+		if isinstance(doc, dict):
+			doc = frappe._dict(doc)
+	price_list = False
+	if frappe.get_meta(doc.doctype).has_field("selling_price_list"):
+		price_list = doc.selling_price_list
+	if not price_list:
+		price_list = frappe.db.get_value("Selling Settings", None, "selling_price_list")
+	if not price_list:
+		price_list = frappe.db.get_values("Price List", {"selling": 1}, ['name'])[0]
+	price_list_currency = frappe.db.get_values("Price List", {"selling": 1, "name": price_list}, ['name', 'currency'])[0]
+	args = {
+		'doctype': "Sales Invoice",
+		'item_code': item_code,
+		'company': doc.company,
+		'customer': frappe.db.get_value("Patient", doc.patient, "customer"),
+		'selling_price_list': price_list,
+		'price_list_currency': price_list_currency,
+		'plc_conversion_rate': 1.0,
+		'conversion_rate': 1.0
+	}
+	if wh:
+		args['warehouse'] = wh
+	item_details = get_item_details(args)
+	return item_details if item_details else False

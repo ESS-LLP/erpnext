@@ -207,7 +207,6 @@ frappe.ui.form.on('Patient Encounter', {
 				'inpatient_status': '',
 				'insurance_subscription': '',
 				'insurance_claim': ''
-
 			};
 			frm.set_value(values);
 			frm.set_df_property('patient', 'read_only', 0);
@@ -277,6 +276,7 @@ var schedule_inpatient = function(frm) {
 				admission_encounter: frm.doc.name,
 				referring_practitioner: frm.doc.practitioner,
 				company: frm.doc.company,
+				document_type: 'Patient Encounter',
 				medical_department: dialog.get_value('medical_department'),
 				primary_practitioner: dialog.get_value('primary_practitioner'),
 				secondary_practitioner: dialog.get_value('secondary_practitioner'),

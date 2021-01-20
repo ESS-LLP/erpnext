@@ -14,14 +14,14 @@
   "patient_identification",
   "gender",
   "column_break_5",
-  "active",
   "color",
-  "patient_status",
+  "status",
   "patient_age",
   "blood_group",
   "mobile",
   "existing_patient",
   "medico_legal_record_created",
+  "inpatient_record_created",
   "companion_details_section",
   "companion_name",
   "companion_contact",
@@ -31,7 +31,10 @@
   "incident_detail",
   "section_break_24",
   "practitioner",
-  "inpatient_record"
+  "appointment_type",
+  "column_break_27",
+  "service_unit",
+  "company"
  ],
  "fields": [
   {
@@ -43,6 +46,7 @@
    "fieldname": "triage",
    "fieldtype": "Link",
    "label": "Triage",
+   "no_copy": 1,
    "options": "Triage"
   },
   {
@@ -50,12 +54,14 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Patient",
+   "no_copy": 1,
    "options": "Patient"
   },
   {
    "fieldname": "patient_name",
    "fieldtype": "Data",
-   "label": "Patient Name"
+   "label": "Patient Name",
+   "no_copy": 1
   },
   {
    "fetch_from": "patient.sex",
@@ -78,12 +84,6 @@
   {
    "fieldname": "column_break_5",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "patient_status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Patient Status"
   },
   {
    "fieldname": "patient_identification",
@@ -130,12 +130,6 @@
    "label": "Color"
   },
   {
-   "default": "0",
-   "fieldname": "active",
-   "fieldtype": "Check",
-   "label": "Active"
-  },
-  {
    "fieldname": "incident_detail",
    "fieldtype": "Small Text",
    "label": "Incident Detail"
@@ -164,7 +158,9 @@
    "default": "0",
    "fieldname": "medico_legal_record_created",
    "fieldtype": "Check",
-   "label": "Medico Legal Record Created"
+   "label": "Medico Legal Record Created",
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "fieldname": "section_break_24",
@@ -177,15 +173,49 @@
    "options": "Healthcare Practitioner"
   },
   {
-   "fieldname": "inpatient_record",
+   "fieldname": "column_break_27",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
    "fieldtype": "Link",
-   "label": "Inpatient Record",
-   "options": "Inpatient Record"
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "default": "Emergency",
+   "fieldname": "appointment_type",
+   "fieldtype": "Link",
+   "label": "Appointment Type",
+   "options": "Appointment Type"
+  },
+  {
+   "fieldname": "service_unit",
+   "fieldtype": "Link",
+   "label": "Healthcare Service Unit",
+   "options": "Healthcare Service Unit"
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Active\nLeft\nAdmission Scheduled\nAdmitted\nDischarge Scheduled\nDischarged",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "inpatient_record_created",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Inpatient Record Created"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-01-19 15:13:49.368112",
+ "modified": "2021-01-20 16:23:50.952666",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Emergency Patient Record",
