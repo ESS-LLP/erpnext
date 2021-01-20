@@ -8,6 +8,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import today, getdate, flt
 from erpnext.healthcare.utils import sales_item_details_for_healthcare_doc
+from erpnext.healthcare.doctype.appointment_type.appointment_type import get_service_item_based_on_department
 
 class EmergencyPatientRecord(Document):
 	def before_insert(self):
@@ -71,7 +72,11 @@ def create_invoice(emergency_id):
 	sales_invoice.due_date = getdate()
 	sales_invoice.inpatient_record = emergency_doc.inpatient_record
 	item_line = sales_invoice.append("items")
-	item_code = frappe.db.get_value("Appointment Type", emergency_doc.appointment_type, "out_patient_consulting_charge_item")
+	item_code = False
+	if emergency_doc.appointment_type and emergency_doc.department:
+		item_list = get_service_item_based_on_department(emergency_doc.appointment_type, emergency_doc.department)
+		if item_list:
+			item_code = item_list[0]['op_consulting_charge_item']
 	cost_center = False
 	if emergency_doc.service_unit:
 		cost_center = frappe.db.get_value("Healthcare Service Unit", emergency_doc.service_unit, "cost_center")
