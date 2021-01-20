@@ -14,9 +14,12 @@ class InpatientRecord(Document):
 		frappe.db.set_value('Patient', self.patient, 'inpatient_record', self.name)
 		frappe.db.set_value('Patient', self.patient, 'inpatient_status', self.status)
 
-		if self.admission_encounter: # Update encounter
-			frappe.db.set_value('Patient Encounter', self.admission_encounter, 'inpatient_record', self.name)
-			frappe.db.set_value('Patient Encounter', self.admission_encounter, 'inpatient_status', self.status)
+		if self.admission_encounter:
+			if self.document_type == 'Patient Encounter': # Update encounter
+				frappe.db.set_value('Patient Encounter', self.admission_encounter, 'inpatient_record', self.name)
+				frappe.db.set_value('Patient Encounter', self.admission_encounter, 'inpatient_status', self.status)
+			elif self.document_type == 'Emergency Patient Record':
+				frappe.db.set_value('Emergency Patient Record', self.admission_encounter, 'inpatient_record_created', 1)
 
 	def validate(self):
 		self.validate_dates()
@@ -24,6 +27,8 @@ class InpatientRecord(Document):
 		if self.status == "Discharged":
 			frappe.db.set_value("Patient", self.patient, "inpatient_status", None)
 			frappe.db.set_value("Patient", self.patient, "inpatient_record", None)
+		if self.admission_encounter and self.document_type == 'Emergency Patient Record':
+			frappe.db.set_value('Emergency Patient Record', self.admission_encounter, 'status', self.status)
 
 	def validate_dates(self):
 		if (getdate(self.expected_discharge) < getdate(self.scheduled_date)) or \
