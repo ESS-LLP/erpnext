@@ -17,6 +17,7 @@
   "title",
   "appointment",
   "appointment_type",
+  "practitioner_availability",
   "patient",
   "patient_name",
   "triage",
@@ -451,12 +452,21 @@
    "label": "Claim Status",
    "options": "\nPending\nApproved\nRejected\nInvoiced",
    "read_only": 1
+  },
+  {
+   "depends_on": "appointment",
+   "fetch_from": "appointment.practitioner_availability",
+   "fieldname": "practitioner_availability",
+   "fieldtype": "Link",
+   "label": "Practitioner Availability",
+   "options": "Practitioner Availability",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-01-19 12:10:45.501288",
+ "modified": "2021-01-20 19:06:24.629476",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Encounter",
