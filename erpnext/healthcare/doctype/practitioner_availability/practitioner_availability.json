@@ -147,7 +147,8 @@
    "depends_on": "present",
    "fieldname": "op_consulting_charge",
    "fieldtype": "Currency",
-   "label": "OP Consulting Charge"
+   "label": "OP Consulting Charge",
+   "mandatory_depends_on": "out_patient_consulting_charge_item"
   },
   {
    "depends_on": "present",
@@ -160,7 +161,8 @@
    "depends_on": "present",
    "fieldname": "inpatient_visit_charge",
    "fieldtype": "Currency",
-   "label": "Inpatient Visit Charge"
+   "label": "Inpatient Visit Charge",
+   "mandatory_depends_on": "inpatient_visit_charge_item"
   },
   {
    "depends_on": "repeat_this_event",
@@ -241,7 +243,7 @@
   }
  ],
  "links": [],
- "modified": "2020-09-25 09:21:25.342956",
+ "modified": "2021-01-20 18:27:34.241886",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Practitioner Availability",
