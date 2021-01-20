@@ -63,6 +63,16 @@
   "organism_test_items",
   "sb_sensitivity",
   "sensitivity_test_items",
+  "consumables_section",
+  "consume_stock",
+  "warehouse",
+  "items",
+  "section_break_59",
+  "invoice_separately_as_consumables",
+  "consumption_invoiced",
+  "consumable_total_amount",
+  "column_break_63",
+  "consumption_details",
   "sb_comments",
   "lab_test_comment",
   "sb_customresult",
@@ -139,6 +149,8 @@
    "report_hide": 1
   },
   {
+   "fetch_from": "patient.sex",
+   "fetch_if_empty": 1,
    "fieldname": "patient_sex",
    "fieldtype": "Link",
    "label": "Gender",
@@ -635,12 +647,72 @@
    "hidden": 1,
    "label": "Healthcare Service Order",
    "options": "Healthcare Service Order"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "consumables_section",
+   "fieldtype": "Section Break",
+   "label": "Consumables"
+  },
+  {
+   "default": "0",
+   "fieldname": "consume_stock",
+   "fieldtype": "Check",
+   "label": "Consume Stock"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Consumables",
+   "options": "Clinical Procedure Item"
+  },
+  {
+   "fieldname": "section_break_59",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "invoice_separately_as_consumables",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Invoice Consumables Separately",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "invoice_separately_as_consumables",
+   "fieldname": "consumption_invoiced",
+   "fieldtype": "Check",
+   "label": "Consumption Invoiced"
+  },
+  {
+   "default": "0",
+   "depends_on": "invoice_separately_as_consumables",
+   "fieldname": "consumable_total_amount",
+   "fieldtype": "Currency",
+   "label": "Consumable Total Amount"
+  },
+  {
+   "fieldname": "column_break_63",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "invoice_separately_as_consumables",
+   "fieldname": "consumption_details",
+   "fieldtype": "Small Text",
+   "label": "Consumption Details"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2020-11-24 08:20:47.716074",
+ "modified": "2021-01-19 19:13:01.222085",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Lab Test",

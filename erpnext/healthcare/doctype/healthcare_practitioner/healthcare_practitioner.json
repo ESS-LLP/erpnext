@@ -33,7 +33,7 @@
   "hospital",
   "appointments",
   "practitioner_schedules",
-  "charges",
+  "item_and_charge_section",
   "op_consulting_charge_item",
   "op_consulting_charge",
   "column_break_18",
@@ -146,12 +146,6 @@
    "options": "Practitioner Service Unit Schedule"
   },
   {
-   "collapsible": 1,
-   "fieldname": "charges",
-   "fieldtype": "Section Break",
-   "label": "Charges"
-  },
-  {
    "fieldname": "op_consulting_charge_item",
    "fieldtype": "Link",
    "label": "Out Patient Consulting Charge Item",
@@ -161,6 +155,7 @@
    "fieldname": "op_consulting_charge",
    "fieldtype": "Currency",
    "label": "Out Patient Consulting Charge",
+   "mandatory_depends_on": "op_consulting_charge_item",
    "options": "Currency"
   },
   {
@@ -176,7 +171,8 @@
   {
    "fieldname": "inpatient_visit_charge",
    "fieldtype": "Currency",
-   "label": "Inpatient Visit Charge"
+   "label": "Inpatient Visit Charge",
+   "mandatory_depends_on": "inpatient_visit_charge_item"
   },
   {
    "depends_on": "eval: !doc.__islocal",
@@ -290,11 +286,17 @@
    "fieldtype": "Link",
    "label": "Supplier",
    "options": "Supplier"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "item_and_charge_section",
+   "fieldtype": "Section Break",
+   "label": "Item and Charge"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2020-06-25 16:03:26.902749",
+ "modified": "2021-01-20 18:24:41.962367",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Practitioner",

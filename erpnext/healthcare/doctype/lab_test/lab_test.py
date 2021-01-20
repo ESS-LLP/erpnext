@@ -6,12 +6,24 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import getdate, cstr, get_link_to_form
+from frappe.utils import getdate, cstr, get_link_to_form, flt, nowdate, nowtime, cstr, to_timedelta
+from erpnext.healthcare.doctype.healthcare_settings.healthcare_settings import get_account
+from erpnext.stock.stock_ledger import get_previous_sle
+from erpnext.stock.get_item_details import get_item_details
 
 class LabTest(Document):
 	def validate(self):
 		if not self.is_new():
 			self.set_secondary_uom_result()
+		if self.consume_stock:
+			allow_start = self.set_actual_qty()
+			if allow_start:
+				return 'insufficient stock'
+		if self.items:
+			self.invoice_separately_as_consumables = False
+			for item in self.items:
+				if item.invoice_separately_as_consumables:
+					self.invoice_separately_as_consumables = True
 
 	def on_submit(self):
 		self.validate_result_values()
@@ -19,6 +31,10 @@ class LabTest(Document):
 		self.db_set('status', 'Completed')
 		insert_lab_test_to_medical_record(self)
 		make_insurance_claim(self)
+		# consumable
+		stock_entry = consumable_item_process(self)
+		if stock_entry:
+			frappe.msgprint(_('Stock Entry {0} created').format(stock_entry), indicator='green')
 
 	def on_cancel(self):
 		self.db_set('status', 'Cancelled')
@@ -31,6 +47,10 @@ class LabTest(Document):
 			for i, item in enumerate(sensitivity):
 				item.idx = i + 1
 			self.sensitivity_test_items = sensitivity
+
+	def before_insert(self):
+		if self.consume_stock:
+			self.set_actual_qty()
 
 	def after_insert(self):
 		if self.healthcare_service_order:
@@ -69,6 +89,18 @@ class LabTest(Document):
 					frappe.throw(_('Row #{0}: Please enter the result value for {1}').format(
 						item.idx, frappe.bold(item.lab_test_particulars)), title=_('Mandatory Results'))
 
+	def set_actual_qty(self):
+		allow_negative_stock = frappe.db.get_single_value(
+			'Stock Settings', 'allow_negative_stock')
+
+		allow_start = True
+		for d in self.get('items'):
+			d.actual_qty = get_stock_qty(d.item_code, self.warehouse)
+			# validate qty
+			if not allow_negative_stock and d.actual_qty < d.qty:
+				allow_start = False
+				break
+		return allow_start
 
 def create_test_from_template(lab_test):
 	template = frappe.get_doc('Lab Test Template', lab_test.template)
@@ -422,3 +454,111 @@ def make_insurance_claim(doc):
 			frappe.set_value(doc.doctype, doc.name ,'insurance_claim', insurance_claim)
 			frappe.set_value(doc.doctype, doc.name ,'claim_status', claim_status)
 			doc.reload()
+
+def consumable_item_process(doc):
+	if doc.consume_stock and doc.items:
+		stock_entry = make_stock_entry(doc)
+
+	if doc.items:
+		consumable_total_amount = 0
+		consumption_details = False
+		customer = frappe.db.get_value('Patient', doc.patient, 'customer')
+		if customer:
+			for item in doc.items:
+				if item.invoice_separately_as_consumables:
+					price_list, price_list_currency = frappe.db.get_values(
+						'Price List', {'selling': 1}, ['name', 'currency'])[0]
+					args = {
+						'doctype': 'Sales Invoice',
+						'item_code': item.item_code,
+						'company': doc.company,
+						'warehouse': doc.warehouse,
+						'customer': customer,
+						'selling_price_list': price_list,
+						'price_list_currency': price_list_currency,
+						'plc_conversion_rate': 1.0,
+						'conversion_rate': 1.0
+					}
+					item_details = get_item_details(args)
+					item_price = item_details.price_list_rate * item.qty
+					item_consumption_details = item_details.item_name + ' ' + \
+						str(item.qty) + ' ' + item.uom + \
+						' ' + str(item_price)
+					consumable_total_amount += item_price
+					if not consumption_details:
+						consumption_details = _(
+							'Lab Test ({0}):').format(doc.name)
+					consumption_details += '\n\t' + item_consumption_details
+
+			if consumable_total_amount > 0:
+				frappe.db.set_value(
+					'Lab Test', doc.name, 'consumable_total_amount', consumable_total_amount)
+				frappe.db.set_value(
+					'Lab Test', doc.name, 'consumption_details', consumption_details)
+		else:
+			frappe.throw(_('Please set Customer in Patient {0}').format(
+				frappe.bold(doc.patient)), title=_('Customer Not Found'))
+	if doc.consume_stock and doc.items:
+		return stock_entry
+
+@frappe.whitelist()
+def make_stock_entry(doc):
+    stock_entry = frappe.new_doc('Stock Entry')
+    stock_entry = set_stock_items(stock_entry, doc.name, 'Lab Test')
+    stock_entry.stock_entry_type = 'Material Issue'
+    stock_entry.from_warehouse = doc.warehouse
+    stock_entry.company = doc.company
+    expense_account = get_account(
+        None, 'expense_account', 'Healthcare Settings', doc.company)
+
+    for item_line in stock_entry.items:
+        cost_center = frappe.get_cached_value(
+            'Company',  doc.company,  'cost_center')
+        item_line.cost_center = cost_center
+        item_line.expense_account = expense_account
+
+    stock_entry.save(ignore_permissions=True)
+    stock_entry.submit()
+    return stock_entry.name
+
+@frappe.whitelist()
+def get_procedure_consumables(template):
+    return get_items('Clinical Procedure Item', template, 'Lab Test Template')
+
+@frappe.whitelist()
+def set_stock_items(doc, stock_detail_parent, parenttype):
+    items = get_items('Clinical Procedure Item',
+                      stock_detail_parent, parenttype)
+
+    for item in items:
+        se_child = doc.append('items')
+        se_child.item_code = item.item_code
+        se_child.item_name = item.item_name
+        se_child.uom = item.uom
+        se_child.stock_uom = item.stock_uom
+        se_child.qty = flt(item.qty)
+        # in stock uom
+        se_child.transfer_qty = flt(item.transfer_qty)
+        se_child.conversion_factor = flt(item.conversion_factor)
+        if item.batch_no:
+            se_child.batch_no = item.batch_no
+        if parenttype == 'Lab Test Template':
+            se_child.invoice_separately_as_consumables = item.invoice_separately_as_consumables
+
+    return doc
+
+def get_items(table, parent, parenttype):
+    items = frappe.db.get_all(table, filters={
+        'parent': parent,
+        'parenttype': parenttype
+    }, fields=['*'])
+
+    return items
+
+def get_stock_qty(item_code, warehouse):
+    return get_previous_sle({
+        'item_code': item_code,
+        'warehouse': warehouse,
+        'posting_date': nowdate(),
+        'posting_time': nowtime()
+    }).get('qty_after_transaction') or 0

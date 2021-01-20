@@ -18,11 +18,8 @@
   "medical_code_standard",
   "medical_code",
   "billing_section",
-  "out_patient_consulting_charge_item",
-  "op_consulting_charge",
-  "column_break_12",
-  "inpatient_visit_charge_item",
-  "inpatient_visit_charge"
+  "price_list",
+  "items"
  ],
  "fields": [
   {
@@ -91,34 +88,20 @@
    "label": "Billing"
   },
   {
-   "fieldname": "out_patient_consulting_charge_item",
+   "fieldname": "price_list",
    "fieldtype": "Link",
-   "label": "Out Patient Consulting Charge Item",
-   "options": "Item"
+   "label": "Price List",
+   "options": "Price List"
   },
   {
-   "fieldname": "op_consulting_charge",
-   "fieldtype": "Currency",
-   "label": "OP Consulting Charge"
-  },
-  {
-   "fieldname": "column_break_12",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "inpatient_visit_charge_item",
-   "fieldtype": "Link",
-   "label": "Inpatient Visit Charge Item",
-   "options": "Item"
-  },
-  {
-   "fieldname": "inpatient_visit_charge",
-   "fieldtype": "Currency",
-   "label": "Inpatient Visit Charge"
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Appointment Type Service Item",
+   "options": "Appointment Type Service Item"
   }
  ],
  "links": [],
- "modified": "2020-10-07 12:51:50.946384",
+ "modified": "2021-01-20 17:40:30.321048",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Appointment Type",
