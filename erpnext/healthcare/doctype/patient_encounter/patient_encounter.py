@@ -321,6 +321,8 @@ def create_patient_referral(args):
 	for key in args:
 		patient_referral.set(key, args[key] if args[key] else '')
 	patient_referral.save(ignore_permissions=True)
+	patient_referral.submit()
+
 
 def make_insurance_claim(doc):
 	if doc.insurance_subscription and not doc.insurance_claim:
