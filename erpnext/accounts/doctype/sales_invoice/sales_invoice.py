@@ -1267,10 +1267,11 @@ class SalesInvoice(SellingController):
 	def calculate_healthcare_insurance_claim(self):
 		total_claim_amount = 0
 		for item in self.items:
-			if item.amount and item.insurance_claim_coverage and float(item.insurance_claim_coverage) > 0:
-				item.insurance_claim_amount = item.amount * 0.01 * float(item.insurance_claim_coverage)
-			if item.insurance_claim_amount and float(item.insurance_claim_amount)>0:
-				total_claim_amount += float(item.insurance_claim_amount)
+			if item.insurance_claim_coverage and item.insurance_claim_amount:
+				if item.amount and item.insurance_claim_coverage and float(item.insurance_claim_coverage) > 0:
+					item.insurance_claim_amount = item.amount * 0.01 * float(item.insurance_claim_coverage)
+				if item.insurance_claim_amount and float(item.insurance_claim_amount)>0:
+					total_claim_amount += float(item.insurance_claim_amount)
 		self.total_insurance_claim_amount = total_claim_amount
 		if self.total_insurance_claim_amount and self.outstanding_amount:
 			self.patient_payable_amount = self.outstanding_amount - self.total_insurance_claim_amount
