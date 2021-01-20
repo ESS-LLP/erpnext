@@ -67,7 +67,15 @@ frappe.ui.form.on('Patient Appointment', {
 						message: __('Please select Patient first'),
 						indicator: 'red'
 					});
-				} else {
+				} 
+				else if(!frm.doc.practitioner){
+					frappe.msgprint({
+						title: __('Not Allowed'),
+						message: __('Please select Practitioner'),
+						indicator: 'red'
+					});
+				}
+				else {
 					frappe.call({
 						method: 'erpnext.healthcare.doctype.patient_appointment.patient_appointment.check_payment_fields_reqd',
 						args: { 'patient': frm.doc.patient },
@@ -280,19 +288,23 @@ frappe.ui.form.on('Patient Appointment', {
 		}
 	},
 	registration_fee: function(frm){
-		if(frm.doc.registration_fee){
-			frm.set_value('paid_amount',  frm.doc.registration_fee)
-		}
+		set_paid_amount(frm)
 	},
 	consultation_charge: function(frm){
-		if(frm.doc.registration_fee){
-			frm.set_value('paid_amount', (frm.doc.consultation_charge + frm.doc.registration_fee))
-		}
-		else{
-			frm.set_value('paid_amount', (frm.doc.consultation_charge))
-		}
+		set_paid_amount(frm)
 	}
 });
+let set_paid_amount = function(frm){
+	if(frm.doc.registration_fee){
+		frm.set_value('paid_amount',  frm.doc.registration_fee)
+	}
+	if(frm.doc.consultation_charge){
+		frm.set_value('paid_amount',  frm.doc.consultation_charge)
+	}
+	if(frm.doc.registration_fee && frm.doc.consultation_charge){
+		frm.set_value('paid_amount', (frm.doc.consultation_charge + frm.doc.registration_fee))
+	}
+}
 
 let check_and_set_availability = function (frm) {
 	let selected_slot = null;
@@ -771,8 +783,14 @@ frappe.ui.form.on('Patient Appointment', 'practitioner', function (frm) {
 			},
 			callback: function (data) {
 				frappe.model.set_value(frm.doctype, frm.docname, 'department', data.message.department);
-				frappe.model.set_value(frm.doctype, frm.docname, 'consultation_charge', data.message.op_consulting_charge);
-				frappe.model.set_value(frm.doctype, frm.docname, 'billing_item', data.message.op_consulting_charge_item);
+				frappe.db.get_single_value('Healthcare Settings', 'automate_appointment_invoicing')
+					.then(automate_appointment_invoicing => {
+						console.log(automate_appointment_invoicing);
+						if (automate_appointment_invoicing == 1){
+							frappe.model.set_value(frm.doctype, frm.docname, 'consultation_charge', data.message.op_consulting_charge);
+							frappe.model.set_value(frm.doctype, frm.docname, 'billing_item', data.message.op_consulting_charge_item);
+						}
+					})
 			}
 		});
 	}

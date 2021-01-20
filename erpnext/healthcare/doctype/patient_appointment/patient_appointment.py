@@ -184,8 +184,9 @@ def invoice_appointment(appointment_doc):
 		frappe.msgprint(_('Sales Invoice {0} created'.format(sales_invoice.name)), alert=True)
 		if not frappe.db.exists('Patient', {'name': appointment_doc.patient, 'status': 'Active'}) and collect_registration_fee:
 			frappe.db.set_value('Patient', appointment_doc.patient, 'status', 'Active')
-		frappe.db.set_value('Patient Appointment', appointment_doc.name, 'invoiced', 1)
-		frappe.db.set_value('Patient Appointment', appointment_doc.name, 'ref_sales_invoice', sales_invoice.name)
+		if automate_invoicing and not appointment_invoiced and not fee_validity:
+			frappe.db.set_value('Patient Appointment', appointment_doc.name, 'invoiced', 1)
+			frappe.db.set_value('Patient Appointment', appointment_doc.name, 'ref_sales_invoice', sales_invoice.name)
 
 
 def check_is_new_patient(patient, name=None):

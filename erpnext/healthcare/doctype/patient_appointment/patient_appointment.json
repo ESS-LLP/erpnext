@@ -170,7 +170,6 @@
    "in_standard_filter": 1,
    "label": "Healthcare Practitioner",
    "options": "Healthcare Practitioner",
-   "read_only": 1,
    "reqd": 1,
    "search_index": 1,
    "set_only_once": 1
@@ -532,7 +531,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-01-19 17:28:52.827457",
+ "modified": "2021-01-20 19:44:27.747683",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Appointment",
