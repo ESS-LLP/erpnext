@@ -8,8 +8,27 @@ cur_frm.cscript.custom_refresh = function (doc) {
 	cur_frm.toggle_display('sb_normal', doc.normal_toggle);
 };
 
+
 frappe.ui.form.on('Lab Test', {
 	setup: function (frm) {
+		frm.set_query('batch_no', 'items', function(doc, cdt, cdn) {
+			let item = locals[cdt][cdn];
+			if (!item.item_code) {
+				frappe.throw(__('Please enter Item Code to get Batch Number'));
+			} else {
+				let filters = {'item_code': item.item_code};
+
+				if (frm.doc.status == 'In Progress') {
+					filters['posting_date'] = frm.doc.start_date || frappe.datetime.nowdate();
+					if (frm.doc.warehouse) filters['warehouse'] = frm.doc.warehouse;
+				}
+
+				return {
+					query : 'erpnext.controllers.queries.get_batch_no',
+					filters: filters
+				};
+			}
+		});
 		frm.get_field('normal_test_items').grid.editable_fields = [
 			{ fieldname: 'lab_test_name', columns: 3 },
 			{ fieldname: 'lab_test_event', columns: 2 },
@@ -88,13 +107,75 @@ frappe.ui.form.on('Lab Test', {
 				}
 			};
 		});
+		if (frm.doc.consume_stock) {
+			frm.set_indicator_formatter('item_code',
+				function(doc) { return (doc.qty<=doc.actual_qty) ? 'green' : 'orange' ; });
+		}
 	},
-
 	source: function(frm){
 		if(frm.doc.source){
 			set_source_referring_practitioner(frm);
 		}
-	}
+	},
+	template: function(frm) {
+		if (frm.doc.template) {
+			console.log(frm.doc.template);
+			frappe.call({
+				'method': 'frappe.client.get',
+				args: {
+					doctype: 'Lab Test Template',
+					name: frm.doc.template
+				},
+				callback: function (data) {
+					console.log(data);
+					frm.set_value('consume_stock', data.message.consume_stock);
+					frm.events.set_warehouse(frm);
+					frm.events.set_procedure_consumables(frm);
+				}
+			});
+		}
+	},
+	set_warehouse: function(frm) {
+		if (!frm.doc.warehouse) {
+			frappe.call({
+				method: 'frappe.client.get_value',
+				args: {
+					doctype: 'Stock Settings',
+					fieldname: 'default_warehouse'
+				},
+				callback: function (data) {
+					frm.set_value('warehouse', data.message.default_warehouse);
+				}
+			});
+		}
+	},
+
+	set_procedure_consumables: function(frm) {
+		frappe.call({
+			method: 'erpnext.healthcare.doctype.lab_test.lab_test.get_procedure_consumables',
+			args: {
+				template: frm.doc.template
+			},
+			callback: function(data) {
+				if (data.message) {
+					frm.doc.items = [];
+					$.each(data.message, function(i, v) {
+						let item = frm.add_child('items');
+						item.item_code = v.item_code;
+						item.item_name = v.item_name;
+						item.uom = v.uom;
+						item.stock_uom = v.stock_uom;
+						item.qty = flt(v.qty);
+						item.transfer_qty = v.transfer_qty;
+						item.conversion_factor = v.conversion_factor;
+						item.invoice_separately_as_consumables = v.invoice_separately_as_consumables;
+						item.batch_no = v.batch_no;
+					});
+					refresh_field('items');
+				}
+			}
+		});
+	},
 
 });
 
