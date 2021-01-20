@@ -66,6 +66,8 @@
   "billing_item",
   "invoiced",
   "column_break_2",
+  "registration_fee",
+  "consultation_charge",
   "paid_amount",
   "ref_sales_invoice",
   "section_break_3",
@@ -515,11 +517,22 @@
    "label": "Claim Status",
    "options": "\nPending\nApproved\nRejected\nInvoiced",
    "read_only": 1
+  },
+  {
+   "fieldname": "registration_fee",
+   "fieldtype": "Currency",
+   "label": "Registration Fee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consultation_charge",
+   "fieldtype": "Currency",
+   "label": "Consultation Charge"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-11-24 08:24:01.987209",
+ "modified": "2021-01-19 17:28:52.827457",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Patient Appointment",
