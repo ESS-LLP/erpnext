@@ -2,18 +2,18 @@
  "cards": [
   {
    "hidden": 0,
-   "label": "Patient",
-   "links": "[\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient\",\n\t\t\"label\": \"Patient\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"page\",\n\t\t\"name\": \"patient_history\",\n\t\t\"label\": \"Patient History\"\n\t},\n\t\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Medical Record\",\n\t\t\"label\": \"Patient Medical Record\"\n\t}\n]"
+   "label": "OP",
+   "links": "[\n     {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient\",\n\t\t\"label\": \"Patient\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"page\",\n\t\t\"name\": \"patient_history\",\n\t\t\"label\": \"Patient History\"\n\t},\n\t\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Medical Record\",\n\t\t\"label\": \"Patient Medical Record\"\n\t},\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Appointment\",\n\t\t\"label\": \"Patient Appointment\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Vital Signs\",\n\t\t\"label\": \"Vital Signs\",\n\t\t\"description\": \"Record Patient Vitals\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Encounter\",\n\t\t\"label\": \"Patient Encounter\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Appointment Type\",\n\t\t\"label\": \"Appointment Type\"\n    },\n    \t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Complaint\",\n\t\t\"label\": \"Complaint\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Diagnosis\",\n\t\t\"label\": \"Diagnosis\"\n\t},\n\t\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Prescription Dosage\",\n\t\t\"label\": \"Prescription Dosage\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Prescription Duration\",\n\t\t\"label\": \"Prescription Duration\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Dosage Form\",\n\t\t\"label\": \"Dosage Form\"\n\t}\n]"
   },
   {
    "hidden": 0,
-   "label": "Outpatient",
-   "links": "[\n    {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Appointment\",\n\t\t\"label\": \"Patient Appointment\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Vital Signs\",\n\t\t\"label\": \"Vital Signs\",\n\t\t\"description\": \"Record Patient Vitals\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Encounter\",\n\t\t\"label\": \"Patient Encounter\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Appointment Type\",\n\t\t\"label\": \"Appointment Type\"\n    },\n    \t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Complaint\",\n\t\t\"label\": \"Complaint\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Diagnosis\",\n\t\t\"label\": \"Diagnosis\"\n\t},\n\t\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Prescription Dosage\",\n\t\t\"label\": \"Prescription Dosage\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Prescription Duration\",\n\t\t\"label\": \"Prescription Duration\"\n\t},\n\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Dosage Form\",\n\t\t\"label\": \"Dosage Form\"\n\t}\n]"
+   "label": "IP",
+   "links": "[\n     {\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient\",\n\t\t\"label\": \"Patient\",\n\t\t\"onboard\": 1\n\t},\n\t{\n\t\t\"type\": \"page\",\n\t\t\"name\": \"patient_history\",\n\t\t\"label\": \"Patient History\"\n\t},\n\t\t{\n\t\t\"type\": \"doctype\",\n\t\t\"name\": \"Patient Medical Record\",\n\t\t\"label\": \"Patient Medical Record\"\n\t},\n\t{\n\t\"type\": \"doctype\",\n\t\"name\": \"Inpatient Record\",\n\t\"label\": \"Inpatient Record\",\n\t\"onboard\": 1\n\t},\n\t{\n\t\"type\": \"doctype\",\n\t\"name\": \"Healthcare Nursing Task\",\n\t\"label\": \"Healthcare Nursing Task\",\n\t\"onboard\": 1\n\t}\n]"
   },
   {
    "hidden": 0,
-   "label": "Inpatient",
-   "links": "[\n\t{\n\t\"type\": \"doctype\",\n\t\"name\": \"Inpatient Record\",\n\t\"label\": \"Inpatient Record\",\n\t\"onboard\": 1\n\t},\n\t{\n\t\"type\": \"doctype\",\n\t\"name\": \"Healthcare Nursing Task\",\n\t\"label\": \"Healthcare Nursing Task\",\n\t\"onboard\": 1\n\t}\n]"
+   "label": "Emergency",
+   "links": "[\n  {\n    \t\"type\": \"doctype\",\n    \t\"name\": \"Emergency Patient Record\",\n    \t\"label\": \"Emergency Patient Record\",\n    \t\"onboard\": 1\n    },\n    \t{\n\t    \"type\": \"doctype\",\n\t\t\"name\": \"Medico Legal Record\",\n\t\t\"label\": \"Medico Legal Record\",\n\t\t\"onboard\": 1\n\t}\n]"
   },
   {
    "hidden": 0,
@@ -89,7 +89,7 @@
  "idx": 0,
  "is_standard": 1,
  "label": "Healthcare",
- "modified": "2021-01-18 16:18:50.740422",
+ "modified": "2021-01-20 18:24:44.846613",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare",
