@@ -101,6 +101,24 @@ data = {
 				'insert_after': 'patient_name', 'read_only': True, 'fetch_if_empty': True, 'options': 'Inpatient Record'
 			}
 		],
+		'Delivery Note': [
+			{
+				'fieldname': 'patient', 'label': 'Patient', 'fieldtype': 'Link', 'options': 'Patient',
+				'insert_after': 'naming_series'
+			},
+			{
+				'fieldname': 'patient_name', 'label': 'Patient Name', 'fieldtype': 'Data', 'fetch_from': 'patient.patient_name',
+				'insert_after': 'patient', 'read_only': True
+			},
+			{
+				'fieldname': 'emergency_patient_record', 'label': 'Emergency Patient Record', 'fieldtype': 'Link',
+				'insert_after': 'patient_name', 'read_only': True, 'options': 'Emergency Patient Record'
+			},
+			{
+				'fieldname': 'inpatient_record', 'label': 'Inpatient Record', 'fieldtype': 'Link', 'fetch_from': 'patient.inpatient_record',
+				'insert_after': 'emergency_patient_record', 'read_only': True, 'fetch_if_empty': True, 'options': 'Inpatient Record'
+			}
+		],
 	},
 	'on_setup': 'erpnext.healthcare.setup.setup_healthcare'
 }
