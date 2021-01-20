@@ -32,6 +32,7 @@
   "section_break_24",
   "practitioner",
   "appointment_type",
+  "department",
   "column_break_27",
   "service_unit",
   "company"
@@ -211,11 +212,18 @@
    "fieldtype": "Check",
    "hidden": 1,
    "label": "Inpatient Record Created"
+  },
+  {
+   "default": "Emergency",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Medical Department"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-01-20 16:23:50.952666",
+ "modified": "2021-01-20 19:39:15.375351",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Emergency Patient Record",

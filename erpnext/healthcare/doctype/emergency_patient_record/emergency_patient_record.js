@@ -48,10 +48,11 @@ frappe.ui.form.on('Emergency Patient Record', {
 						create_medico_legal_record(frm);
 					}, __('Create'));
 				}
-				// if (frm.doc.status: ['not in', 'Active, Left']) {
+
 				if (frm.doc.status != 'Active') {
 					frm.add_custom_button(__('IP Record'), function(){
-						view_inpatient_record(frm);
+						frappe.route_options = {'admission_encounter': frm.doc.name};
+						frappe.set_route('List', 'Inpatient Record');
 				});
 				}
 			}
@@ -342,16 +343,3 @@ let update_items = function(items, new_item){
 	}
 	return items;
 };
-
-let view_inpatient_record = function(frm) {
-	frappe.db.get_value('Inpatient Record', {admission_encounter: frm.doc.name}, 'name')
-    .then(r => {
-			if (r.message) {
-        let values = r.message;
-				frappe.route_options = {'name': values.name};
-				frappe.set_route('List', 'Inpatient Record');
-				// frappe.set_route('Form', 'Inpatient Record', values.name);
-			}
-    })
-
-}
