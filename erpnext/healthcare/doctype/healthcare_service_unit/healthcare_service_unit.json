@@ -25,6 +25,7 @@
   "column_break_9",
   "company",
   "warehouse",
+  "cost_center",
   "tree_details_section",
   "parent_healthcare_service_unit",
   "lft",
@@ -232,10 +233,19 @@
    "fieldtype": "Data",
    "label": "Modality Name",
    "mandatory_depends_on": "eval: doc.is_modality == 1 "
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "bold": 1,
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Cost Center",
+   "options": "Cost Center"
   }
  ],
  "links": [],
- "modified": "2020-09-11 14:39:33.346107",
+ "modified": "2021-01-19 18:21:33.996329",
  "modified_by": "Administrator",
  "module": "Healthcare",
  "name": "Healthcare Service Unit",
