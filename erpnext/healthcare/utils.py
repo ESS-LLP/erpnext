@@ -179,6 +179,23 @@ def get_lab_tests_to_invoice(patient, company):
 					'reference_name': lab_test.name,
 					'service': item
 				})
+	# consumables
+	if lab_test.invoice_separately_as_consumables and lab_test.consume_stock \
+		and lab_test.status == 'Completed' and not lab_test.consumption_invoiced:
+
+		service_item = frappe.db.get_single_value('Healthcare Settings', 'clinical_procedure_consumable_item')
+		if not service_item:
+			msg = _('Please Configure Consumable Item in ')
+			msg += '''<b><a href='#Form/Healthcare Settings'>Healthcare Settings</a></b>'''
+			frappe.throw(msg, title=_('Missing Configuration'))
+
+		lab_tests_to_invoice.append({
+			'reference_type': 'Lab Test',
+			'reference_name': lab_test.name,
+			'service': service_item,
+			'rate': lab_test.consumable_total_amount,
+			'description': lab_test.consumption_details
+		})
 
 	return lab_tests_to_invoice
 
@@ -217,7 +234,7 @@ def get_clinical_procedures_to_invoice(patient, company):
 		if procedure.invoice_separately_as_consumables and procedure.consume_stock \
 			and procedure.status == 'Completed' and not procedure.consumption_invoiced:
 
-			service_item = get_healthcare_service_item('clinical_procedure_consumable_item')
+			service_item = frappe.db.get_single_value('Healthcare Settings', 'clinical_procedure_consumable_item')
 			if not service_item:
 				msg = _('Please Configure Clinical Procedure Consumable Item in ')
 				msg += '''<b><a href='#Form/Healthcare Settings'>Healthcare Settings</a></b>'''
@@ -499,10 +516,22 @@ def set_invoiced(item, method, ref_invoice=None):
 		invoiced = True
 
 	if item.reference_dt == 'Clinical Procedure':
-		if get_healthcare_service_item('clinical_procedure_consumable_item') == item.item_code:
-			frappe.db.set_value(item.reference_dt, item.reference_dn, 'consumption_invoiced', invoiced)
-		else:
-			frappe.db.set_value(item.reference_dt, item.reference_dn, 'invoiced', invoiced)
+		service_item = frappe.db.get_single_value('Healthcare Settings', 'clinical_procedure_consumable_item')
+		if service_item:
+			if  service_item == item.item_code:
+				frappe.db.set_value(item.reference_dt, item.reference_dn, 'consumption_invoiced', invoiced)
+			else:
+				frappe.db.set_value(item.reference_dt, item.reference_dn, 'invoiced', invoiced)
+	else:
+		frappe.db.set_value(item.reference_dt, item.reference_dn, 'invoiced', invoiced)
+
+	if item.reference_dt == 'Lab Test':
+		service_item = frappe.db.get_single_value('Healthcare Settings', 'clinical_procedure_consumable_item')
+		if service_item:
+			if  service_item == item.item_code:
+				frappe.db.set_value(item.reference_dt, item.reference_dn, 'consumption_invoiced', invoiced)
+			else:
+				frappe.db.set_value(item.reference_dt, item.reference_dn, 'invoiced', invoiced)
 	else:
 		frappe.db.set_value(item.reference_dt, item.reference_dn, 'invoiced', invoiced)
 
@@ -523,7 +552,9 @@ def set_invoiced(item, method, ref_invoice=None):
 		frappe.db.set_value(item.reference_dt, item.reference_dn, 'invoiced', invoiced)
 
 def validate_invoiced_on_submit(item):
-	if item.reference_dt == 'Clinical Procedure' and get_healthcare_service_item('clinical_procedure_consumable_item') == item.item_code:
+	if item.reference_dt == 'Clinical Procedure' and frappe.db.get_single_value('Healthcare Settings', 'clinical_procedure_consumable_item') == item.item_code:
+		is_invoiced = frappe.db.get_value(item.reference_dt, item.reference_dn, 'consumption_invoiced')
+	elif item.reference_dt == 'Lab Test' and frappe.db.get_single_value('Healthcare Settings', 'clinical_procedure_consumable_item') == item.item_code:
 		is_invoiced = frappe.db.get_value(item.reference_dt, item.reference_dn, 'consumption_invoiced')
 	else:
 		is_invoiced = frappe.db.get_value(item.reference_dt, item.reference_dn, 'invoiced')
